@@ -851,7 +851,10 @@ footer{
 <section class="sec-dark" id="workflow">
   <div class="sec-inner">
     <div class="reveal">
-      <div class="eyebrow" id="wf-eye">Automatisierter Ablauf</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.9rem">
+        <div class="eyebrow" id="wf-eye" style="margin-bottom:0">Automatisierter Ablauf</div>
+        <button onclick="location.href='animation.html?lang='+(document.documentElement.lang||'de')" id="wf-anim-btn" style="padding:.3rem .9rem;background:rgba(0,163,224,.1);border:1px solid rgba(0,163,224,.25);border-radius:20px;color:#00A3E0;font-size:.7rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s" onmouseover="this.style.background='rgba(0,163,224,.2)'" onmouseout="this.style.background='rgba(0,163,224,.1)'">▶ Workflow Animation ansehen</button>
+      </div>
       <h2 class="sec-heading" id="wf-heading">Vollautomatisch.<br>Copilot — kein Autopilot.</h2>
       <p class="sec-body" id="wf-body">Das System liest Aufträge aus SMax Go, plant, informiert und prüft — der Disponent bestätigt die Schlüsselentscheidungen.</p>
     </div>
@@ -1323,6 +1326,7 @@ de:{
   'sc-note-btn':'⚙ Daten anpassen',
   'cl-expand-note':'+ Neue Cluster &amp; Familien jederzeit ergänzbar',
   'wf-eye':'Automatisierter Ablauf',
+  'wf-anim-btn':'▶ Workflow Animation ansehen',
   'wf-heading':'Vollautomatisch.<br>Copilot — kein Autopilot.',
   'wf-body':'Das System liest Aufträge aus SMax Go, plant, informiert und prüft — der Disponent bestätigt die Schlüsselentscheidungen.',
   'wf-auto-title':'KI übernimmt automatisch',
@@ -1392,6 +1396,7 @@ en:{
   'sc-note-btn':'⚙ Edit data',
   'cl-expand-note':'+ New clusters &amp; families can be added anytime',
   'wf-eye':'Automated Workflow',
+  'wf-anim-btn':'▶ View Workflow Animation',
   'wf-heading':'Fully automated.<br>Copilot — not autopilot.',
   'wf-body':'The system reads orders from SMax Go, plans, informs and checks — the dispatcher confirms key decisions.',
   'wf-auto-title':'AI handles automatically',
