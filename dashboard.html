@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Field Service AI &ndash; Medtronic Deutschland</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
     :root {
       --bg:           #000810;
       --card-bg:      rgba(255,255,255,.03);
       --card-border:  rgba(255,255,255,.09);
-      --nav-bg:       rgba(0,8,20,.85);
+      --nav-bg:       rgba(0,8,20,.7);
       --primary:      #0072CE;
       --accent:       #00A3E0;
       --success:      #00875A;
@@ -25,6 +25,8 @@
       --text-muted:   rgba(255,255,255,.3);
       --font-body:    'Plus Jakarta Sans', sans-serif;
       --font-heading: 'Syne', sans-serif;
+      --grad-accent:  linear-gradient(135deg, #00A3E0, #6EC6FF);
+      --grad-primary: linear-gradient(135deg, #0072CE, #00A3E0);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -34,7 +36,13 @@
       font-size: 14px;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.1) transparent;
     }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.18); }
 
     /* ── Grain Overlay ── */
     .grain-overlay {
@@ -60,17 +68,17 @@
       flex-direction: column;
     }
 
-    /* ── Header ── */
+    /* ── Hero Header ── */
     header {
-      background: var(--nav-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(0,8,20,.85);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       color: #fff;
       padding: 0 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 64px;
+      height: 60px;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -83,54 +91,63 @@
     }
     .header-logo {
       font-family: var(--font-heading);
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: .5px;
-      color: #fff;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: .3px;
+      background: var(--grad-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .header-logo .brand-ai {
-      color: var(--accent);
-      font-weight: 500;
+      background: var(--grad-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
     }
     .header-sub {
       font-size: 11px;
-      color: var(--text-dim);
-      font-weight: 400;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: .04em;
     }
     .header-right {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
     .demo-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255,208,96,.12);
+      background: rgba(255,208,96,.1);
       color: var(--demo);
-      border: 1px solid rgba(255,208,96,.25);
+      border: 1px solid rgba(255,208,96,.2);
       border-radius: 20px;
-      padding: 4px 14px;
+      padding: 5px 16px;
       font-size: 11px;
       font-weight: 600;
-      letter-spacing: .3px;
+      letter-spacing: .04em;
     }
     .lang-toggle, .api-key-btn {
-      background: rgba(255,255,255,.06);
+      background: rgba(255,255,255,.05);
       color: var(--text-dim);
       border: 1px solid rgba(255,255,255,.1);
-      border-radius: 6px;
-      padding: 5px 12px;
+      border-radius: 20px;
+      padding: 6px 16px;
       font-family: var(--font-body);
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
-      transition: all .2s;
+      transition: all .2s ease;
+      letter-spacing: .03em;
     }
     .lang-toggle:hover, .api-key-btn:hover {
       background: rgba(255,255,255,.1);
-      color: var(--text);
-      border-color: rgba(255,255,255,.2);
+      color: #fff;
+      border-color: rgba(255,255,255,.25);
+      box-shadow: 0 0 12px rgba(0,163,224,.15);
     }
 
     /* ── Summary Bar ── */
@@ -154,18 +171,23 @@
     section {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 24px 28px;
+      border-radius: 16px;
+      padding: 28px 32px;
+      transition: background .2s ease, box-shadow .2s ease;
+    }
+    section:hover {
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 4px 24px rgba(0,0,0,.3);
     }
     section h2 {
       font-family: var(--font-heading);
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 700;
       color: var(--text);
       margin-bottom: 16px;
       padding-bottom: 12px;
       border-bottom: 1px solid rgba(255,255,255,.06);
-      letter-spacing: .3px;
+      letter-spacing: .02em;
     }
     .section-hint {
       font-size: 11px;
@@ -176,40 +198,51 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* ── Ampel-Karten ── */
+    /* ── Techniker-Karten (Glassmorphism) ── */
     .ampel-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 14px;
     }
     .ampel-karte {
-      border-radius: 10px;
+      border-radius: 14px;
       padding: 16px 18px;
       width: 170px;
       position: relative;
       border: 1px solid var(--card-border);
+      border-top: 3px solid var(--text-muted);
       background: var(--card-bg);
-      transition: transform .2s ease, box-shadow .2s ease;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
     }
     .ampel-karte:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(0,0,0,.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,.35);
+      background: rgba(255,255,255,.05);
     }
     .ampel-gruen {
-      background: rgba(0,135,90,.08);
-      border-color: rgba(94,221,159,.15);
+      background: rgba(0,135,90,.06);
+      border-color: rgba(94,221,159,.12);
+      border-top-color: var(--success);
     }
-    .ampel-gruen .ampel-id, .ampel-gruen .metric-num { color: var(--success-text); }
+    .ampel-gruen:hover { box-shadow: 0 8px 28px rgba(0,135,90,.15); }
+    .ampel-gruen .ampel-id { background: var(--grad-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .ampel-gruen .metric-num { color: var(--success-text); }
     .ampel-gelb {
-      background: rgba(255,139,0,.08);
-      border-color: rgba(255,179,71,.15);
+      background: rgba(255,139,0,.06);
+      border-color: rgba(255,179,71,.12);
+      border-top-color: var(--warning);
     }
-    .ampel-gelb .ampel-id, .ampel-gelb .metric-num { color: var(--warning-text); }
+    .ampel-gelb:hover { box-shadow: 0 8px 28px rgba(255,139,0,.12); }
+    .ampel-gelb .ampel-id { color: var(--warning-text); }
+    .ampel-gelb .metric-num { color: var(--warning-text); }
     .ampel-rot {
-      background: rgba(204,0,0,.08);
-      border-color: rgba(255,128,128,.15);
+      background: rgba(204,0,0,.06);
+      border-color: rgba(255,128,128,.12);
+      border-top-color: var(--critical);
     }
-    .ampel-rot .ampel-id, .ampel-rot .metric-num { color: var(--critical-text); }
+    .ampel-rot:hover { box-shadow: 0 8px 28px rgba(204,0,0,.12); }
+    .ampel-rot .ampel-id { color: var(--critical-text); }
+    .ampel-rot .metric-num { color: var(--critical-text); }
     .ampel-karte.hugo-border { border: 2px solid var(--primary); }
     .ampel-header {
       display: flex;
@@ -217,7 +250,7 @@
       align-items: flex-start;
       margin-bottom: 4px;
     }
-    .ampel-id      { font-family: var(--font-heading); font-size: 22px; font-weight: 700; line-height: 1; }
+    .ampel-id      { font-family: var(--font-heading); font-size: 22px; font-weight: 800; line-height: 1; }
     .ampel-standort{ font-size: 12px; color: var(--text-dim); }
     .ampel-region  { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
     .ampel-badge {
@@ -264,17 +297,17 @@
       font-size: 12px;
       padding: 8px 14px;
       border: 1px solid var(--card-border);
-      border-radius: 8px;
+      border-radius: 10px;
       background: rgba(255,255,255,.04);
       color: var(--text);
       cursor: pointer;
       min-width: 320px;
       outline: none;
-      transition: border-color .2s;
+      transition: all .2s ease;
     }
     .ampel-sort-controls select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(0,114,206,.2);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0,163,224,.15);
     }
     .ampel-sort-controls .demo-hint {
       font-size: 10px;
@@ -282,18 +315,18 @@
       font-style: italic;
     }
 
-    /* ── Metric Box ── */
+    /* ── Metric Box (stat-cell style) ── */
     .metric-box   { margin: 8px 0 2px; }
-    .metric-num   { font-family: var(--font-heading); font-size: 24px; font-weight: 700; line-height: 1.1; }
-    .metric-lbl   { font-size: 10px; color: var(--text-dim); margin-bottom: 3px; }
+    .metric-num   { font-family: var(--font-heading); font-size: 24px; font-weight: 800; line-height: 1.1; }
+    .metric-lbl   { font-size: 10px; color: rgba(255,255,255,.4); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .08em; }
     .metric-sub   { font-size: 10px; color: var(--text-muted); }
     .metric-italic{ font-style: italic; }
 
-    /* ── Auslastungsbalken ── */
+    /* ── Fortschrittsbalken ── */
     .auslastung-bar-wrap {
       position: relative;
-      height: 6px;
-      background: rgba(255,255,255,.06);
+      height: 5px;
+      background: rgba(255,255,255,.07);
       border-radius: 3px;
       margin: 5px 0 3px;
       overflow: visible;
@@ -302,10 +335,11 @@
       height: 100%;
       border-radius: 3px;
       min-width: 0;
+      background: linear-gradient(90deg, #0072CE, #00A3E0);
     }
-    .ampel-gruen .auslastung-bar-fill { background: var(--success); }
-    .ampel-gelb  .auslastung-bar-fill { background: var(--warning); }
-    .ampel-rot   .auslastung-bar-fill { background: var(--critical); }
+    .ampel-gruen .auslastung-bar-fill { background: linear-gradient(90deg, var(--success), #5EDD9F); }
+    .ampel-gelb  .auslastung-bar-fill { background: linear-gradient(90deg, #E87000, var(--warning)); }
+    .ampel-rot   .auslastung-bar-fill { background: linear-gradient(90deg, #990000, var(--critical)); }
     .auslastung-bar-ziel {
       position: absolute;
       top: -3px;
@@ -339,7 +373,7 @@
       color: var(--text);
     }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(0,114,206,.04); }
+    tr:hover td { background: rgba(0,163,224,.04); }
     code { font-family: 'JetBrains Mono', 'Consolas', monospace; font-size: 12px; color: var(--accent); }
     .sub { color: var(--text-dim); font-size: 11px; }
     .fehlend-liste { font-size: 11px; color: var(--text-dim); max-width: 340px; }
@@ -354,10 +388,10 @@
       letter-spacing: .4px;
     }
     .badge-ueberfaellig { background: rgba(204,0,0,.2); color: var(--critical-text); border: 1px solid rgba(204,0,0,.3); }
-    .badge-kritisch { background: rgba(204,0,0,.12); color: var(--critical-text); border: 1px solid rgba(204,0,0,.2); }
-    .badge-hoch     { background: rgba(255,139,0,.12); color: var(--warning-text); border: 1px solid rgba(255,139,0,.2); }
-    .badge-normal   { background: rgba(0,114,206,.12); color: var(--accent); border: 1px solid rgba(0,114,206,.2); }
-    .badge-blau     { background: rgba(0,163,224,.12); color: var(--accent); border: 1px solid rgba(0,163,224,.2); }
+    .badge-kritisch { background: rgba(204,0,0,.15); color: var(--critical-text); border: 1px solid rgba(204,0,0,.25); }
+    .badge-hoch     { background: rgba(255,139,0,.15); color: var(--warning-text); border: 1px solid rgba(255,139,0,.25); }
+    .badge-normal   { background: rgba(0,135,90,.15); color: var(--success-text); border: 1px solid rgba(0,135,90,.25); }
+    .badge-blau     { background: rgba(0,163,224,.15); color: var(--accent); border: 1px solid rgba(0,163,224,.25); }
     .puls-animation { animation: puls 1.5s ease-in-out infinite; }
     @keyframes puls { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
 
@@ -402,24 +436,24 @@
     .puffer-container { display: flex; flex-direction: column; gap: 8px; }
     .puffer-row {
       border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 10px 14px;
+      border-radius: 12px;
+      padding: 12px 16px;
       cursor: pointer;
-      transition: background .2s;
+      transition: all .2s ease;
       background: var(--card-bg);
     }
-    .puffer-row:hover { background: rgba(0,114,206,.05); }
+    .puffer-row:hover { background: rgba(255,255,255,.04); box-shadow: 0 2px 12px rgba(0,0,0,.2); }
     .puffer-summary { font-size: 13px; margin-bottom: 6px; color: var(--text); }
     .puffer-gesamt { font-weight: 700; color: var(--accent); }
     .puffer-bar-wrap { display: flex; height: 20px; border-radius: 6px; overflow: hidden; font-size: 10px; }
     .puffer-bar-netto {
-      background: var(--success);
+      background: linear-gradient(90deg, var(--success), #5EDD9F);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; min-width: 40px;
     }
     .puffer-bar-puffer {
-      background: var(--warning);
+      background: linear-gradient(90deg, #E87000, var(--warning));
       color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; min-width: 40px;
@@ -508,11 +542,11 @@
     .bc-card {
       background: rgba(255,255,255,.02);
       border: 1px solid var(--card-border);
-      border-radius: 10px;
+      border-radius: 14px;
       padding: 20px;
-      transition: border-color .2s;
+      transition: all .2s ease;
     }
-    .bc-card:hover { border-color: rgba(0,114,206,.3); }
+    .bc-card:hover { border-color: rgba(0,163,224,.25); background: rgba(255,255,255,.04); box-shadow: 0 4px 20px rgba(0,0,0,.25); }
     .bc-card-title {
       font-family: var(--font-heading);
       font-size: 13px;
@@ -548,18 +582,21 @@
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,8,16,.8);
-      backdrop-filter: blur(8px);
+      background: rgba(0,8,16,.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       z-index: 1000;
       justify-content: center;
       align-items: center;
     }
     .tech-detail-overlay.active { display: flex; }
     .tech-detail-panel {
-      background: #0a1020;
+      background: rgba(0,8,20,.95);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
-      box-shadow: 0 16px 48px rgba(0,0,0,.5);
+      border-radius: 20px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.6);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       max-width: 720px;
       width: 90%;
       max-height: 85vh;
@@ -599,7 +636,7 @@
       border-radius: 10px;
       padding: 12px 14px;
     }
-    .tech-detail-kpi .kpi-val { font-family: var(--font-heading); font-size: 20px; font-weight: 700; color: var(--accent); }
+    .tech-detail-kpi .kpi-val { font-family: var(--font-heading); font-size: 20px; font-weight: 800; background: var(--grad-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .tech-detail-kpi .kpi-lbl { font-size: 11px; color: var(--text-dim); }
 
     /* ── NRW-Warnung ── */
@@ -629,13 +666,15 @@
 
     /* ── Footer ── */
     footer {
-      background: var(--nav-bg);
-      backdrop-filter: blur(20px);
+      background: rgba(0,8,20,.85);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       text-align: center;
       padding: 20px 32px;
       font-size: 11px;
-      color: var(--text-dim);
+      color: var(--text-muted);
       border-top: 1px solid var(--card-border);
+      letter-spacing: .03em;
     }
 
     /* ── Gebietsplanung ── */
@@ -646,10 +685,13 @@
     }
     .gebiets-karte { flex-shrink: 0; }
     .gebiets-karte svg {
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      background: rgba(0,8,16,.5);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 14px;
+      background: #000D2A;
     }
+    .gebiets-karte svg path.st { opacity: .7; transition: opacity .2s ease; }
+    .gebiets-karte svg path.st:hover { opacity: .9; }
+    .gebiets-karte svg circle.td { filter: drop-shadow(0 0 4px rgba(0,163,224,.4)); }
     .gebiets-metriken { flex: 1; min-width: 0; overflow-x: auto; }
 
     /* Einstellungsbedarf */
@@ -660,9 +702,9 @@
     }
     .einst-karte { flex: 0 0 60%; min-width: 0; }
     .einst-karte svg {
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      background: rgba(0,8,16,.5);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 14px;
+      background: #000D2A;
       width: 100%;
       height: auto;
     }
@@ -678,14 +720,14 @@
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      padding: 10px 12px;
+      padding: 12px 14px;
       margin-bottom: 8px;
       border: 1px solid var(--card-border);
-      border-radius: 10px;
+      border-radius: 14px;
       background: var(--card-bg);
-      transition: all .2s;
+      transition: all .2s ease;
     }
-    .einst-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); border-color: rgba(255,255,255,.15); }
+    .einst-item:hover { box-shadow: 0 4px 20px rgba(0,0,0,.35); border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.05); }
     .einst-dot {
       flex-shrink: 0;
       width: 28px;
@@ -789,12 +831,13 @@
       border: 1px solid rgba(255,255,255,.15);
     }
 
-    /* ── Chat Panel ── */
+    /* ── Chat Panel (Glassmorphism) ── */
     .chat-panel {
       width: 340px;
       min-width: 340px;
-      background: rgba(0,8,16,.9);
-      backdrop-filter: blur(20px);
+      background: rgba(0,8,16,.85);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       border-left: 1px solid var(--card-border);
       display: flex;
       flex-direction: column;
@@ -803,10 +846,12 @@
       top: 0;
     }
     .chat-header {
-      background: var(--nav-bg);
+      background: rgba(0,8,20,.85);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       color: #fff;
       padding: 0 16px;
-      height: 64px;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -897,15 +942,15 @@
     }
     .chat-msg-user {
       align-self: flex-end;
-      background: var(--primary);
+      background: linear-gradient(135deg, #0072CE, #00A3E0);
       color: #fff;
       border-bottom-right-radius: 4px;
     }
     .chat-msg-assistant {
       align-self: flex-start;
-      background: rgba(255,255,255,.04);
+      background: rgba(0,87,168,.15);
       color: var(--text);
-      border: 1px solid var(--card-border);
+      border: 1px solid rgba(0,87,168,.2);
       border-bottom-left-radius: 4px;
     }
     .chat-msg-assistant strong { color: var(--accent); }
@@ -937,19 +982,20 @@
     .chat-quick button {
       background: rgba(255,255,255,.04);
       color: var(--text-dim);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 5px 12px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 16px;
+      padding: 6px 14px;
       font-family: var(--font-body);
       font-size: 11px;
       cursor: pointer;
-      transition: all .2s;
+      transition: all .2s ease;
       white-space: nowrap;
     }
     .chat-quick button:hover {
-      background: var(--primary);
+      background: linear-gradient(135deg, #0072CE, #00A3E0);
       color: #fff;
-      border-color: var(--primary);
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(0,114,206,.25);
     }
 
     /* ── Chat Input ── */
@@ -964,8 +1010,8 @@
     .chat-input-wrap textarea {
       flex: 1;
       resize: none;
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 12px;
       padding: 10px 12px;
       font-family: var(--font-body);
       font-size: 13px;
@@ -975,16 +1021,17 @@
       color: var(--text);
       max-height: 120px;
       min-height: 40px;
+      transition: border-color .2s ease;
     }
     .chat-input-wrap textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(0,114,206,.15);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0,163,224,.12);
     }
     .chat-send-btn {
-      background: var(--primary);
+      background: linear-gradient(135deg, #0072CE, #00A3E0);
       color: #fff;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       width: 40px;
       height: 40px;
       cursor: pointer;
@@ -1024,16 +1071,16 @@
       gap: 16px;
       background: rgba(255,255,255,.02);
       border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 18px 20px;
-      transition: border-color .2s;
+      border-radius: 14px;
+      padding: 20px 22px;
+      transition: all .2s ease;
     }
-    .go-empf-card:hover { border-color: rgba(0,114,206,.3); }
+    .go-empf-card:hover { border-color: rgba(0,163,224,.25); background: rgba(255,255,255,.04); box-shadow: 0 4px 20px rgba(0,0,0,.25); }
     .go-empf-num {
       flex-shrink: 0;
       width: 36px; height: 36px;
       border-radius: 50%;
-      background: var(--primary);
+      background: linear-gradient(135deg, #0072CE, #00A3E0);
       color: #fff;
       font-family: var(--font-heading);
       font-size: 16px;
@@ -1068,16 +1115,16 @@
     .go-gelb td { color: var(--warning-text); }
     .go-rot td { color: var(--critical-text); }
 
-    /* ── Nav Tabs ── */
+    /* ── Nav Tabs (Glassmorphism) ── */
     .nav-tabs {
-      background: var(--nav-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(0,8,20,.7);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       display: flex;
       gap: 0;
       padding: 0 32px;
       position: sticky;
-      top: 64px;
+      top: 60px;
       z-index: 99;
       border-bottom: 1px solid rgba(255,255,255,.06);
       overflow-x: auto;
@@ -1086,26 +1133,26 @@
     }
     .nav-tabs::-webkit-scrollbar { display: none; }
     .nav-tab {
-      padding: 12px 18px;
+      padding: 13px 20px;
       font-family: var(--font-body);
       font-size: 12px;
       font-weight: 600;
-      color: var(--text-dim);
+      color: rgba(255,255,255,.35);
       cursor: pointer;
       border: none;
       background: none;
       border-bottom: 3px solid transparent;
-      transition: color .2s, border-color .2s;
-      letter-spacing: .2px;
+      transition: color .2s ease, border-color .2s ease;
+      letter-spacing: .02em;
       white-space: nowrap;
     }
-    .nav-tab:hover { color: var(--text); }
+    .nav-tab:hover { color: rgba(255,255,255,.6); }
     .nav-tab.active {
       color: #fff;
       border-bottom-color: var(--accent);
     }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .tab-content { display: none; opacity: 0; transition: opacity .3s ease; }
+    .tab-content.active { display: block; opacity: 1; }
 
     /* ── Animations ── */
     @keyframes fadeInUp {
@@ -1136,27 +1183,27 @@
     </div>
   </div>
   <div class="header-right">
-    <span class="demo-badge">Demo-Daten &middot; Konfigurierbar</span>
-    <button class="lang-toggle" onclick="alert('Sprach-Toggle: DE/EN – In Entwicklung')">DE / EN</button>
+    <span class="demo-badge" data-i18n="header.demo">Demo-Daten &middot; Konfigurierbar</span>
+    <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleLang()">EN</button>
     <button class="api-key-btn" onclick="document.getElementById('chat-setup').style.display='block';document.getElementById('api-key-input').focus()">API-Key &#128273;</button>
   </div>
 </header>
 
 <nav class="nav-tabs">
-  <button class="nav-tab active" data-tab="tab-uebersicht">&Uuml;bersicht</button>
-  <button class="nav-tab" data-tab="tab-auftraege">Auftr&auml;ge</button>
-  <button class="nav-tab" data-tab="tab-crosstraining">Cross-Training</button>
-  <button class="nav-tab" data-tab="tab-workflow">Workflow</button>
-  <button class="nav-tab" data-tab="tab-business">Business Case</button>
-  <button class="nav-tab" data-tab="tab-gebietsopt">Gebietsoptimierung</button>
-  <button class="nav-tab" data-tab="tab-einstellung">Einstellungsbedarf</button>
+  <button class="nav-tab active" data-tab="tab-uebersicht" data-i18n="tab.overview">&Uuml;bersicht</button>
+  <button class="nav-tab" data-tab="tab-auftraege" data-i18n="tab.orders">Auftr&auml;ge</button>
+  <button class="nav-tab" data-tab="tab-crosstraining" data-i18n="tab.crosstraining">Cross-Training</button>
+  <button class="nav-tab" data-tab="tab-workflow" data-i18n="tab.workflow">Workflow</button>
+  <button class="nav-tab" data-tab="tab-business" data-i18n="tab.business">Business Case</button>
+  <button class="nav-tab" data-tab="tab-gebietsopt" data-i18n="tab.territory">Gebietsoptimierung</button>
+  <button class="nav-tab" data-tab="tab-einstellung" data-i18n="tab.hiring">Einstellungsbedarf</button>
 </nav>
 
 <div class="summary-bar">
-  <span><span class="dot dot-gruen"></span> Gr&uuml;n: <strong>0</strong> (&ge;60&thinsp;% L3)</span>
-  <span><span class="dot dot-gelb"></span> Gelb: <strong>6</strong> (30&ndash;59&thinsp;%)</span>
-  <span><span class="dot dot-rot"></span> Rot: <strong>8</strong> (&lt;30&thinsp;%)</span>
-  <span style="margin-left:auto;color:var(--text-muted);font-size:11px">Stand: 10.04.2026 18:47 &middot; 32h/Wo Mo&ndash;Do &middot; Hugo KA: 25,6h</span>
+  <span><span class="dot dot-gruen"></span> <span data-i18n="summary.green">Gr&uuml;n</span>: <strong>0</strong> (&ge;60&thinsp;% L3)</span>
+  <span><span class="dot dot-gelb"></span> <span data-i18n="summary.yellow">Gelb</span>: <strong>6</strong> (30&ndash;59&thinsp;%)</span>
+  <span><span class="dot dot-rot"></span> <span data-i18n="summary.red">Rot</span>: <strong>8</strong> (&lt;30&thinsp;%)</span>
+  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 10.04.2026 19:31 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
 </div>
 
 <main>
@@ -1164,21 +1211,21 @@
   <!-- Tab 1: Uebersicht -->
   <div id="tab-uebersicht" class="tab-content active">
   <section>
-    <h2>&Uuml;bersicht &mdash; Qualifikations-Ampel</h2>
-    <p class="section-hint">
+    <h2 data-i18n="h.overview">&Uuml;bersicht &mdash; Qualifikations-Ampel</h2>
+    <p class="section-hint" data-i18n="hint.overview">
       L3-Abdeckung in der Region &middot; 14 Techniker &middot;
       Gr&uuml;n &ge;60% &middot; Gelb 30-59% &middot; Rot &lt;30%
     </p>
     <div class="ampel-sort-controls">
-      <label for="ampel-sort-select">Sortierung:</label>
+      <label for="ampel-sort-select" data-i18n="sort.label">Sortierung:</label>
       <select id="ampel-sort-select">
-        <option value="standard">Standard (Gr&uuml;n / Gelb / Rot)</option>
-        <option value="crosstraining">Crosstraining-Bedarf (meiste L&uuml;cken zuerst)</option>
-        <option value="auslastung">Auslastung (Stunden)</option>
-        <option value="portfolio">Ger&auml;te-Portfolio (meiste L3-Familien zuerst)</option>
-        <option value="potential">Gebietsgr&ouml;&szlig;e</option>
+        <option value="standard" data-i18n="sort.standard">Standard (Gr&uuml;n / Gelb / Rot)</option>
+        <option value="crosstraining" data-i18n="sort.ct">Crosstraining-Bedarf (meiste L&uuml;cken zuerst)</option>
+        <option value="auslastung" data-i18n="sort.util">Auslastung (Stunden)</option>
+        <option value="portfolio" data-i18n="sort.portfolio">Ger&auml;te-Portfolio (meiste L3-Familien zuerst)</option>
+        <option value="potential" data-i18n="sort.area">Gebietsgr&ouml;&szlig;e</option>
       </select>
-      <span class="demo-hint">Demo-Daten &middot; Techniker erweiterbar</span>
+      <span class="demo-hint" data-i18n="hint.demo">Demo-Daten &middot; Techniker erweiterbar</span>
     </div>
     <div class="ampel-grid" id="ampel-grid">
 
@@ -1201,21 +1248,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">30&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">3&thinsp;/&thinsp;10 Fam. &middot; 8 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 25.6h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">3&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 8 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">8</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+560&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+560&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 25.6h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:56.9%"></div>
@@ -1223,19 +1270,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;25.6h &middot; Max&thinsp;45&thinsp;h</div>
           <div class="hugo-reserve">20% Reserve = 6.4h f&uuml;r Hugo-Calls</div>
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">3</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+560</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1258,21 +1305,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">10&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">1&thinsp;/&thinsp;10 Fam. &middot; 9 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">1&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 9 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">9</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+815&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+815&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:71.1%"></div>
@@ -1280,19 +1327,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;32.0h &middot; Max&thinsp;45&thinsp;h</div>
           
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">1</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+815</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1315,21 +1362,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">12&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">1&thinsp;/&thinsp;8 Fam. &middot; 7 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">1&thinsp;/&thinsp;8 <span data-i18n="card.fam">Fam.</span> &middot; 7 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">7</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+77&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+77&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:71.1%"></div>
@@ -1337,19 +1384,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;32.0h &middot; Max&thinsp;45&thinsp;h</div>
           
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">1</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 8 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 8 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+77</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1372,21 +1419,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">20&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">2&thinsp;/&thinsp;10 Fam. &middot; 8 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">2&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 8 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">8</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+352&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+352&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:71.1%"></div>
@@ -1394,19 +1441,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;32.0h &middot; Max&thinsp;45&thinsp;h</div>
           
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">2</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+352</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1429,21 +1476,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">40&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">4&thinsp;/&thinsp;10 Fam. &middot; 7 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">4&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 7 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">7</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+132&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+132&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:71.1%"></div>
@@ -1451,19 +1498,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;32.0h &middot; Max&thinsp;45&thinsp;h</div>
           
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">4</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+132</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1486,21 +1533,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">30&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">3&thinsp;/&thinsp;10 Fam. &middot; 7 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 25.6h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">3&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 7 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">7</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+136&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+136&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 25.6h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:56.9%"></div>
@@ -1508,19 +1555,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;25.6h &middot; Max&thinsp;45&thinsp;h</div>
           <div class="hugo-reserve">20% Reserve = 6.4h f&uuml;r Hugo-Calls</div>
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">3</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+136</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1543,21 +1590,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">20&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">2&thinsp;/&thinsp;10 Fam. &middot; 8 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">2&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 8 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">8</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+370&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+370&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:71.1%"></div>
@@ -1565,19 +1612,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;32.0h &middot; Max&thinsp;45&thinsp;h</div>
           
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">2</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+370</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1600,21 +1647,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">10&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">1&thinsp;/&thinsp;10 Fam. &middot; 9 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">1&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 9 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">9</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+527&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+527&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:71.1%"></div>
@@ -1622,19 +1669,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;32.0h &middot; Max&thinsp;45&thinsp;h</div>
           
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">1</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+527</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1657,21 +1704,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">10&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">1&thinsp;/&thinsp;10 Fam. &middot; 9 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">1&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 9 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">9</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+160&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+160&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:71.1%"></div>
@@ -1679,19 +1726,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;32.0h &middot; Max&thinsp;45&thinsp;h</div>
           
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">1</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+160</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1714,21 +1761,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">50&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">5&thinsp;/&thinsp;10 Fam. &middot; 6 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 25.6h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">5&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 6 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">6</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+280&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+280&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 25.6h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:56.9%"></div>
@@ -1736,19 +1783,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;25.6h &middot; Max&thinsp;45&thinsp;h</div>
           <div class="hugo-reserve">20% Reserve = 6.4h f&uuml;r Hugo-Calls</div>
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">5</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+280</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1771,21 +1818,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">30&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">3&thinsp;/&thinsp;10 Fam. &middot; 8 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 25.6h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">3&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 8 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">8</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+353&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+353&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 25.6h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:56.9%"></div>
@@ -1793,19 +1840,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;25.6h &middot; Max&thinsp;45&thinsp;h</div>
           <div class="hugo-reserve">20% Reserve = 6.4h f&uuml;r Hugo-Calls</div>
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">3</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+353</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1828,21 +1875,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">20&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">2&thinsp;/&thinsp;10 Fam. &middot; 8 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">2&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 8 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">8</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+482&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+482&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:71.1%"></div>
@@ -1850,19 +1897,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;32.0h &middot; Max&thinsp;45&thinsp;h</div>
           
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">2</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+482</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1885,21 +1932,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">10&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">1&thinsp;/&thinsp;10 Fam. &middot; 9 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">1&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 9 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">9</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+498&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+498&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:71.1%"></div>
@@ -1907,19 +1954,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;32.0h &middot; Max&thinsp;45&thinsp;h</div>
           
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">1</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+498</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
 
@@ -1942,21 +1989,21 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">40&thinsp;%</div>
-          <div class="metric-lbl">L3-Abdeckung</div>
-          <div class="metric-sub">4&thinsp;/&thinsp;10 Fam. &middot; 6 L&uuml;cken</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-sub">4&thinsp;/&thinsp;10 <span data-i18n="card.fam">Fam.</span> &middot; 6 <span data-i18n="card.gaps">L&uuml;cken</span></div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
 
         <div class="metric-box metric-crosstraining" style="display:none">
           <div class="metric-num">6</div>
-          <div class="metric-lbl">fehlende Familien</div>
-          <div class="metric-sub">+185&thinsp;STK/a Potenzial</div>
+          <div class="metric-lbl" data-i18n="card.missingFam">fehlende Familien</div>
+          <div class="metric-sub">+185&thinsp;STK/a <span data-i18n="card.potential">Potenzial</span></div>
         </div>
 
         <div class="metric-box metric-auslastung" style="display:none">
           <div class="metric-num">0&thinsp;h</div>
-          <div class="metric-lbl">Wochenstunden</div>
-          <div class="metric-sub">Kapazit&auml;t: 32.0h/Woche</div>
+          <div class="metric-lbl" data-i18n="card.weeklyHours">Wochenstunden</div>
+          <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
           <div class="auslastung-bar-wrap">
             <div class="auslastung-bar-fill" style="width:0.0%"></div>
             <div class="auslastung-bar-ziel" style="left:71.1%"></div>
@@ -1964,19 +2011,19 @@
           <div class="metric-sub">0&thinsp;h &middot; Ziel&thinsp;32.0h &middot; Max&thinsp;45&thinsp;h</div>
           
           
-          <div class="metric-sub metric-italic">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
+          <div class="metric-sub metric-italic" data-i18n="card.fridayNote">Freitag = Home Office &middot; keine Echtzeit-Daten</div>
         </div>
 
         <div class="metric-box metric-portfolio" style="display:none">
           <div class="metric-num">4</div>
-          <div class="metric-lbl">L3-Familien</div>
-          <div class="metric-sub">von 10 regionalen</div>
+          <div class="metric-lbl" data-i18n="card.l3families">L3-Familien</div>
+          <div class="metric-sub"><span data-i18n="card.ofRegional">von</span> 10 <span data-i18n="card.regional">regionalen</span></div>
         </div>
 
         <div class="metric-box metric-potential" style="display:none">
           <div class="metric-num">+185</div>
-          <div class="metric-lbl">STK/a Potenzial</div>
-          <div class="metric-sub">nach Crosstraining</div>
+          <div class="metric-lbl" data-i18n="card.stkPotential">STK/a Potenzial</div>
+          <div class="metric-sub" data-i18n="card.afterCT">nach Crosstraining</div>
         </div>
       </div>
     </div>
@@ -1986,19 +2033,19 @@
   <!-- Tab 2: Auftraege (STK + Repair) -->
   <div id="tab-auftraege" class="tab-content">
   <section>
-    <h2>STK-Auftr&auml;ge (Top 10)</h2>
-    <p class="section-hint">Quelle: daten/geraete.csv &middot; Aufsteigend nach F&auml;lligkeitsdatum</p>
+    <h2 data-i18n="h.stk">STK-Auftr&auml;ge (Top 10)</h2>
+    <p class="section-hint" data-i18n="hint.stk">Quelle: daten/geraete.csv &middot; Aufsteigend nach F&auml;lligkeitsdatum</p>
     <table>
       <thead>
         <tr>
-          <th>Auftrag-ID</th>
-          <th>Klinik</th>
-          <th>Ger&auml;t</th>
-          <th>Produktfamilie</th>
-          <th>F&auml;lligkeit</th>
-          <th>Vorgeschlagene Termine</th>
-          <th>Dringlichkeit</th>
-          <th>Tage</th>
+          <th data-i18n="th.orderId">Auftrag-ID</th>
+          <th data-i18n="th.clinic">Klinik</th>
+          <th data-i18n="th.device">Ger&auml;t</th>
+          <th data-i18n="th.productFamily">Produktfamilie</th>
+          <th data-i18n="th.dueDate">F&auml;lligkeit</th>
+          <th data-i18n="th.suggestedDates">Vorgeschlagene Termine</th>
+          <th data-i18n="th.urgency">Dringlichkeit</th>
+          <th data-i18n="th.days">Tage</th>
         </tr>
       </thead>
       <tbody>
@@ -2016,26 +2063,26 @@
     </table>
   </section>
   <section>
-    <h2>Offene Repair-Auftr&auml;ge</h2>
-    <p class="section-hint">SLA: Kundenkontakt innerhalb 48h &middot; Internes Ziel: 24h</p>
+    <h2 data-i18n="h.repair">Offene Repair-Auftr&auml;ge</h2>
+    <p class="section-hint" data-i18n="hint.repair">SLA: Kundenkontakt innerhalb 48h &middot; Internes Ziel: 24h</p>
     <table>
       <thead>
         <tr>
-          <th>Auftrag-ID</th>
-          <th>Klinik</th>
-          <th>Ger&auml;t</th>
-          <th>Eingang</th>
-          <th>SLA-Status</th>
-          <th>Phase</th>
-          <th>Ersatzteil</th>
+          <th data-i18n="th.orderId">Auftrag-ID</th>
+          <th data-i18n="th.clinic">Klinik</th>
+          <th data-i18n="th.device">Ger&auml;t</th>
+          <th data-i18n="th.received">Eingang</th>
+          <th data-i18n="th.slaStatus">SLA-Status</th>
+          <th data-i18n="th.phase">Phase</th>
+          <th data-i18n="th.sparePart">Ersatzteil</th>
         </tr>
       </thead>
       <tbody>
-      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>10.04. 11:47</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>09.04. 11:47</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>08.04. 16:47</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>09.04. 22:47</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
-      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>09.04. 06:47</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
+      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>10.04. 12:31</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>09.04. 12:31</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>08.04. 17:31</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>09.04. 23:31</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
+      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>09.04. 07:31</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
       </tbody>
     </table>
   </section>
@@ -2044,19 +2091,19 @@
   <!-- Tab 3: Cross-Training + NRW -->
   <div id="tab-crosstraining" class="tab-content">
   <section>
-    <h2>Crosstraining Top 5</h2>
-    <p class="section-hint">
+    <h2 data-i18n="h.ct">Crosstraining Top 5</h2>
+    <p class="section-hint" data-i18n="hint.ct">
       T2 +664 &middot; T8 +527 &middot; T13 +498 &middot; T12 +449 &middot; T1 +453 STK/a &middot;
       Sortiert nach zus&auml;tzlichem STK-Potenzial pro Jahr
     </p>
     <table>
       <thead>
         <tr>
-          <th>Techniker</th>
-          <th>L&uuml;cken</th>
-          <th>+STK/Jahr</th>
-          <th>Fehlende Produktfamilien</th>
-          <th>Empf. Partner</th>
+          <th data-i18n="th.technician">Techniker</th>
+          <th data-i18n="th.gaps">L&uuml;cken</th>
+          <th data-i18n="th.stkYear">+STK/Jahr</th>
+          <th data-i18n="th.missingFamilies">Fehlende Produktfamilien</th>
+          <th data-i18n="th.recPartner">Empf. Partner</th>
         </tr>
       </thead>
       <tbody>
@@ -2154,15 +2201,15 @@
   <div id="tab-gebietsopt" class="tab-content">
 
   <section>
-    <h2>Gebietsoptimierung</h2>
-    <p class="section-hint">
+    <h2 data-i18n="h.territory">Gebietsoptimierung</h2>
+    <p class="section-hint" data-i18n="hint.territory">
       Analyse der Gebietsabdeckung &middot; &Uuml;berschneidungen &amp; L&uuml;cken &middot;
       Fahrzeit-Optimierungspotenzial je Region
     </p>
 
     <div class="gebiets-layout">
       <div class="gebiets-karte">
-        <svg id="germany-map" width="480" height="580"><path class="st" d="M186.4,240.9L181.4,246.8L178.3,252.7L174.0,257.3L166.6,256.9L156.6,256.0L157.1,261.2L153.9,265.5L144.2,266.5L138.2,274.3L139.5,277.1L144.2,275.8L146.8,276.6L147.9,283.5L143.0,291.0L136.3,296.7L132.7,302.9L128.1,309.8L120.9,310.5L113.5,318.9L115.8,321.7L109.1,326.2L104.2,313.3L97.4,308.6L93.0,311.4L89.2,317.7L87.3,319.5L75.2,324.9L70.9,329.5L62.2,331.2L56.2,334.7L46.5,338.7L41.9,346.4L36.8,347.0L38.2,353.1L30.9,355.3L26.2,354.1L17.5,354.0L17.7,357.9L12.4,345.3L4.3,341.7L3.3,330.5L-6.2,319.4L-2.7,308.5L-10.5,301.1L1.6,286.5L4.5,269.0L-0.2,241.3L-9.6,225.9L5.0,220.9L21.1,222.5L32.8,206.7L42.6,195.7L64.6,184.9L81.4,175.3L82.9,170.2L89.7,172.0L104.3,180.2L102.8,184.4L100.6,190.9L106.9,193.3L100.4,202.1L117.1,201.1L132.8,194.1L130.6,177.0L131.0,167.7L141.5,161.3L145.6,170.1L160.0,171.5L169.2,165.7L165.3,177.6L160.8,184.8L164.1,189.8L162.0,196.0L169.6,198.9L172.9,207.6L171.4,210.3L175.4,210.6L180.0,216.8L186.9,221.2L187.6,224.7L184.3,232.2L183.4,237.2L183.8,241.7Z" fill="#4169E1" data-name="Nordrhein-Westfalen" data-fill-aktuell="#4169E1" data-fill-optimiert="#4169E1" stroke="rgba(255,255,255,.15)" stroke-width="1.2"><title>Nordrhein-Westfalen → T11</title></path>
+        <svg id="germany-map-opt" width="480" height="580"><path class="st" d="M186.4,240.9L181.4,246.8L178.3,252.7L174.0,257.3L166.6,256.9L156.6,256.0L157.1,261.2L153.9,265.5L144.2,266.5L138.2,274.3L139.5,277.1L144.2,275.8L146.8,276.6L147.9,283.5L143.0,291.0L136.3,296.7L132.7,302.9L128.1,309.8L120.9,310.5L113.5,318.9L115.8,321.7L109.1,326.2L104.2,313.3L97.4,308.6L93.0,311.4L89.2,317.7L87.3,319.5L75.2,324.9L70.9,329.5L62.2,331.2L56.2,334.7L46.5,338.7L41.9,346.4L36.8,347.0L38.2,353.1L30.9,355.3L26.2,354.1L17.5,354.0L17.7,357.9L12.4,345.3L4.3,341.7L3.3,330.5L-6.2,319.4L-2.7,308.5L-10.5,301.1L1.6,286.5L4.5,269.0L-0.2,241.3L-9.6,225.9L5.0,220.9L21.1,222.5L32.8,206.7L42.6,195.7L64.6,184.9L81.4,175.3L82.9,170.2L89.7,172.0L104.3,180.2L102.8,184.4L100.6,190.9L106.9,193.3L100.4,202.1L117.1,201.1L132.8,194.1L130.6,177.0L131.0,167.7L141.5,161.3L145.6,170.1L160.0,171.5L169.2,165.7L165.3,177.6L160.8,184.8L164.1,189.8L162.0,196.0L169.6,198.9L172.9,207.6L171.4,210.3L175.4,210.6L180.0,216.8L186.9,221.2L187.6,224.7L184.3,232.2L183.4,237.2L183.8,241.7Z" fill="#4169E1" data-name="Nordrhein-Westfalen" data-fill-aktuell="#4169E1" data-fill-optimiert="#4169E1" stroke="rgba(255,255,255,.15)" stroke-width="1.2"><title>Nordrhein-Westfalen → T11</title></path>
     <path class="st" d="M192.7,595.8L153.6,584.4L145.1,580.0L140.4,577.2L130.9,578.3L133.4,586.5L138.4,587.0L135.1,588.4L120.0,588.4L101.1,593.5L84.2,593.1L80.1,584.8L81.6,569.5L84.8,559.4L88.9,534.4L92.8,518.4L101.7,498.3L108.0,490.7L126.2,462.5L134.0,436.0L131.1,422.3L140.4,425.8L144.0,420.3L146.1,426.3L155.9,429.8L153.6,431.2L151.5,436.4L155.0,437.2L158.7,434.0L162.5,429.5L168.3,429.2L165.9,423.9L176.5,422.9L179.4,417.8L185.0,415.8L183.4,412.5L179.6,410.3L181.5,405.3L197.9,405.5L198.1,408.4L197.5,411.5L199.8,412.5L201.6,412.3L206.3,411.0L211.1,420.3L209.7,424.2L211.0,424.4L213.0,424.2L213.9,429.4L221.2,428.1L223.2,427.6L224.8,429.4L225.5,435.7L224.4,444.1L226.6,449.2L225.7,451.3L226.1,455.1L230.9,459.0L232.0,462.9L230.8,464.3L233.1,467.9L237.4,469.8L242.7,477.3L242.6,480.8L243.3,486.9L242.0,492.2L244.0,495.3L242.1,499.2L238.4,501.1L233.9,498.2L234.1,502.9L235.1,505.9L235.0,511.7L231.8,513.7L225.0,516.1L219.9,519.5L219.7,529.8L222.4,559.5L223.0,567.5L223.4,568.5L222.6,573.5L224.1,576.5L223.9,584.0L219.6,583.6L199.8,589.3Z" fill="#B22222" data-name="Baden-Württemberg" data-fill-aktuell="#B22222" data-fill-optimiert="#B22222" stroke="rgba(255,255,255,.15)" stroke-width="1.2"><title>Baden-Württemberg → T10</title></path>
     <path class="st" d="M214.8,264.9L214.9,271.9L220.5,276.2L226.0,280.5L228.7,288.5L224.7,286.8L225.6,293.2L229.3,297.1L223.7,298.4L216.4,304.3L216.0,306.5L218.9,306.4L217.2,314.3L214.3,318.7L212.8,326.1L212.1,331.0L214.8,328.9L221.8,332.5L220.8,338.7L209.8,351.9L203.5,358.1L198.7,366.3L192.2,366.1L189.8,371.4L185.9,378.9L175.3,374.1L170.5,377.1L162.3,379.0L163.3,382.8L165.4,400.9L166.8,402.2L168.6,407.0L168.7,413.6L166.1,420.1L167.6,426.5L165.6,428.3L158.5,432.9L155.0,437.2L152.3,435.9L154.9,432.0L151.0,427.9L144.7,421.6L140.4,426.0L126.9,417.8L127.4,401.2L98.0,386.5L99.2,376.4L102.0,374.7L105.7,366.9L108.5,363.7L108.7,354.3L107.0,347.0L108.0,339.3L114.6,336.9L114.0,325.6L113.9,319.3L118.2,313.3L128.0,310.0L133.4,301.3L135.8,294.4L145.5,289.2L147.8,281.3L146.3,275.0L140.4,277.5L138.1,274.9L144.2,266.5L155.9,264.1L157.0,259.1L164.6,254.6L170.6,259.7L174.8,255.0L181.0,247.9L185.5,242.4L191.3,242.7L196.6,242.7L197.3,247.9L195.9,252.3L197.3,259.5L193.3,265.3L201.5,272.9L205.6,268.9L201.6,266.6L208.7,264.1L210.1,262.3Z" fill="#0072CE" data-name="Hessen" data-fill-aktuell="#0072CE" data-fill-optimiert="#0072CE" stroke="rgba(255,255,255,.15)" stroke-width="1.2"><title>Hessen → T1</title></path>
     <path class="st" d="M137.3,97.6L137.5,97.7L137.6,97.7L138.6,97.4L138.9,97.4L140.5,98.4L143.8,99.7L144.5,99.9L145.1,99.8L145.3,99.8L145.3,99.8L145.4,99.6L145.6,99.6L146.9,99.5L147.6,99.6L147.7,99.7L147.8,99.8L147.8,99.9L147.9,100.0L147.8,100.2L147.8,100.3L147.9,100.6L148.2,100.8L149.5,101.6L149.7,101.7L151.3,101.6L152.0,101.8L152.1,101.9L152.9,102.7L154.0,103.5L156.0,104.5L156.5,104.6L156.7,104.5L156.9,104.5L157.0,104.3L157.1,104.2L157.1,104.0L157.2,103.7L157.3,103.5L157.5,102.9L157.7,102.6L157.8,102.4L158.1,102.2L158.3,102.3L158.4,102.4L159.0,102.9L160.3,104.5L160.4,104.7L160.4,104.9L160.3,105.1L159.6,105.7L159.5,105.9L159.4,106.1L159.6,106.7L161.0,108.1L161.1,108.4L161.2,108.7L161.1,108.9L160.8,109.4L160.6,109.8L160.5,110.4L160.4,111.7L160.4,112.2L160.3,112.5L159.4,113.5L157.5,114.8L157.0,115.1L154.3,113.0L154.3,113.2L154.3,113.5L154.3,113.8L154.2,114.0L153.9,114.1L153.1,114.3L152.6,114.3L152.0,114.2L149.4,112.4L149.0,112.3L148.9,112.3L148.3,112.6L146.1,113.0L145.3,112.8L145.3,112.7L145.2,112.7L145.2,112.6L145.2,112.5L145.2,112.4L145.2,110.0L145.2,109.7L145.0,109.4L144.6,109.3L142.5,106.7L141.6,105.3L141.5,105.0L141.4,104.5L141.3,104.3L141.2,102.6L140.4,101.0L140.1,100.7L138.9,100.8L138.2,100.7L136.9,99.8L134.6,98.8L134.1,97.8L133.9,97.2L133.7,96.6L134.9,96.3L135.5,96.5L137.3,97.6ZM137.1,68.9L137.6,66.3L137.3,65.9L135.8,62.2L135.4,61.6L134.9,60.4L134.6,59.7L134.6,59.7L134.7,59.7L137.4,60.8L138.6,61.0L140.9,60.8L141.2,61.0L141.3,61.1L141.1,61.4L140.9,61.6L140.7,61.9L140.7,62.2L140.6,62.5L140.6,63.0L140.8,63.5L141.2,64.4L141.4,65.1L141.8,67.1L141.9,67.7L141.8,68.4L141.7,68.9L141.7,69.2L140.8,70.5L139.6,71.6L139.5,71.7L139.5,71.7L139.3,71.6L139.2,71.5L138.8,70.7L138.8,70.7L138.6,70.7L138.2,70.8L138.0,70.6L137.3,69.3L137.1,68.9Z" fill="#003087" data-name="Bremen" data-fill-aktuell="#003087" data-fill-optimiert="#003087" stroke="rgba(255,255,255,.15)" stroke-width="1.2"><title>Bremen → T6</title></path>
@@ -2317,20 +2364,13 @@
     <circle cx="132.2" cy="430.8" r="10" fill="#CC0000" stroke="#fff" stroke-width="2"><title>Mannheim: 6 Kliniken</title></circle>
     <text x="132.2" y="435.8" font-size="13px" fill="#fff" text-anchor="middle" style="pointer-events:none">★</text>
     </g></svg>
-        <div class="gebiets-legende" id="gebiets-legende"></div>
+        <div class="gebiets-legende" id="gebiets-legende-opt"></div>
       </div>
       <div class="gebiets-metriken">
-        <div class="ampel-sort-controls">
-          <label for="gebiets-modus">Ansicht:</label>
-          <select id="gebiets-modus">
-            <option value="aktuell">Aktuelle Gebiete</option>
-            <option value="optimiert">Optimierte Gebiete (Allg&auml;u-Shift)</option>
-          </select>
-        </div>
         <table>
           <thead>
             <tr>
-              <th>Techniker</th>
+              <th data-i18n="th.technician">Techniker</th>
               <th>Standort</th>
               <th>Kliniken</th>
               <th>&Oslash; Fahrzeit</th>
@@ -2348,8 +2388,8 @@
   </section>
 
   <section>
-    <h2>Top-3 Empfehlungen f&uuml;r Gebietsanpassung</h2>
-    <p class="section-hint">
+    <h2 data-i18n="h.top3">Top-3 Empfehlungen f&uuml;r Gebietsanpassung</h2>
+    <p class="section-hint" data-i18n="hint.top3">
       Priorisiert nach Fahrzeit-Einsparungspotenzial und Crosstraining-Bedarf
     </p>
     <div class="go-empf-grid">
@@ -2836,7 +2876,7 @@
 <footer>
   Field Service AI &nbsp;|&nbsp;
   Medtronic GmbH Service &amp; Repair &nbsp;|&nbsp;
-  Vollautomatisiert &middot; Copilot &mdash; kein Autopilot &nbsp;|&nbsp;
+  <span data-i18n="footer.copilot">Vollautomatisiert &middot; Copilot &mdash; kein Autopilot</span> &nbsp;|&nbsp;
   441 Tests gr&uuml;n
 </footer>
 
@@ -2850,17 +2890,17 @@
       <div class="chat-header-title">
         <span class="chat-status offline" id="chat-status"></span>Claude AI
       </div>
-      <div class="chat-header-sub">Medtronic Field Service Assistent</div>
+      <div class="chat-header-sub" data-i18n="chat.sub">Medtronic Field Service Assistent</div>
     </div>
   </div>
 
   <!-- API-Key Setup -->
   <div class="chat-setup" id="chat-setup">
-    <p>Claude API-Key eingeben, um den<br>KI-Assistenten zu aktivieren.</p>
+    <p data-i18n-html="chat.setup">Claude API-Key eingeben, um den<br>KI-Assistenten zu aktivieren.</p>
     <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." autocomplete="off">
     <div class="chat-key-error" id="chat-key-error">Ung&uuml;ltiger API-Key. Bitte pr&uuml;fen.</div>
-    <button class="chat-btn-primary" id="api-key-save">Verbinden</button>
-    <p style="margin-top:12px;font-size:10px;color:var(--text-muted)">
+    <button class="chat-btn-primary" id="api-key-save" data-i18n="chat.connect">Verbinden</button>
+    <p style="margin-top:12px;font-size:10px;color:var(--text-muted)" data-i18n-html="chat.keyNote">
       Key wird lokal im Browser gespeichert.<br>Keine serverseitige Speicherung.
     </p>
   </div>
@@ -2869,22 +2909,22 @@
   <div class="chat-messages" id="chat-messages" style="display:none"></div>
 
   <div class="chat-quick" id="chat-quick" style="display:none">
-    <button data-q="Warum wurde T5 fuer diesen Auftrag empfohlen? Erklaere die Scoring-Berechnung.">Warum T5?</button>
-    <button data-q="Erklaere das NRW-Ueberlastungsproblem: Welche Techniker sind betroffen, warum ist es kritisch, und was sind die Loesungsoptionen?">NRW Problem</button>
-    <button data-q="Wie ist der Kalibrierungsstatus von T10? Welche Messmittel laufen bald ab?">T10 Kalibrierung</button>
-    <button data-q="Welches Crosstraining sollte prioritaer durchgefuehrt werden? Begruende anhand der Daten.">Crosstraining</button>
-    <button data-q="Was sind die wichtigsten naechsten Schritte fuer die Serviceplanung?">N&auml;chste Schritte</button>
+    <button data-q="Warum wurde T5 fuer diesen Auftrag empfohlen? Erklaere die Scoring-Berechnung." data-i18n="chat.q1">Warum T5?</button>
+    <button data-q="Erklaere das NRW-Ueberlastungsproblem: Welche Techniker sind betroffen, warum ist es kritisch, und was sind die Loesungsoptionen?" data-i18n="chat.q2">NRW Problem</button>
+    <button data-q="Wie ist der Kalibrierungsstatus von T10? Welche Messmittel laufen bald ab?" data-i18n="chat.q3">T10 Kalibrierung</button>
+    <button data-q="Welches Crosstraining sollte prioritaer durchgefuehrt werden? Begruende anhand der Daten." data-i18n="chat.q4">Crosstraining</button>
+    <button data-q="Was sind die wichtigsten naechsten Schritte fuer die Serviceplanung?" data-i18n="chat.q5">N&auml;chste Schritte</button>
   </div>
 
   <div class="chat-input-wrap" id="chat-input-wrap" style="display:none">
-    <textarea id="chat-input" placeholder="Frage zum Dashboard stellen..." rows="1"></textarea>
+    <textarea id="chat-input" data-i18n-placeholder="chat.placeholder" placeholder="Frage zum Dashboard stellen..." rows="1"></textarea>
     <button class="chat-send-btn" id="chat-send" title="Senden">
       <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
     </button>
   </div>
 
   <div class="chat-disconnect" id="chat-disconnect" style="display:none">
-    <button id="chat-disconnect-btn">API-Key entfernen</button>
+    <button id="chat-disconnect-btn" data-i18n="chat.removeKey">API-Key entfernen</button>
   </div>
 
 </aside>
@@ -2901,6 +2941,193 @@
 </div>
 
 <script>
+/* ── i18n Translation ── */
+var _I18N = {
+  DE: {
+    'header.demo': 'Demo-Daten · Konfigurierbar',
+    'tab.overview': 'Übersicht',
+    'tab.orders': 'Aufträge',
+    'tab.crosstraining': 'Cross-Training',
+    'tab.workflow': 'Workflow',
+    'tab.business': 'Business Case',
+    'tab.territory': 'Gebietsoptimierung',
+    'tab.hiring': 'Einstellungsbedarf',
+    'summary.green': 'Grün',
+    'summary.yellow': 'Gelb',
+    'summary.red': 'Rot',
+    'summary.asOf': 'Stand',
+    'summary.monThu': 'Mo–Do',
+    'h.overview': 'Übersicht — Qualifikations-Ampel',
+    'hint.overview': 'L3-Abdeckung in der Region · 14 Techniker · Grün ≥60% · Gelb 30-59% · Rot <30%',
+    'sort.label': 'Sortierung:',
+    'sort.standard': 'Standard (Grün / Gelb / Rot)',
+    'sort.ct': 'Crosstraining-Bedarf (meiste Lücken zuerst)',
+    'sort.util': 'Auslastung (Stunden)',
+    'sort.portfolio': 'Geräte-Portfolio (meiste L3-Familien zuerst)',
+    'sort.area': 'Gebietsgröße',
+    'hint.demo': 'Demo-Daten · Techniker erweiterbar',
+    'h.stk': 'STK-Aufträge (Top 10)',
+    'hint.stk': 'Quelle: daten/geraete.csv · Aufsteigend nach Fälligkeitsdatum',
+    'th.orderId': 'Auftrag-ID',
+    'th.clinic': 'Klinik',
+    'th.device': 'Gerät',
+    'th.productFamily': 'Produktfamilie',
+    'th.dueDate': 'Fälligkeit',
+    'th.suggestedDates': 'Vorgeschlagene Termine',
+    'th.urgency': 'Dringlichkeit',
+    'th.days': 'Tage',
+    'h.repair': 'Offene Repair-Aufträge',
+    'hint.repair': 'SLA: Kundenkontakt innerhalb 48h · Internes Ziel: 24h',
+    'th.received': 'Eingang',
+    'th.slaStatus': 'SLA-Status',
+    'th.phase': 'Phase',
+    'th.sparePart': 'Ersatzteil',
+    'h.ct': 'Crosstraining Top 5',
+    'hint.ct': 'T2 +664 · T8 +527 · T13 +498 · T12 +449 · T1 +453 STK/a · Sortiert nach zusätzlichem STK-Potenzial pro Jahr',
+    'th.technician': 'Techniker',
+    'th.gaps': 'Lücken',
+    'th.stkYear': '+STK/Jahr',
+    'th.missingFamilies': 'Fehlende Produktfamilien',
+    'th.recPartner': 'Empf. Partner',
+    'card.l3coverage': 'L3-Abdeckung',
+    'card.fam': 'Fam.',
+    'card.gaps': 'Lücken',
+    'card.capacity': 'Kapazität',
+    'card.week': 'Woche',
+    'card.missingFam': 'fehlende Familien',
+    'card.potential': 'Potenzial',
+    'card.weeklyHours': 'Wochenstunden',
+    'card.fridayNote': 'Freitag = Home Office · keine Echtzeit-Daten',
+    'card.l3families': 'L3-Familien',
+    'card.ofRegional': 'von',
+    'card.regional': 'regionalen',
+    'card.stkPotential': 'STK/a Potenzial',
+    'card.afterCT': 'nach Crosstraining',
+    'footer.copilot': 'Vollautomatisiert · Copilot — kein Autopilot',
+    'chat.sub': 'Medtronic Field Service Assistent',
+    'chat.setup': 'Claude API-Key eingeben, um den<br>KI-Assistenten zu aktivieren.',
+    'chat.connect': 'Verbinden',
+    'chat.keyNote': 'Key wird lokal im Browser gespeichert.<br>Keine serverseitige Speicherung.',
+    'chat.placeholder': 'Frage zum Dashboard stellen...',
+    'chat.removeKey': 'API-Key entfernen',
+    'chat.q1': 'Warum T5?',
+    'chat.q2': 'NRW Problem',
+    'chat.q3': 'T10 Kalibrierung',
+    'chat.q4': 'Crosstraining',
+    'chat.q5': 'Nächste Schritte',
+    'h.territory': 'Gebietsoptimierung',
+    'hint.territory': 'Analyse der Gebietsabdeckung · Überschneidungen & Lücken · Fahrzeit-Optimierungspotenzial je Region',
+    'h.top3': 'Top-3 Empfehlungen für Gebietsanpassung',
+    'hint.top3': 'Priorisiert nach Fahrzeit-Einsparungspotenzial und Crosstraining-Bedarf'
+  },
+  EN: {
+    'header.demo': 'Demo Data · Configurable',
+    'tab.overview': 'Overview',
+    'tab.orders': 'Orders',
+    'tab.crosstraining': 'Cross-Training',
+    'tab.workflow': 'Workflow',
+    'tab.business': 'Business Case',
+    'tab.territory': 'Territory Optimization',
+    'tab.hiring': 'Hiring Needs',
+    'summary.green': 'Green',
+    'summary.yellow': 'Yellow',
+    'summary.red': 'Red',
+    'summary.asOf': 'As of',
+    'summary.monThu': 'Mon–Thu',
+    'h.overview': 'Overview — Qualification Traffic Light',
+    'hint.overview': 'L3 coverage by region · 14 technicians · Green ≥60% · Yellow 30-59% · Red <30%',
+    'sort.label': 'Sort by:',
+    'sort.standard': 'Default (Green / Yellow / Red)',
+    'sort.ct': 'Cross-training need (most gaps first)',
+    'sort.util': 'Utilization (hours)',
+    'sort.portfolio': 'Device portfolio (most L3 families first)',
+    'sort.area': 'Territory size',
+    'hint.demo': 'Demo data · Technicians configurable',
+    'h.stk': 'Safety Checks (Top 10)',
+    'hint.stk': 'Source: daten/geraete.csv · Ascending by due date',
+    'th.orderId': 'Order ID',
+    'th.clinic': 'Hospital',
+    'th.device': 'Device',
+    'th.productFamily': 'Product Family',
+    'th.dueDate': 'Due Date',
+    'th.suggestedDates': 'Suggested Dates',
+    'th.urgency': 'Urgency',
+    'th.days': 'Days',
+    'h.repair': 'Open Repair Orders',
+    'hint.repair': 'SLA: Customer contact within 48h · Internal target: 24h',
+    'th.received': 'Received',
+    'th.slaStatus': 'SLA Status',
+    'th.phase': 'Phase',
+    'th.sparePart': 'Spare Part',
+    'h.ct': 'Cross-Training Top 5',
+    'hint.ct': 'T2 +664 · T8 +527 · T13 +498 · T12 +449 · T1 +453 STK/yr · Sorted by additional STK potential per year',
+    'th.technician': 'Technician',
+    'th.gaps': 'Gaps',
+    'th.stkYear': '+STK/Year',
+    'th.missingFamilies': 'Missing Product Families',
+    'th.recPartner': 'Rec. Partner',
+    'card.l3coverage': 'L3 Coverage',
+    'card.fam': 'fam.',
+    'card.gaps': 'gaps',
+    'card.capacity': 'Capacity',
+    'card.week': 'week',
+    'card.missingFam': 'missing families',
+    'card.potential': 'potential',
+    'card.weeklyHours': 'Weekly hours',
+    'card.fridayNote': 'Friday = Home Office · no real-time data',
+    'card.l3families': 'L3 Families',
+    'card.ofRegional': 'of',
+    'card.regional': 'regional',
+    'card.stkPotential': 'STK/yr potential',
+    'card.afterCT': 'after cross-training',
+    'footer.copilot': 'Fully automated · Copilot — not autopilot',
+    'chat.sub': 'Medtronic Field Service Assistant',
+    'chat.setup': 'Enter Claude API key to<br>activate the AI assistant.',
+    'chat.connect': 'Connect',
+    'chat.keyNote': 'Key is stored locally in your browser.<br>No server-side storage.',
+    'chat.placeholder': 'Ask a question about the dashboard...',
+    'chat.removeKey': 'Remove API key',
+    'chat.q1': 'Why T5?',
+    'chat.q2': 'NRW Problem',
+    'chat.q3': 'T10 Calibration',
+    'chat.q4': 'Cross-training',
+    'chat.q5': 'Next Steps',
+    'h.territory': 'Territory Optimization',
+    'hint.territory': 'Territory coverage analysis · Overlaps & gaps · Travel time optimization potential per region',
+    'h.top3': 'Top 3 Recommendations for Territory Adjustment',
+    'hint.top3': 'Prioritized by travel time savings potential and cross-training needs'
+  }
+};
+var _currentLang = localStorage.getItem('fsa_lang') || 'DE';
+
+function setLang(lang) {
+  _currentLang = lang;
+  localStorage.setItem('fsa_lang', lang);
+  var dict = _I18N[lang];
+  if (!dict) return;
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (dict[key] !== undefined) el.textContent = dict[key];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-html');
+    if (dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-placeholder');
+    if (dict[key] !== undefined) el.placeholder = dict[key];
+  });
+  var btn = document.getElementById('lang-toggle-btn');
+  if (btn) btn.textContent = lang === 'DE' ? 'EN' : 'DE';
+  document.documentElement.lang = lang.toLowerCase();
+}
+
+function toggleLang() {
+  setLang(_currentLang === 'DE' ? 'EN' : 'DE');
+}
+
+if (_currentLang !== 'DE') setLang(_currentLang);
+
 /* ── Tab Navigation ── */
 (function() {
   var tabs = document.querySelectorAll('.nav-tab');
@@ -3000,14 +3227,15 @@ document.addEventListener('keydown', function(e) {
       r.style.display=m==='aktuell'?'table-row':'none';});
     document.querySelectorAll('.gebiets-optimiert').forEach(function(r){
       r.style.display=m==='optimiert'?'table-row':'none';});
-    document.getElementById('gebiets-hinweis').style.display=
-      m==='optimiert'?'block':'none';
   });}
-  var lg=document.getElementById('gebiets-legende');
-  if(lg){Object.keys(C).sort().forEach(function(t){
-    lg.innerHTML+='<span class="gebiets-legende-item">'
-      +'<span class="gebiets-legende-dot" style="background:'+C[t]+'"></span>'
-      +t+'</span>';});}
+  ['gebiets-legende','gebiets-legende-opt'].forEach(function(id){
+    var lg=document.getElementById(id);
+    if(lg){Object.keys(C).sort().forEach(function(t){
+      lg.innerHTML+='<span class="gebiets-legende-item">'
+        +'<span class="gebiets-legende-dot" style="background:'+C[t]+'"></span>'
+        +t+'</span>';});
+    }
+  });
 })();
 
 /* ── Einstellungsempfehlung: Hover-Sync ── */
