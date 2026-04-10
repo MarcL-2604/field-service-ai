@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Field Service AI — Demo · Medtronic GmbH</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#000810;--deep:#000D2A;--navy:#001F5C;--blue:#0057A8;--mid:#0072CE;
+  --sky:#00A3E0;--frost:#6EC6FF;--white:#FFF;
+  --dim:rgba(255,255,255,.6);--mute:rgba(255,255,255,.3);
+  --faint:rgba(255,255,255,.05);--line:rgba(255,255,255,.09);
+  --glass:rgba(10,20,50,.6);
+  --green:#00875A;--green-bg:rgba(0,135,90,.12);--green-border:rgba(0,135,90,.25);
+  --red:#CC0000;--red-bg:rgba(204,0,0,.1);--red-border:rgba(204,0,0,.22);
+  --warn:#FF8B00;--warn-bg:rgba(255,139,0,.1);--warn-border:rgba(255,139,0,.22);
+  --r:10px;
+}
+html{height:100%}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--ink);color:var(--white);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+body::before{content:'';pointer-events:none;position:fixed;inset:0;z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size:180px 180px;opacity:.025;mix-blend-mode:overlay}
+
+/* ── HEADER ── */
+.hdr{
+  height:52px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;flex-shrink:0;
+  background:rgba(0,8,20,.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.hdr-left{display:flex;align-items:center;gap:1rem}
+.hdr-back{
+  font-size:.72rem;color:var(--mute);background:none;border:none;cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:.02em;transition:color .2s;
+  display:flex;align-items:center;gap:.3rem;
+}
+.hdr-back:hover{color:var(--sky)}
+.hdr-sep{width:1px;height:18px;background:var(--line)}
+.hdr-title{
+  font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;
+  background:linear-gradient(90deg,var(--sky),var(--frost));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hdr-sub{font-size:.7rem;color:var(--mute);margin-left:.2rem}
+.status-pill{
+  padding:.28rem .85rem;border-radius:20px;
+  font-size:.7rem;font-weight:700;letter-spacing:.04em;
+  background:rgba(255,139,0,.15);color:#FFB347;
+  border:1px solid rgba(255,139,0,.25);
+  transition:all .3s;
+}
+
+/* ── MAIN LAYOUT ── */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* ── LEFT PANEL ── */
+.left{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* Tab bar */
+.tabbar{
+  display:flex;overflow-x:auto;flex-shrink:0;
+  background:rgba(0,8,20,.6);
+  border-bottom:1px solid var(--line);
+  scrollbar-width:none;
+}
+.tabbar::-webkit-scrollbar{display:none}
+.tab{
+  padding:.7rem 1.1rem;font-size:.75rem;font-weight:600;color:var(--mute);
+  border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;
+  transition:all .2s;letter-spacing:.01em;background:none;border-left:none;border-right:none;border-top:none;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.tab:hover{color:var(--dim);background:var(--faint)}
+.tab.active{color:var(--sky);border-bottom-color:var(--sky)}
+
+/* Step bar */
+.stepbar{
+  display:flex;overflow-x:auto;flex-shrink:0;padding:.5rem 1rem;gap:.3rem;
+  background:rgba(0,5,15,.4);border-bottom:1px solid var(--line);
+  scrollbar-width:none;
+}
+.stepbar::-webkit-scrollbar{display:none}
+.step{
+  padding:.35rem .75rem;font-size:.7rem;font-weight:600;
+  color:var(--mute);border-radius:20px;cursor:pointer;
+  border:1px solid transparent;white-space:nowrap;transition:all .2s;
+  background:none;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.step:hover{color:var(--dim);border-color:var(--line)}
+.step.active{color:var(--sky);background:rgba(0,163,224,.1);border-color:rgba(0,163,224,.25)}
+.step.done{color:var(--green);border-color:rgba(0,135,90,.25);background:rgba(0,135,90,.08)}
+
+/* Content area */
+.content{flex:1;overflow-y:auto;padding:1.2rem 1.5rem;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+.screen{display:none}
+.screen.active{display:block}
+
+/* Cards */
+.card{
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--line);border-radius:var(--r);
+  padding:1.1rem 1.2rem;margin-bottom:1rem;
+}
+.card-title{
+  font-size:.8rem;font-weight:700;color:var(--white);
+  margin-bottom:.85rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;
+}
+
+/* Rows */
+.row{
+  display:flex;gap:.8rem;padding:.45rem 0;
+  border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;flex-wrap:wrap;
+}
+.row:last-child{border:none}
+.rl{color:var(--mute);min-width:160px;flex-shrink:0;font-size:.76rem}
+.rv{font-weight:500;color:var(--dim);flex:1}
+
+/* Badges */
+.badge{
+  display:inline-block;padding:.18rem .55rem;border-radius:6px;
+  font-size:.66rem;font-weight:700;letter-spacing:.03em;
+}
+.b-red{background:var(--red-bg);color:#FF8080;border:1px solid var(--red-border)}
+.b-green{background:var(--green-bg);color:#5EDD9F;border:1px solid var(--green-border)}
+.b-warn{background:var(--warn-bg);color:#FFB347;border:1px solid var(--warn-border)}
+.b-blue{background:rgba(0,114,206,.15);color:var(--frost);border:1px solid rgba(0,114,206,.25)}
+.b-med{background:rgba(0,114,206,.25);color:var(--white);border:1px solid rgba(0,114,206,.4)}
+.b-gray{background:rgba(255,255,255,.07);color:var(--mute);border:1px solid var(--line)}
+
+/* Info boxes */
+.info{border-radius:var(--r);padding:.7rem 1rem;font-size:.78rem;margin-bottom:.85rem;line-height:1.55}
+.info-blue{background:rgba(0,114,206,.1);border:1px solid rgba(0,114,206,.22);color:var(--frost)}
+.info-green{background:var(--green-bg);border:1px solid var(--green-border);color:#5EDD9F}
+.info-red{background:var(--red-bg);border:1px solid var(--red-border);color:#FF8080}
+.info-warn{background:var(--warn-bg);border:1px solid var(--warn-border);color:#FFB347}
+
+/* Tech cards */
+.tech-card{
+  display:flex;align-items:flex-start;gap:.85rem;padding:.9rem 1rem;
+  border-radius:var(--r);border:1px solid var(--line);margin-bottom:.6rem;
+  background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;
+}
+.tech-card:hover{border-color:rgba(0,163,224,.3);background:rgba(0,163,224,.04)}
+.tech-card.best{border-color:rgba(0,163,224,.4);background:rgba(0,87,168,.12)}
+.t-avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;
+  background:rgba(0,114,206,.2);color:var(--frost);border:1px solid rgba(0,114,206,.3);
+}
+.t-score{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--sky);flex-shrink:0}
+.t-name{font-weight:700;font-size:.82rem;color:var(--white);display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.t-detail{font-size:.72rem;color:var(--mute);margin-top:.2rem}
+.t-warn{font-size:.7rem;color:#FFB347;margin-top:.15rem}
+.t-sel{font-size:1rem;color:var(--sky);flex-shrink:0}
+.score-bar{height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-top:.4rem}
+.score-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--mid),var(--sky))}
+
+/* Puffer rows */
+.pr{display:flex;justify-content:space-between;font-size:.76rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.04);color:var(--dim)}
+.pr:last-child{border:none}
+.pt{display:flex;justify-content:space-between;font-size:.8rem;font-weight:700;padding:.5rem 0;border-top:1px solid rgba(255,255,255,.12);margin-top:.3rem;color:var(--white)}
+
+/* Buttons */
+.btns{display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap}
+.btn{
+  padding:.55rem 1.1rem;border-radius:8px;border:1px solid var(--line);
+  background:var(--faint);color:var(--dim);cursor:pointer;
+  font-size:.78rem;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:all .2s;
+}
+.btn:hover{border-color:rgba(255,255,255,.2);color:var(--white)}
+.btn-p{background:linear-gradient(135deg,var(--mid),var(--sky));border-color:transparent;color:var(--white);box-shadow:0 4px 16px rgba(0,163,224,.2)}
+.btn-p:hover{opacity:.88;transform:translateY(-1px)}
+.btn-s{background:rgba(0,135,90,.2);border-color:var(--green-border);color:#5EDD9F}
+.btn-s:hover{background:rgba(0,135,90,.3)}
+
+/* Checklist */
+.check-item{display:flex;align-items:flex-start;gap:.8rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.check-item:last-child{border:none}
+.checkbox{
+  width:20px;height:20px;border-radius:5px;border:1.5px solid var(--line);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;flex-shrink:0;background:var(--faint);margin-top:1px;transition:all .2s;
+}
+.checkbox.checked{background:var(--green);border-color:var(--green);color:var(--white)}
+.prog-track{height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin:.5rem 0}
+.prog-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--green),#5EDD9F);transition:width .3s}
+
+/* Timeline */
+.tl{padding-left:1rem;border-left:2px solid rgba(255,255,255,.08)}
+.tl-item{position:relative;margin-bottom:.9rem;padding-left:.8rem}
+.tl-dot{position:absolute;left:-1.15rem;top:4px;width:8px;height:8px;border-radius:50%;background:var(--mid);border:2px solid var(--ink);outline:2px solid var(--mid)}
+.tl-dot.done{background:var(--green);outline-color:var(--green)}
+
+/* Mail */
+.mail-wrap{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:.8rem}
+.mail-head{background:rgba(0,87,168,.2);padding:.85rem 1rem;font-size:.75rem;line-height:1.7;color:var(--dim);border-bottom:1px solid var(--line)}
+.mail-body{padding:1rem;font-size:.78rem;line-height:1.75;color:var(--dim)}
+
+/* Tour card */
+.tour-card{background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:.7rem}
+.tour-card-title{font-weight:700;font-size:.8rem;color:#5EDD9F;margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+
+/* Stats grid */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.stat-c{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:var(--r);padding:1rem;text-align:center}
+.stat-v{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;line-height:1}
+.stat-l{font-size:.7rem;color:var(--mute);margin-top:.3rem}
+
+/* Table */
+.data-table{width:100%;border-collapse:collapse;font-size:.75rem}
+.data-table thead tr{background:rgba(0,87,168,.2)}
+.data-table thead th{padding:.55rem .75rem;text-align:left;font-size:.68rem;font-weight:600;color:var(--sky);letter-spacing:.06em;text-transform:uppercase}
+.data-table tbody tr{border-top:1px solid rgba(255,255,255,.04)}
+.data-table tbody td{padding:.55rem .75rem;color:var(--dim)}
+
+/* Calert */
+.calert{border-radius:var(--r);padding:.7rem 1rem;font-size:.78rem;margin-bottom:.65rem;display:flex;align-items:center;gap:.85rem}
+.ca-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0}
+
+/* ── RIGHT CHAT PANEL ── */
+.right{
+  width:320px;flex-shrink:0;display:flex;flex-direction:column;
+  border-left:1px solid var(--line);background:rgba(0,5,15,.5);
+}
+.chat-hdr{
+  padding:.85rem 1rem;border-bottom:1px solid var(--line);
+  background:rgba(0,87,168,.1);
+  display:flex;align-items:center;gap:.8rem;flex-shrink:0;
+}
+.chat-av{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--mid),var(--sky));
+  display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;
+}
+.chat-t{font-size:.82rem;font-weight:700;color:var(--white)}
+.chat-s{font-size:.68rem;color:var(--mute);margin-top:.1rem}
+
+.api-box{
+  margin:.8rem;padding:.9rem;border:1px solid var(--line);border-radius:var(--r);
+  background:var(--faint);font-size:.76rem;color:var(--dim);
+}
+.api-box input{
+  width:100%;margin-top:.5rem;padding:.45rem .7rem;
+  background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:6px;
+  color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:.78rem;
+}
+.api-box input:focus{outline:none;border-color:var(--sky)}
+
+.msgs{flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.6rem;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.08) transparent}
+.msgs::-webkit-scrollbar{width:3px}
+.msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+.msg{padding:.65rem .85rem;border-radius:10px;font-size:.78rem;line-height:1.6;max-width:90%}
+.msg-ai{background:rgba(0,87,168,.15);border:1px solid rgba(0,87,168,.2);color:var(--dim);align-self:flex-start}
+.msg-user{background:linear-gradient(135deg,var(--mid),var(--sky));color:var(--white);align-self:flex-end}
+.msg-ai.thinking{color:var(--mute);font-style:italic;animation:pulse .8s ease infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+.quick-row{padding:.5rem .75rem;display:flex;flex-wrap:wrap;gap:.4rem;border-top:1px solid var(--line);flex-shrink:0}
+.qbtn{
+  padding:.28rem .65rem;font-size:.68rem;font-weight:500;
+  background:var(--faint);border:1px solid var(--line);border-radius:20px;
+  color:var(--mute);cursor:pointer;transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.qbtn:hover{color:var(--sky);border-color:rgba(0,163,224,.3)}
+
+.chat-input-area{padding:.65rem .75rem;border-top:1px solid var(--line);flex-shrink:0}
+.input-row{display:flex;gap:.5rem}
+textarea.chat-in{
+  flex:1;padding:.55rem .75rem;
+  background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;
+  color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:.78rem;
+  resize:none;min-height:42px;max-height:100px;transition:border-color .2s;
+}
+textarea.chat-in:focus{outline:none;border-color:var(--sky)}
+textarea.chat-in::placeholder{color:var(--mute)}
+.send-btn{
+  padding:.5rem .85rem;
+  background:linear-gradient(135deg,var(--mid),var(--sky));
+  border:none;border-radius:8px;color:var(--white);cursor:pointer;
+  font-size:.76rem;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:opacity .2s;white-space:nowrap;
+}
+.send-btn:hover{opacity:.85}
+.send-btn:disabled{opacity:.4;cursor:default}
+
+/* ── FOOTER ── */
+.ftr{
+  height:30px;display:flex;align-items:center;padding:0 1.5rem;flex-shrink:0;
+  background:rgba(0,5,15,.6);border-top:1px solid rgba(255,255,255,.04);
+  font-size:.65rem;color:rgba(255,255,255,.18);letter-spacing:.04em;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <button class="hdr-back" onclick="location.href='index.html'">← Home</button>
+    <div class="hdr-sep"></div>
+    <div>
+      <span class="hdr-title">AI Field Service Demo</span>
+      <span class="hdr-sub">Medtronic GmbH · Service &amp; Repair</span>
+    </div>
+  </div>
+  <div class="status-pill" id="statusBadge">Auftrag NEU</div>
+  <button onclick="toggleDemoLang()" id="lang-btn" style="font-size:.68rem;color:rgba(255,255,255,.35);cursor:pointer;letter-spacing:.1em;border:1px solid rgba(255,255,255,.1);padding:.22rem .65rem;border-radius:5px;background:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s" onmouseover="this.style.color='#00A3E0';this.style.borderColor='rgba(0,163,224,.4)'" onmouseout="this.style.color='rgba(255,255,255,.35)';this.style.borderColor='rgba(255,255,255,.1)'">EN</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="left">
+
+<!-- TABS -->
+<div class="tabbar">
+  <button class="tab active" onclick="showTab(0)">Work Order Demo</button>
+  <button class="tab" onclick="showTab(1)">Tour-Optimierung</button>
+  <button class="tab" onclick="showTab(2)">Cross-Training NRW</button>
+  <button class="tab" onclick="showTab(3)">Kalibrierungs-Warnungen</button>
+  <button class="tab" onclick="showTab(4)">Dashboard</button>
+</div>
+
+<!-- ── TAB 0: WORK ORDER ── -->
+<div class="screen active" id="main0">
+<div class="stepbar">
+  <button class="step active" onclick="goStep(0)">1 Eingang</button>
+  <button class="step" onclick="goStep(1)">2 KI-Scoring</button>
+  <button class="step" onclick="goStep(2)">3 Zuweisung</button>
+  <button class="step" onclick="goStep(3)">4 Vorbereitung</button>
+  <button class="step" onclick="goStep(4)">5 Durchführung</button>
+  <button class="step" onclick="goStep(5)">6 Abschluss</button>
+  <button class="step" onclick="goStep(6)">7 QA + Mail</button>
+</div>
+<div class="content">
+
+<div class="screen active" id="s0">
+  <div class="info info-red">Neuer Auftrag aus Fälligkeitslogik · Status: NEU · Kein Techniker zugewiesen</div>
+  <div class="card">
+    <div class="card-title">Work Order <span class="badge b-red">KRITISCH — 12 Tage überfällig</span></div>
+    <div class="row"><span class="rl">Auftrags-ID</span><span class="rv">WO-2026-04718</span></div>
+    <div class="row"><span class="rl">Auftragstyp</span><span class="rv">STK — Sicherheitstechnische Kontrolle</span></div>
+    <div class="row"><span class="rl">Klinik</span><span class="rv">Universitätsklinikum Bonn (K019)</span></div>
+    <div class="row"><span class="rl">Gerät</span><span class="rv">EC300 Legend — Kardiovaskuläres IPC-System <span class="badge b-blue">Big Capital</span></span></div>
+    <div class="row"><span class="rl">Seriennummer</span><span class="rv">35B2004118</span></div>
+    <div class="row"><span class="rl">Standort</span><span class="rv">Venusberg-Campus 1, 53127 Bonn · Geb. 32, Raum 04</span></div>
+    <div class="row"><span class="rl">Fälligkeit</span><span class="rv" style="color:#FF8080;font-weight:700">15.03.2026 — überfällig 12 Tage</span></div>
+    <div class="row"><span class="rl">Ansprechpartner</span><span class="rv">Dr. Sabine Müller · +49 228 287-15832</span></div>
+    <div class="row"><span class="rl">Zugangs-Code</span><span class="rv">1247# · Mo–Fr 07:00–17:00</span></div>
+    <div class="row"><span class="rl">Bündelung erkannt</span><span class="rv" style="color:#5EDD9F">NIM4CM01 ebenfalls fällig → Tour wird optimiert</span></div>
+  </div>
+  <div class="btns"><button class="btn btn-p" onclick="goStep(1)">KI-Scoring starten →</button></div>
+</div>
+
+<div class="screen" id="s1">
+  <div class="info info-blue">Scoring: Kompetenz 40% + Fahrzeit 35% + Auslastung 25% · EC300 = Big Capital → L3 Pflicht</div>
+  <div class="card">
+    <div class="card-title">Top-3 Empfehlung <span style="font-size:.68rem;font-weight:400;color:var(--mute)">Klick zum Auswählen</span></div>
+    <div class="tech-card best" id="tc0" onclick="selectTech(0)">
+      <div class="t-avatar">T5</div>
+      <div style="flex:1">
+        <div class="t-name">T5 Oberhausen <span class="badge b-med">L3</span></div>
+        <div class="score-bar"><div class="score-fill" style="width:90.3%"></div></div>
+        <div class="t-detail">84 km · 52 min · 28h/32h · NRW-West · kann auch NIM abdecken</div>
+        <div class="t-warn">⚠ Kalibrierung MM-NEURO-001: noch 19 Tage</div>
+      </div>
+      <div class="t-score">90.3</div>
+      <div class="t-sel" id="sel0">✓</div>
+    </div>
+    <div class="tech-card" id="tc1" onclick="selectTech(1)">
+      <div class="t-avatar" style="background:rgba(255,139,0,.15);color:#FFB347;border-color:rgba(255,139,0,.3)">T8</div>
+      <div style="flex:1">
+        <div class="t-name">T8 Hennef <span class="badge b-warn">L2</span></div>
+        <div class="score-bar"><div class="score-fill" style="width:85.2%;background:linear-gradient(90deg,var(--warn),#FFB347)"></div></div>
+        <div class="t-detail">13 km · 9 min · Small Capital NIM: L2 vollwertig</div>
+        <div class="t-warn">EC300 Big Capital: L3 nötig — nur für NIM-Teil einsetzbar</div>
+      </div>
+      <div class="t-score" style="color:#FFB347">85.2</div>
+      <div class="t-sel" id="sel1" style="display:none">✓</div>
+    </div>
+    <div class="tech-card" id="tc2" onclick="selectTech(2)">
+      <div class="t-avatar" style="background:var(--faint);color:var(--mute)">T10</div>
+      <div style="flex:1">
+        <div class="t-name">T10 Balingen <span class="badge b-med">L3</span> <span class="badge b-blue">Hugo KA</span></div>
+        <div class="score-bar"><div class="score-fill" style="width:68.1%;background:rgba(255,255,255,.15)"></div></div>
+        <div class="t-detail">301 km · 3h 10min · Kalibrierung MM-HUGO-002: 14 Tage!</div>
+      </div>
+      <div class="t-score" style="color:var(--mute)">68.1</div>
+      <div class="t-sel" id="sel2" style="display:none">✓</div>
+    </div>
+  </div>
+  <div class="info info-green" id="selInfo">Tour-Empfehlung: T5 übernimmt EC300 + NIM — beide L3/L2 abgedeckt. Spart 1 Einzelfahrt.</div>
+  <div class="btns">
+    <button class="btn" onclick="goStep(0)">← Zurück</button>
+    <button class="btn btn-p" id="btnSelect" onclick="goStep(2)">T5 zuweisen →</button>
+  </div>
+</div>
+
+<div class="screen" id="s2">
+  <div class="info info-green">T5 übernimmt EC300 Legend + NIM4CM01 — gebündelter Einsatz.</div>
+  <div class="card">
+    <div class="card-title">Einsatzplanung — Zeitkalkulation</div>
+    <div style="font-size:.72rem;font-weight:700;color:var(--mute);margin-bottom:.5rem;letter-spacing:.06em;text-transform:uppercase">Netto-Zeiten</div>
+    <div class="pr"><span>EC300 Legend (Service + Admin)</span><span>120 min</span></div>
+    <div class="pr"><span>NIM4CM01 (70% Synergie, Service + Admin)</span><span>56 min</span></div>
+    <div class="pr"><span>Rüstzeit (Gerätefamilienwechsel)</span><span>30 min</span></div>
+    <div class="pt"><span>Netto gesamt</span><span>206 min = 3h 26min</span></div>
+    <div style="font-size:.72rem;font-weight:700;color:var(--mute);margin:.8rem 0 .5rem;letter-spacing:.06em;text-transform:uppercase">Puffer (Klinikalltag)</div>
+    <div class="pr"><span>Basis-Puffer</span><span>30 min</span></div>
+    <div class="pr"><span>Einschleusung Uniklinikum</span><span>20 min</span></div>
+    <div class="pr"><span>Grossgerät EC300</span><span>30 min</span></div>
+    <div class="pr"><span>Gesprächsbedarf Medizintechnik</span><span>15 min</span></div>
+    <div class="pt"><span>Puffer gesamt</span><span>95 min = 1h 35min</span></div>
+    <div style="background:rgba(0,114,206,.08);border:1px solid rgba(0,114,206,.15);border-radius:var(--r);padding:.8rem 1rem;margin-top:.8rem">
+      <div class="pt" style="margin:0;border:none;padding:0"><span>Geplant total</span><span style="color:var(--sky)">301 min = 5h 01min</span></div>
+      <div style="font-size:.7rem;color:var(--mute);margin-top:.3rem">+ Fahrzeit 104 min → Gesamttag 405 min = 6h 45min ✓</div>
+    </div>
+  </div>
+  <div class="row"><span class="rl">Termin</span><span class="rv" style="color:#5EDD9F">Di, 01.04.2026 · kein Freitag ✓</span></div>
+  <div class="row"><span class="rl">Übernachtung</span><span class="rv" style="color:#5EDD9F">Nicht nötig ✓</span></div>
+  <div class="btns">
+    <button class="btn" onclick="goStep(1)">← Zurück</button>
+    <button class="btn btn-p" onclick="goStep(3)">Zuweisung bestätigen →</button>
+  </div>
+</div>
+
+<div class="screen" id="s3">
+  <div class="info info-green">T5 hat Push-Benachrichtigung erhalten. Alle Infos bereit.</div>
+  <div class="card">
+    <div class="card-title">Kundeninformationen — T5 Oberhausen</div>
+    <div class="row"><span class="rl">Klinik</span><span class="rv">Universitätsklinikum Bonn</span></div>
+    <div class="row"><span class="rl">Adresse</span><span class="rv">Venusberg-Campus 1, 53127 Bonn</span></div>
+    <div class="row"><span class="rl">Ansprechpartner</span><span class="rv">Dr. Sabine Müller · +49 228 287-15832</span></div>
+    <div class="row"><span class="rl">Zugang</span><span class="rv">Geb. 32, Raum 04 — Code: 1247#</span></div>
+    <div class="row"><span class="rl">Geräte (gebündelt)</span><span class="rv">EC300 Legend SN 35B2004118 + NIM4CM01 SN 28A1003456</span></div>
+    <div class="row"><span class="rl">Geplante Dauer</span><span class="rv">5h 01min (inkl. Puffer)</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Trunkstock-Checkliste</div>
+    <div class="row"><span class="rl">Filterset EC300</span><span class="rv"><span class="badge b-green">mitbringen</span></span></div>
+    <div class="row"><span class="rl">Druckschlauch-Set</span><span class="rv"><span class="badge b-green">mitbringen</span></span></div>
+    <div class="row"><span class="rl">NIM Elektroden-Set</span><span class="rv"><span class="badge b-blue">prüfen</span></span></div>
+    <div class="row"><span class="rl">Messprotokoll EC300 + NIM</span><span class="rv"><span class="badge b-red">Pflicht</span></span></div>
+  </div>
+  <div class="btns">
+    <button class="btn" onclick="goStep(2)">← Zurück</button>
+    <button class="btn btn-p" onclick="goStep(4)">Einsatz starten →</button>
+  </div>
+</div>
+
+<div class="screen" id="s4">
+  <div class="card">
+    <div class="card-title">Einsatzprotokoll — T5 · UKB · 01.04.2026 <span class="badge b-blue">IN ARBEIT</span></div>
+    <div class="tl">
+      <div class="tl-item"><div class="tl-dot done"></div><div style="font-size:.76rem"><strong>07:42</strong> <span style="color:var(--mute)">Abfahrt Oberhausen</span></div></div>
+      <div class="tl-item"><div class="tl-dot done"></div><div style="font-size:.76rem"><strong>08:38</strong> <span style="color:var(--mute)">Eintreffen · Einschleusung Geb. 32</span></div></div>
+      <div class="tl-item"><div class="tl-dot done"></div><div style="font-size:.76rem"><strong>08:58</strong> <span style="color:var(--mute)">STK EC300 Legend begonnen</span></div></div>
+      <div class="tl-item"><div class="tl-dot done"></div><div style="font-size:.76rem"><strong>11:05</strong> <span style="color:var(--mute)">EC300 abgeschlossen · Gespräch Dr. Müller</span></div></div>
+      <div class="tl-item"><div class="tl-dot done"></div><div style="font-size:.76rem"><strong>11:25</strong> <span style="color:var(--mute)">STK NIM4CM01 begonnen</span></div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div style="font-size:.76rem;color:var(--mute)"><strong>~12:20</strong> NIM abgeschlossen (geplant)</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Messwerte EC300 + NIM</div>
+    <div class="row"><span class="rl">Drucktest EC300</span><span class="rv" style="color:#5EDD9F">210 mmHg — OK ✓</span></div>
+    <div class="row"><span class="rl">Leckagetest</span><span class="rv" style="color:#5EDD9F">0,2 mmHg/min — OK ✓</span></div>
+    <div class="row"><span class="rl">Elektr. Sicherheit</span><span class="rv" style="color:#5EDD9F">0,08 mA — OK ✓</span></div>
+    <div class="row"><span class="rl">NIM Impedanz</span><span class="rv" style="color:#5EDD9F">1,2 kΩ — OK ✓</span></div>
+  </div>
+  <div class="btns">
+    <button class="btn" onclick="goStep(3)">← Zurück</button>
+    <button class="btn btn-p" onclick="goStep(5)">Einsatz abschliessen →</button>
+  </div>
+</div>
+
+<div class="screen" id="s5">
+  <div class="info info-warn">Work Order nur schliessbar wenn alle Pflichtdokumente vorhanden.</div>
+  <div class="card">
+    <div class="card-title">Pflichtdokumente — EC300 + NIM</div>
+    <div class="check-item"><div class="checkbox" id="c0" onclick="toggleDoc(0)"></div><div style="font-size:.8rem;font-weight:500;color:var(--dim)">Messprotokoll EC300 <span class="badge b-red">Pflicht</span></div></div>
+    <div class="check-item"><div class="checkbox" id="c1" onclick="toggleDoc(1)"></div><div style="font-size:.8rem;font-weight:500;color:var(--dim)">Messprotokoll NIM <span class="badge b-red">Pflicht</span></div></div>
+    <div class="check-item"><div class="checkbox" id="c2" onclick="toggleDoc(2)"></div><div style="font-size:.8rem;font-weight:500;color:var(--dim)">Servicebericht (beide Geräte) <span class="badge b-red">Pflicht</span></div></div>
+    <div class="check-item"><div class="checkbox" id="c3" onclick="toggleDoc(3)"></div><div style="font-size:.8rem;font-weight:500;color:var(--dim)">TDS EC300 + TDS NIM <span class="badge b-red">Pflicht</span></div></div>
+    <div class="check-item"><div class="checkbox" id="c4" onclick="toggleDoc(4)"></div><div style="font-size:.8rem;font-weight:500;color:var(--dim)">Unterschrift Dr. Müller <span class="badge b-gray">Optional</span></div></div>
+  </div>
+  <div style="font-size:.74rem;color:var(--mute);margin-bottom:.3rem" id="docTxt">0 von 4 Pflichtdokumenten</div>
+  <div class="prog-track"><div class="prog-fill" id="docBar" style="width:0%"></div></div>
+  <div class="info info-red" id="docWarn" style="display:none">Unvollständig — Abschluss nicht möglich</div>
+  <div class="info info-green" id="docOk" style="display:none">Alle Pflichtdokumente vorhanden ✓</div>
+  <div class="btns">
+    <button class="btn" onclick="goStep(4)">← Zurück</button>
+    <button class="btn btn-s" id="closeBtn" onclick="closeWO()">Work Order schliessen</button>
+  </div>
+  <div id="closeSuccess" style="display:none" class="card">
+    <div style="text-align:center;padding:.8rem">
+      <div style="font-size:2rem;margin-bottom:.4rem">✅</div>
+      <div style="font-weight:700;font-size:.9rem;color:#5EDD9F">Beide Work Orders erfolgreich geschlossen</div>
+      <div style="font-size:.74rem;color:var(--mute);margin-top:.25rem">EC300 + NIM · T5 · 01.04.2026 · Nächste STK: 01.04.2027</div>
+      <button class="btn btn-p" style="margin-top:.75rem" onclick="goStep(6)">Weiter zur QA →</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s6">
+  <div class="info info-blue">Automatischer QA-Lauf · Mo 07.04.2026 · 07:00 Uhr</div>
+  <div class="card">
+    <div class="card-title">QA-Ergebnis <span class="badge b-green">VOLLSTÄNDIG</span></div>
+    <div class="row"><span class="rl">EC300 Messprotokoll</span><span class="rv" style="color:#5EDD9F">✓</span></div>
+    <div class="row"><span class="rl">NIM Messprotokoll</span><span class="rv" style="color:#5EDD9F">✓</span></div>
+    <div class="row"><span class="rl">Servicebericht</span><span class="rv" style="color:#5EDD9F">✓</span></div>
+    <div class="row"><span class="rl">TDS beide Geräte</span><span class="rv" style="color:#5EDD9F">✓</span></div>
+    <div class="row"><span class="rl">Einsparung Tour</span><span class="rv" style="color:#5EDD9F">1 Einzelfahrt gespart · 52 min Fahrzeit</span></div>
+  </div>
+  <div class="mail-wrap">
+    <div class="mail-head">
+      <div><strong style="color:var(--frost)">Von:</strong> service.repair@medtronic.com</div>
+      <div><strong style="color:var(--frost)">An:</strong> s.mueller@ukbonn.de</div>
+      <div><strong style="color:var(--frost)">Betreff:</strong> Serviceberichte STK — EC300 + NIM4CM01 — UKB</div>
+    </div>
+    <div class="mail-body">Sehr geehrte Frau Dr. Müller,<br><br>anbei die Serviceunterlagen für die am 01.04.2026 durchgeführten STK.<br><br><strong style="color:var(--white)">EC300 Legend</strong> SN 35B2004118 — Freigegeben ✓<br><strong style="color:var(--white)">NIM4CM01</strong> SN 28A1003456 — Freigegeben ✓<br><br>Nächste STK jeweils: 01.04.2027<br><br>Mit freundlichen Grüssen<br>Medtronic GmbH · Service & Repair</div>
+  </div>
+  <div class="info info-green" style="margin-top:.75rem">Mail versendet · 07.04.2026 07:04 · In SMax dokumentiert ✓</div>
+  <div class="btns">
+    <button class="btn" onclick="goStep(5)">← Zurück</button>
+    <button class="btn btn-p" onclick="goStep(0);resetDemo()">↺ Neue Demo</button>
+  </div>
+</div>
+
+</div></div><!-- /main0 content -->
+
+<!-- ── TAB 1: TOUR-OPTIMIERUNG ── -->
+<div class="screen" id="main1">
+<div class="content">
+  <div class="info info-blue">Tour-Optimierung: Kliniken bündeln · Qualifikation prüfen · Puffer einplanen · Max 1 Übernachtung/Woche</div>
+  <div class="card">
+    <div class="card-title">Beispiel — UKB Bonn · April 2026 · 3 Geräte fällig</div>
+    <div class="tour-card">
+      <div class="tour-card-title">Einsatz 1 — T5 Oberhausen <span class="badge b-green">1 Fahrt statt 2</span></div>
+      <div class="pr"><span>EC300 Legend (Big Capital L3)</span><span>T5 L3 ✓</span></div>
+      <div class="pr"><span>NIM4CM01 (Small Capital L2 reicht)</span><span>T5 L3 ✓</span></div>
+      <div class="pr"><span>Netto gesamt</span><span>3h 26min</span></div>
+      <div class="pt"><span>Geplant inkl. Puffer</span><span>5h 01min</span></div>
+    </div>
+    <div style="background:rgba(255,139,0,.08);border:1px solid var(--warn-border);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:.7rem">
+      <div style="font-weight:700;font-size:.8rem;color:#FFB347;margin-bottom:.6rem">Einsatz 2 — T8 Hennef (gleicher Tag)</div>
+      <div class="pr"><span>Prog2090 (Small Capital L2 reicht)</span><span>T8 L2 ✓</span></div>
+      <div class="pt"><span>Geplant</span><span>1h 20min</span></div>
+    </div>
+    <div class="info info-green">3 Geräte an 1 Tag · 2 Techniker · T8 nur 13km · spart 2 Einzelfahrten</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Übernachtungsregel</div>
+    <div class="row"><span class="rl">Maximum</span><span class="rv">1 Übernachtung pro Techniker pro Woche</span></div>
+    <div class="row"><span class="rl">Auslöser</span><span class="rv">Fahrzeit hin + Einsatz + zurück &gt; 10h</span></div>
+    <div class="row"><span class="rl">Kosten</span><span class="rv">+150 EUR wird eingerechnet</span></div>
+    <div class="row"><span class="rl">Warnung</span><span class="rv" style="color:#FF8080">T10 hat KW14 bereits 1 Übernachtung</span></div>
+  </div>
+</div></div>
+
+<!-- ── TAB 2: CROSS-TRAINING ── -->
+<div class="screen" id="main2">
+<div class="content">
+  <div class="info info-red">NRW: 380 STK/Kopf vs. 72 in Region Nord · Faktor 5 · Strukturelle Überlastung</div>
+  <div class="card">
+    <div class="card-title">Cross-Training-Plan 2026/2027</div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Techniker</th><th>Q3 2026</th><th>Q4 2026</th><th>Q1 2027</th><th>+STK/a</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:700;color:var(--white)">T5</td><td><span class="badge b-green">HF-Chir L3</span></td><td>—</td><td><span class="badge b-warn">Ablation L3</span></td><td style="color:#5EDD9F;font-weight:700">+180</td></tr>
+          <tr><td style="font-weight:700;color:var(--white)">T11 ⚡</td><td><span class="badge b-red">Kardio L2!</span></td><td><span class="badge b-red">Kardio L3!</span></td><td><span class="badge b-warn">Neuro L2</span></td><td style="color:#FF8080;font-weight:700">Backup T5</td></tr>
+          <tr><td style="font-weight:700;color:var(--white)">T8</td><td><span class="badge b-green">NIM L3</span></td><td><span class="badge b-warn">HF-Chir L3</span></td><td>—</td><td style="color:#5EDD9F;font-weight:700">+320</td></tr>
+          <tr><td style="font-weight:700;color:var(--white)">T13</td><td><span class="badge b-green">IPC L3</span></td><td><span class="badge b-warn">HF-Chir L2</span></td><td><span class="badge b-blue">NIM L2</span></td><td style="color:#5EDD9F;font-weight:700">+200</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info info-green" style="margin-top:.8rem">Nach Q2 2027: NRW sinkt von 380 auf ~290 STK/Kopf</div>
+  </div>
+</div></div>
+
+<!-- ── TAB 3: KALIBRIERUNG ── -->
+<div class="screen" id="main3">
+<div class="content">
+  <div class="info info-red">4 Messmittel laufen in den nächsten 30 Tagen ab!</div>
+  <div class="card">
+    <div class="card-title">Kalibrierungs-Warnungen (Stand 28.03.2026)</div>
+    <div class="calert" style="background:var(--red-bg);border:1px solid var(--red-border);margin-bottom:.6rem">
+      <div class="ca-dot" style="background:rgba(204,0,0,.2);color:#FF8080;border:1px solid var(--red-border)">T10</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:.8rem">MM-HUGO-002 — Hugo-Tester</div><div style="font-size:.72rem;color:#FF8080">Läuft ab: 10.04.2026 · <strong>nur noch 14 Tage!</strong></div></div>
+      <span class="badge b-red">DRINGEND</span>
+    </div>
+    <div class="calert" style="background:var(--red-bg);border:1px solid var(--red-border);margin-bottom:.6rem">
+      <div class="ca-dot" style="background:rgba(204,0,0,.2);color:#FF8080;border:1px solid var(--red-border)">T5</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:.8rem">MM-NEURO-001 — Neuro-Tester</div><div style="font-size:.72rem;color:#FF8080">Läuft ab: 15.04.2026 · noch 19 Tage</div></div>
+      <span class="badge b-red">DRINGEND</span>
+    </div>
+    <div class="calert" style="background:var(--warn-bg);border:1px solid var(--warn-border);margin-bottom:.6rem">
+      <div class="ca-dot" style="background:rgba(255,139,0,.15);color:#FFB347;border:1px solid var(--warn-border)">T1</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:.8rem">MM-HUGO-001 — Hugo-Tester</div><div style="font-size:.72rem;color:#FFB347">Läuft ab: 20.04.2026 · noch 24 Tage</div></div>
+      <span class="badge b-warn">BALD</span>
+    </div>
+    <div class="calert" style="background:var(--warn-bg);border:1px solid var(--warn-border)">
+      <div class="ca-dot" style="background:rgba(255,139,0,.15);color:#FFB347;border:1px solid var(--warn-border)">T8</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:.8rem">MM-KARD-001 — Kardio-Tester</div><div style="font-size:.72rem;color:#FFB347">Läuft ab: 25.04.2026 · noch 29 Tage</div></div>
+      <span class="badge b-warn">BALD</span>
+    </div>
+  </div>
+</div></div>
+
+<!-- ── TAB 4: DASHBOARD ── -->
+<div class="screen" id="main4">
+<div class="content">
+  <div class="stat-grid">
+    <div class="stat-c"><div class="stat-v" style="color:#5EDD9F">516</div><div class="stat-l">Tests grün</div></div>
+    <div class="stat-c"><div class="stat-v" style="color:var(--sky)">1.985</div><div class="stat-l">Vertragsgeräte</div></div>
+    <div class="stat-c"><div class="stat-v" style="color:#FFB347">32h</div><div class="stat-l">Außendienst/Woche</div></div>
+    <div class="stat-c"><div class="stat-v" style="color:#FF8080">380</div><div class="stat-l">STK/Kopf NRW</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">System-Features v2</div>
+    <div class="row"><span class="rl">Tour-Optimierung</span><span class="rv" style="color:#5EDD9F">Kliniken bündeln · Qualifikation prüfen · Puffer ✓</span></div>
+    <div class="row"><span class="rl">Small Capital L2</span><span class="rv" style="color:#5EDD9F">NIM, PROG, ACT, IPC STK → L2 vollwertig ✓</span></div>
+    <div class="row"><span class="rl">Labor-Zeiten</span><span class="rv" style="color:#5EDD9F">SMax Daten · Synergie 70% · Rüstzeit 30min ✓</span></div>
+    <div class="row"><span class="rl">Puffer-Logik</span><span class="rv" style="color:#5EDD9F">Basis + Einschleusung + Grossgerät + Gespräch ✓</span></div>
+    <div class="row"><span class="rl">Übernachtungsregel</span><span class="rv" style="color:#5EDD9F">Max 1/Woche · automatische Warnung ✓</span></div>
+  </div>
+</div></div>
+
+</div><!-- /left -->
+
+<!-- ── CHAT PANEL ── -->
+<div class="right">
+  <div class="chat-hdr">
+    <div class="chat-av">AI</div>
+    <div>
+      <div class="chat-t" id="chat-title-el">Field Service Assistent</div>
+      <div class="chat-s" id="chat-sub-el">Claude-powered · Medtronic</div>
+    </div>
+  </div>
+  <div class="api-box" id="apiSetup">
+    <div style="font-weight:600;margin-bottom:.3rem;font-size:.78rem" id="api-title-el">API-Key erforderlich</div>
+    <div style="font-size:.72rem;color:var(--mute)" id="api-sub-el">Anthropic API-Key für echten KI-Chat</div>
+    <input type="password" id="apiKey" placeholder="sk-ant-...">
+    <div style="display:flex;gap:.5rem;margin-top:.5rem">
+      <button class="btn btn-p" style="padding:.4rem .9rem;font-size:.72rem" onclick="saveKey()" id="api-save-btn">Speichern</button>
+      <button class="btn" style="padding:.4rem .9rem;font-size:.72rem" onclick="document.getElementById('apiSetup').style.display='none'" id="api-demo-btn">Demo-Modus</button>
+    </div>
+  </div>
+  <div class="msgs" id="chatMsgs">
+    <div class="msg msg-ai">Hallo! Ich kenne alle 14 Techniker, 1.985 Geräte, Tour-Optimierung und Planungsregeln. Was möchtest du wissen?</div>
+  </div>
+  <div class="quick-row">
+    <button class="qbtn" onclick="sendQuick('q1')">Warum T5?</button>
+    <button class="qbtn" onclick="sendQuick('q2')">Tour-Logik</button>
+    <button class="qbtn" onclick="sendQuick('q3')">T8 L2-Regel</button>
+    <button class="qbtn" onclick="sendQuick('q4')">T10 Kalibr.</button>
+    <button class="qbtn" onclick="sendQuick('q5')">Puffer?</button>
+  </div>
+  <div class="chat-input-area">
+    <div class="input-row">
+      <textarea class="chat-in" id="chatInput" rows="2" placeholder="Frage stellen..." onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()" id="send-btn-el">Senden</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<div class="ftr" id="ftr-el">AI Assisted Field Service Assistant · Medtronic GmbH Service &amp; Repair · Demo v2 · 516 Tests grün</div>
+
+<script>
+// ── LANGUAGE FROM URL ──────────────────────────────────────────────────────
+const urlLang = new URLSearchParams(location.search).get('lang') || 'de';
+
+const DT = {
+de:{
+  'title':'Field Service AI — Demo · Medtronic GmbH',
+  'hdr-title':'AI Field Service Demo',
+  'hdr-sub':'Medtronic GmbH · Service & Repair',
+  'tab0':'Work Order Demo','tab1':'Tour-Optimierung','tab2':'Cross-Training NRW',
+  'tab3':'Kalibrierungs-Warnungen','tab4':'Dashboard',
+  'step0':'1 Eingang','step1':'2 KI-Scoring','step2':'3 Zuweisung',
+  'step3':'4 Vorbereitung','step4':'5 Durchführung','step5':'6 Abschluss','step6':'7 QA + Mail',
+  'status':['Auftrag NEU','KI-Scoring','Zugewiesen','Vorbereitung','In Arbeit','Abgeschlossen','QA Abgeschlossen'],
+  's0-info':'Neuer Auftrag aus Fälligkeitslogik · Status: NEU · Kein Techniker zugewiesen',
+  's0-card':'Work Order',
+  's0-btn':'KI-Scoring starten →',
+  's1-info':'Scoring: Kompetenz 40% + Fahrzeit 35% + Auslastung 25% · EC300 = Big Capital → L3 Pflicht',
+  's1-card':'Top-3 Empfehlung',
+  's1-hint':'KI-Empfehlung: T5 (Score 90.3) · Klick zum Auswählen',
+  's1-sel-info':'Tour-Empfehlung: T5 übernimmt EC300 + NIM — L3/L2 abgedeckt. Spart 1 Einzelfahrt.',
+  's2-info':'T5 übernimmt EC300 Legend + NIM4CM01 — gebündelter Einsatz.',
+  's2-card':'Einsatzplanung — Zeitkalkulation',
+  's3-info':'T5 hat Push-Benachrichtigung erhalten. Alle Infos bereit.',
+  's3-card':'Kundeninformationen — T5 Oberhausen',
+  's3-card2':'Trunkstock-Checkliste',
+  's4-card':'Einsatzprotokoll · IN ARBEIT',
+  's4-card2':'Messwerte EC300 + NIM',
+  's5-info':'Work Order nur schliessbar wenn alle Pflichtdokumente vorhanden.',
+  's5-card':'Pflichtdokumente — EC300 + NIM',
+  's5-doc0':'Messprotokoll EC300',
+  's5-doc1':'Messprotokoll NIM',
+  's5-doc2':'Servicebericht (beide Geräte)',
+  's5-doc3':'TDS EC300 + TDS NIM',
+  's5-doc4':'Unterschrift Dr. Müller',
+  's5-close':'Work Order schliessen',
+  's5-success':'Beide Work Orders erfolgreich geschlossen',
+  's6-info':'Automatischer QA-Lauf · Mo 07.04.2026 · 07:00 Uhr',
+  's6-card':'QA-Ergebnis',
+  'btn-back':'← Zurück','btn-next-demo':'↺ Neue Demo',
+  'api-title':'API-Key erforderlich',
+  'api-sub':'Anthropic API-Key für echten KI-Chat',
+  'api-save':'Speichern','api-demo':'Demo-Modus',
+  'chat-title':'Field Service Assistent','chat-sub':'Claude-powered · Medtronic',
+  'chat-welcome':'Hallo! Ich kenne alle 14 Techniker, 1.985 Geräte, Tour-Optimierung und Planungsregeln. Was möchtest du wissen?',
+  'chat-placeholder':'Frage stellen...',
+  'send':'Senden',
+  'q1':'Warum T5?','q2':'Tour-Logik','q3':'T8 L2-Regel','q4':'T10 Kalibr.','q5':'Puffer?',
+  'qs1':'Warum wurde T5 empfohlen?',
+  'qs2':'Erkläre die Tour-Optimierung',
+  'qs3':'Wann darf T8 eigenständig fahren?',
+  'qs4':'T10 Kalibrierung — was tun?',
+  'qs5':'Wie wird der Puffer berechnet?',
+  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · Demo v2 · 516 Tests grün',
+  'sys-lang':'Deutsch'
+},
+en:{
+  'title':'Field Service AI — Demo · Medtronic GmbH',
+  'hdr-title':'AI Field Service Demo',
+  'hdr-sub':'Medtronic GmbH · Service & Repair',
+  'tab0':'Work Order Demo','tab1':'Tour Optimization','tab2':'Cross-Training NRW',
+  'tab3':'Calibration Warnings','tab4':'Dashboard',
+  'step0':'1 Receipt','step1':'2 AI Scoring','step2':'3 Assignment',
+  'step3':'4 Preparation','step4':'5 Execution','step5':'6 Completion','step6':'7 QA + Email',
+  'status':['Order NEW','AI Scoring','Assigned','Preparation','In Progress','Completed','QA Complete'],
+  's0-info':'New order from due date logic · Status: NEW · No technician assigned',
+  's0-card':'Work Order',
+  's0-btn':'Start AI Scoring →',
+  's1-info':'Scoring: Competency 40% + Travel 35% + Utilization 25% · EC300 = Big Capital → L3 required',
+  's1-card':'Top-3 Recommendation',
+  's1-hint':'AI recommendation: T5 (Score 90.3) · Click to select',
+  's1-sel-info':'Tour recommendation: T5 handles EC300 + NIM — L3/L2 covered. Saves 1 separate trip.',
+  's2-info':'T5 handles EC300 Legend + NIM4CM01 — bundled assignment.',
+  's2-card':'Assignment Planning — Time Calculation',
+  's3-info':'T5 received push notification. All info ready.',
+  's3-card':'Customer Information — T5 Oberhausen',
+  's3-card2':'Trunk Stock Checklist',
+  's4-card':'Assignment Log · IN PROGRESS',
+  's4-card2':'Measurements EC300 + NIM',
+  's5-info':'Work order can only be closed when all mandatory documents are present.',
+  's5-card':'Mandatory Documents — EC300 + NIM',
+  's5-doc0':'Measurement report EC300',
+  's5-doc1':'Measurement report NIM',
+  's5-doc2':'Service report (both devices)',
+  's5-doc3':'TDS EC300 + TDS NIM',
+  's5-doc4':'Signature Dr. Müller',
+  's5-close':'Close Work Order',
+  's5-success':'Both Work Orders successfully closed',
+  's6-info':'Automatic QA run · Mon 07.04.2026 · 07:00',
+  's6-card':'QA Result',
+  'btn-back':'← Back','btn-next-demo':'↺ New Demo',
+  'api-title':'API key required',
+  'api-sub':'Anthropic API key for real AI chat',
+  'api-save':'Save','api-demo':'Demo mode',
+  'chat-title':'Field Service Assistant','chat-sub':'Claude-powered · Medtronic',
+  'chat-welcome':'Hello! I know all 14 technicians, 1,985 devices, tour optimization and planning rules. What would you like to know?',
+  'chat-placeholder':'Ask a question...',
+  'send':'Send',
+  'q1':'Why T5?','q2':'Tour logic','q3':'T8 L2 rule','q4':'T10 calib.','q5':'Buffer?',
+  'qs1':'Why was T5 recommended?',
+  'qs2':'Explain the tour optimization',
+  'qs3':'When can T8 work independently?',
+  'qs4':'T10 calibration — what to do?',
+  'qs5':'How is the buffer calculated?',
+  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · Demo v2 · 516 Tests passed',
+  'sys-lang':'English'
+}};
+
+function applyDemoLang(l){
+  const t = DT[l];
+  document.title = t['title'];
+  document.documentElement.lang = l;
+
+  // Header
+  setText('hdr-title', t['hdr-title']);
+  setText('hdr-sub', t['hdr-sub']);
+
+  // Tabs
+  document.querySelectorAll('.tabbar .tab').forEach((tab, i) => {
+    tab.textContent = t['tab'+i] || tab.textContent;
+  });
+
+  // Steps
+  document.querySelectorAll('.stepbar .step').forEach((step, i) => {
+    step.textContent = t['step'+i] || step.textContent;
+  });
+
+  // Status badge
+  statusLabels = t['status'];
+
+  // Step content
+  setHTML('s0-info-el', '<div class="info info-red">'+t['s0-info']+'</div>');
+  setText('s0-card-title', t['s0-card']);
+  setText('s0-btn', t['s0-btn']);
+  setHTML('s1-info-el', '<div class="info info-blue">'+t['s1-info']+'</div>');
+  setText('s1-card-title', t['s1-card']);
+  setText('s1-hint-el', t['s1-hint']);
+  setText('selInfo', t['s1-sel-info']);
+  setHTML('s2-info-el', '<div class="info info-green">'+t['s2-info']+'</div>');
+  setText('s2-card-title', t['s2-card']);
+  setHTML('s3-info-el', '<div class="info info-green">'+t['s3-info']+'</div>');
+  setText('s3-card-title', t['s3-card']);
+  setText('s3-card2-title', t['s3-card2']);
+  setText('s4-card-title', t['s4-card']);
+  setText('s4-card2-title', t['s4-card2']);
+  setHTML('s5-info-el', '<div class="info info-warn">'+t['s5-info']+'</div>');
+  setText('s5-card-title', t['s5-card']);
+  setText('doc0-lbl', t['s5-doc0']);
+  setText('doc1-lbl', t['s5-doc1']);
+  setText('doc2-lbl', t['s5-doc2']);
+  setText('doc3-lbl', t['s5-doc3']);
+  setText('doc4-lbl', t['s5-doc4']);
+  setText('closeBtn', t['s5-close']);
+  setText('closeSuccess-txt', t['s5-success']);
+  setHTML('s6-info-el', '<div class="info info-blue">'+t['s6-info']+'</div>');
+  setText('s6-card-title', t['s6-card']);
+
+  // Buttons
+  document.querySelectorAll('.btn-back').forEach(b => b.textContent = t['btn-back']);
+  setText('s0-next-btn', t['s0-btn']);
+  setText('new-demo-btn', t['btn-next-demo']);
+
+  // API box
+  setText('api-title-el', t['api-title']);
+  setText('api-sub-el', t['api-sub']);
+  setText('api-save-btn', t['api-save']);
+  setText('api-demo-btn', t['api-demo']);
+
+  // Chat
+  setText('chat-title-el', t['chat-title']);
+  setText('chat-sub-el', t['chat-sub']);
+  document.getElementById('chatInput').placeholder = t['chat-placeholder'];
+  setText('send-btn-el', t['send']);
+
+  // Quick buttons
+  const qbtns = document.querySelectorAll('.qbtn');
+  ['q1','q2','q3','q4','q5'].forEach((k,i) => { if(qbtns[i]) qbtns[i].textContent = t[k]; });
+
+  // Footer
+  setText('ftr-el', t['ftr']);
+
+  // AI system lang note
+  aiLang = l;
+}
+
+function setText(id, val){ const el=document.getElementById(id); if(el) el.textContent=val; }
+function setHTML(id, val){ const el=document.getElementById(id); if(el) el.innerHTML=val; }
+
+let aiLang = urlLang;
+
+function getSystem(){
+  const lang = aiLang === 'en' ? 'English' : 'Deutsch';
+  return `You are the AI Field Service Assistant for Medtronic GmbH Service & Repair Germany. TECHNICIANS: T1(Obertshausen,Hugo KA), T2(Wehingen,BaWü), T3(Weimar,Thuringia), T4(Erlangen,Bavaria), T5(Oberhausen,NRW,L3), T6(Schenefeld,Hugo KA,North), T7(Wildenberg,Bavaria), T8(Hennef,NRW,L2), T9(Hamburg), T10(Balingen,Hugo KA,BaWü), T11(Gangelt,Hugo KA,NRW), T12(Frankfurt), T13(Meckenheim,NRW), T14(Waldachtal,BaWü). SCORING: Competency 40%+Travel 35%+Utilization 25%. BASIS: 32h Mon-Thu. Friday=HomeOffice. Hugo KA: 25.6h (20% reserve). SMALL CAP(L2 STK): NIM,PROG,ACT,IPC,EC300,AEX,Neuro. HF-SURG(L2 STK/PM, L3 Repair). OR-CLUSTER(L3 all): Hugo,Mazor,Stealth,O-arm. CARDIAC(L3): Affera,ArcticFront,Nitron. MONITORING: STK L2, PM+Repair L3. DIGITAL: L2 all. BUFFER: Base 30+UniClinic 20+LargeDevice 30+MTech 15min. TOUR: Synergy 2nd device 70% time, setup time 30min. Max 1 overnight/week. CALIBRATION: T10 MM-HUGO-002 expires 10.04 (14 days!), T5 MM-NEURO-001 15.04 (19 days). Answer in ${lang}, concise and specific. Max 4-5 sentences.`;
+}
+
+let apiKey=localStorage.getItem('fs_api_key')||'';
+let hist=[];
+if(apiKey)document.getElementById('apiSetup').style.display='none';
+
+function saveKey(){
+  const k=document.getElementById('apiKey').value.trim();
+  if(k){apiKey=k;localStorage.setItem('fs_api_key',k);document.getElementById('apiSetup').style.display='none';addMsg('API-Key gespeichert ✓','ai');}
+}
+function addMsg(txt,role){
+  const d=document.createElement('div');
+  d.className='msg msg-'+role;d.textContent=txt;
+  const m=document.getElementById('chatMsgs');
+  m.appendChild(d);m.scrollTop=m.scrollHeight;return d;
+}
+async function sendMessage(){
+  const inp=document.getElementById('chatInput');
+  const txt=inp.value.trim();if(!txt)return;
+  inp.value='';addMsg(txt,'user');hist.push({role:'user',content:txt});
+  const btn=document.getElementById('sendBtn');btn.disabled=true;
+  const td=addMsg('…','ai thinking');
+  if(!apiKey){td.className='msg msg-ai';td.textContent='Bitte zuerst API-Key eingeben.';btn.disabled=false;return;}
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:getSystem(),messages:hist})});
+    const data=await r.json();
+    const ans=data.content?.[0]?.text||'Keine Antwort.';
+    td.className='msg msg-ai';td.textContent=ans;
+    hist.push({role:'assistant',content:ans});
+  }catch(e){td.className='msg msg-ai';td.textContent='Fehler: '+e.message;}
+  btn.disabled=false;
+}
+function sendQuick(key){
+  const t = DT[aiLang];
+  const qs = {'q1':'qs1','q2':'qs2','q3':'qs3','q4':'qs4','q5':'qs5'};
+  document.getElementById('chatInput').value = t[qs[key]] || key;
+  sendMessage();
+}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+
+function showTab(n){
+  document.querySelectorAll('.tabbar .tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  document.querySelectorAll('.main>.left>.screen').forEach((s,i)=>s.classList.toggle('active',i===n));
+}
+
+const TECH_INFO=[
+  'Tour-Empfehlung: T5 übernimmt EC300 + NIM — L3/L2 abgedeckt. Spart 1 Einzelfahrt.',
+  'Achtung: T8 L2 nur für NIM. EC300 Big Capital → L3 Pflicht. Separate Einsätze nötig.',
+  'T10 Hugo Key Account — hohe Fahrzeit 301km. Nur wenn T5 nicht verfügbar. Kalibrierung prüfen!'
+];
+let selTech=0;
+function selectTech(i){
+  selTech=i;
+  [0,1,2].forEach(n=>{
+    document.getElementById('tc'+n).classList.toggle('best',n===i);
+    document.getElementById('sel'+n).style.display=n===i?'':'none';
+  });
+  document.getElementById('selInfo').textContent=TECH_INFO[i];
+  document.getElementById('btnSelect').textContent=['T5','T8','T10'][i]+' zuweisen →';
+}
+
+const STATUS_LABELS=['Auftrag NEU','KI-Scoring','Zugewiesen','Vorbereitung','In Arbeit','Abgeschlossen','QA Abgeschlossen'];
+const docs=[false,false,false,false,false];
+function goStep(n){
+  document.querySelectorAll('#main0 .screen').forEach((s,i)=>s.classList.toggle('active',i===n));
+  document.querySelectorAll('.stepbar .step').forEach((s,i)=>{s.classList.remove('active','done');if(i<n)s.classList.add('done');if(i===n)s.classList.add('active');});
+  document.getElementById('statusBadge').textContent=STATUS_LABELS[n];
+}
+function toggleDoc(i){
+  docs[i]=!docs[i];
+  const cb=document.getElementById('c'+i);
+  cb.classList.toggle('checked',docs[i]);cb.innerHTML=docs[i]?'✓':'';
+  const req=docs[0]&&docs[1]&&docs[2]&&docs[3];
+  const cnt=[0,1,2,3].filter(x=>docs[x]).length;
+  document.getElementById('docTxt').textContent=cnt+' von 4 Pflichtdokumenten';
+  document.getElementById('docBar').style.width=Math.round(cnt/4*100)+'%';
+  document.getElementById('docWarn').style.display=req?'none':'block';
+  document.getElementById('docOk').style.display=req?'block':'none';
+}
+function closeWO(){
+  if(!docs[0]||!docs[1]||!docs[2]||!docs[3]){document.getElementById('docWarn').style.display='block';return;}
+  document.getElementById('closeBtn').style.display='none';
+  document.getElementById('docOk').style.display='none';
+  document.getElementById('closeSuccess').style.display='block';
+  document.getElementById('statusBadge').textContent=DT[aiLang]['status'][5];
+}
+function resetDemo(){
+  docs.fill(false);
+  for(let i=0;i<5;i++){const cb=document.getElementById('c'+i);if(cb){cb.classList.remove('checked');cb.innerHTML='';}}
+  const t=DT[aiLang];
+  document.getElementById('docTxt').textContent=aiLang==='en'?'0 of 4 mandatory documents':'0 von 4 Pflichtdokumenten';
+  document.getElementById('docBar').style.width='0%';
+  document.getElementById('docWarn').style.display='none';
+  document.getElementById('docOk').style.display='none';
+  document.getElementById('closeBtn').style.display='';
+  document.getElementById('closeSuccess').style.display='none';
+  document.getElementById('statusBadge').textContent=t['status'][0];
+}
+
+function toggleDemoLang(){
+  aiLang = aiLang === 'de' ? 'en' : 'de';
+  applyDemoLang(aiLang);
+  document.getElementById('lang-btn').textContent = aiLang === 'de' ? 'EN' : 'DE';
+  // Reset chat with new language welcome
+  document.getElementById('chatMsgs').innerHTML =
+    '<div class="msg msg-ai">'+DT[aiLang]['chat-welcome']+'</div>';
+  hist = [];
+}
+// ── INIT LANGUAGE — direkt, kein DOMContentLoaded ─────────────────────────
+applyDemoLang(urlLang);
+document.getElementById('lang-btn').textContent = urlLang === 'de' ? 'EN' : 'DE';
+document.getElementById('chatMsgs').innerHTML =
+  '<div class="msg msg-ai">'+DT[urlLang]['chat-welcome']+'</div>';
+</script>
+
+<!-- PASSWORD PROTECTION -->
+<div id="pw-overlay" style="position:fixed;inset:0;z-index:9998;background:#000810;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.25)">Medtronic GmbH · Field Service AI</div>
+  <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#00A3E0,#0072CE);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Zugangscode erforderlich</div>
+  <div style="display:flex;flex-direction:column;gap:.6rem;width:280px">
+    <input id="pw-input" type="password" placeholder="Passwort eingeben..." style="padding:.75rem 1rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;outline:none;width:100%" onkeydown="if(event.key==='Enter')checkPw()" oninput="document.getElementById('pw-err').style.display='none'">
+    <button onclick="checkPw()" style="padding:.75rem;background:linear-gradient(135deg,#0072CE,#00A3E0);border:none;border-radius:8px;color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">Zugang ↗</button>
+    <div id="pw-err" style="display:none;font-size:.75rem;color:#FF8080;text-align:center">Falsches Passwort</div>
+  </div>
+  <div style="font-size:.68rem;color:rgba(255,255,255,.18)">Vertraulich · Nur für autorisierte Personen</div>
+</div>
+<script>
+(function(){
+  var H='037453db72fb8a93ebe48d4ff52b1b493cdf56ef6a28240a65c6055b76d8f360';
+  var K='fsa_auth';
+  if(sessionStorage.getItem(K)===H){document.getElementById('pw-overlay').style.display='none';return;}
+  async function checkPw(){
+    var v=document.getElementById('pw-input').value;
+    var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));
+    var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+    if(h===H){sessionStorage.setItem(K,H);document.getElementById('pw-overlay').style.display='none';}
+    else{document.getElementById('pw-err').style.display='block';document.getElementById('pw-input').value='';document.getElementById('pw-input').focus();}
+  }
+  window.checkPw=checkPw;
+  document.getElementById('pw-input').focus();
+})();
+</script>
+
+</body>
+</html>
