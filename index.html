@@ -753,6 +753,7 @@ footer{
     <button onclick="goTo('prototyp')" id="nl-proto">Prototyp</button>
     <button onclick="openDemo()" id="nl-demo-nav">Demo</button>
     <button onclick="goTo('roadmap')" id="nl-road">Roadmap</button>
+    <button onclick="location.href='dashboard.html'" id="nl-dash" style="color:rgba(255,255,255,.55);background:none;border:none;cursor:pointer;font-size:.78rem;letter-spacing:.02em;font-family:'Plus Jakarta Sans',sans-serif;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.55)'">Dashboard</button>
   </div>
   <div class="nav-right">
     <button class="nav-lang-btn" id="lang-tog" onclick="toggleLang()">EN</button>
@@ -1289,7 +1290,7 @@ footer{
 /* ── TRANSLATIONS ──────────────────────────────────────────────────────── */
 const TX = {
 de:{
-  'nl-feat':'Features','nl-workflow':'Workflow','nl-algo':'Algorithmus','nl-proto':'Prototyp','nl-demo-nav':'Demo','nl-road':'Roadmap',
+  'nl-feat':'Features','nl-workflow':'Workflow','nl-algo':'Algorithmus','nl-proto':'Prototyp','nl-demo-nav':'Demo','nl-road':'Roadmap','nl-dash':'Dashboard',
   'nav-cta':'Demo starten','lang-tog':'EN',
   'h-eye':'Medtronic GmbH · Service & Repair Deutschland','h-t2':'Field Service Assistant',
   'btn-demo':'Demo ansehen ↗','btn-proto':'Prototyp erkunden',
@@ -1359,7 +1360,7 @@ de:{
   'cfg-nt':'⚙ Werte aus <code>config.py</code> (Pilotphase automatisch)'
 },
 en:{
-  'nl-feat':'Features','nl-workflow':'Workflow','nl-algo':'Algorithm','nl-proto':'Prototype','nl-demo-nav':'Demo','nl-road':'Roadmap',
+  'nl-feat':'Features','nl-workflow':'Workflow','nl-algo':'Algorithm','nl-proto':'Prototype','nl-demo-nav':'Demo','nl-road':'Roadmap','nl-dash':'Dashboard',
   'nav-cta':'Start Demo','lang-tog':'DE',
   'h-eye':'Medtronic GmbH · Service & Repair Germany','h-t2':'Field Service Assistant',
   'btn-demo':'View Demo ↗','btn-proto':'Explore Prototype',
