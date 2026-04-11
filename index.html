@@ -745,13 +745,33 @@ footer{
 
 <!-- ── NAV ─────────────────────────────────────────────────────────────── -->
 <nav id="nav">
-  <button class="nav-brand" onclick="goTo('top')">Field Service AI</button>
+  <button class="nav-brand" onclick="goTo('top')" style="display:flex;align-items:center;gap:.6rem;background:none;border:none;cursor:pointer;padding:0"><svg width="30" height="30" viewBox="0 0 152 152" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+  <polygon points="76,2 140,38 140,114 76,150 12,114 12,38" fill="none" stroke="#0072CE" stroke-width="2" opacity="0.3"/>
+  <polygon points="76,14 130,47 130,105 76,138 22,105 22,47" fill="#000D2A" stroke="#0072CE" stroke-width="2"/>
+  <polygon points="76,30 114,52 114,100 76,122 38,100 38,52" fill="#001845" stroke="#00A3E0" stroke-width="1.5"/>
+  <line x1="76" y1="34" x2="76" y2="64" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <line x1="110" y1="54" x2="83" y2="69" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <line x1="110" y1="98" x2="83" y2="83" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <line x1="76" y1="118" x2="76" y2="88" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <line x1="42" y1="98" x2="69" y2="83" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <line x1="42" y1="54" x2="69" y2="69" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <circle cx="76" cy="34" r="7" fill="#6EC6FF"/>
+  <circle cx="110" cy="54" r="7" fill="#00A3E0"/>
+  <circle cx="110" cy="98" r="7" fill="#0072CE"/>
+  <circle cx="76" cy="118" r="7" fill="#00A3E0"/>
+  <circle cx="42" cy="98" r="7" fill="#0072CE"/>
+  <circle cx="42" cy="54" r="7" fill="#6EC6FF"/>
+  <circle cx="76" cy="76" r="14" fill="#0057A8" stroke="#00A3E0" stroke-width="2"/>
+  <circle cx="76" cy="76" r="8" fill="#00A3E0"/>
+  <circle cx="76" cy="76" r="4" fill="#6EC6FF"/>
+</svg><span style="font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;background:linear-gradient(90deg,#fff,#6EC6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Field Service AI</span></button>
   <div class="nav-links">
     <button onclick="goTo('features')" id="nl-feat">Features</button>
     <button onclick="goTo('workflow')" id="nl-workflow">Workflow</button>
     <button onclick="goTo('scoring')" id="nl-algo">Algorithmus</button>
     <button onclick="goTo('prototyp')" id="nl-proto">Prototyp</button>
     <button onclick="openDemo()" id="nl-demo-nav">Demo</button>
+    <button onclick="location.href='dashboard.html'" id="nl-dash" style="color:rgba(255,255,255,.55);background:none;border:none;cursor:pointer;font-size:.78rem;letter-spacing:.02em;font-family:'Plus Jakarta Sans',sans-serif;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.55)'">Dashboard</button>
     <button onclick="goTo('roadmap')" id="nl-road">Roadmap</button>
   </div>
   <div class="nav-right">
@@ -1585,6 +1605,7 @@ const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.targ
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 </script>
 
+
 <!-- PASSWORD PROTECTION -->
 <div id="pw-overlay" style="position:fixed;inset:0;z-index:99999;background:#000810;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;font-family:'Plus Jakarta Sans',sans-serif">
   <div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.25)">Medtronic GmbH · Field Service AI</div>
@@ -1604,29 +1625,19 @@ document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
     var ov=document.getElementById('pw-overlay');
     if(sessionStorage.getItem(K)===H){ov.style.display='none';return;}
     ov.style.display='flex';
-    document.getElementById('pw-input').focus();
+    setTimeout(function(){var i=document.getElementById('pw-input');if(i)i.focus();},100);
   }
   async function checkPw(){
     var v=document.getElementById('pw-input').value;
     var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));
     var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
-    if(h===H){
-      sessionStorage.setItem(K,H);
-      document.getElementById('pw-overlay').style.display='none';
-    } else {
-      document.getElementById('pw-err').style.display='block';
-      document.getElementById('pw-input').value='';
-      document.getElementById('pw-input').focus();
-    }
+    if(h===H){sessionStorage.setItem(K,H);document.getElementById('pw-overlay').style.display='none';}
+    else{document.getElementById('pw-err').style.display='block';document.getElementById('pw-input').value='';document.getElementById('pw-input').focus();}
   }
   window.checkPw=checkPw;
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',initPw);
-  } else {
-    initPw();
-  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initPw);}
+  else{initPw();}
 })();
 </script>
-
 </body>
 </html>

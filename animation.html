@@ -196,7 +196,26 @@ body::before{
 <div class="wrap">
 
 <div class="vid-head">
-  <div class="brand">Medtronic · Field Service AI</div>
+  <div class="brand" style="display:flex;align-items:center;gap:.5rem"><svg width="30" height="30" viewBox="0 0 152 152" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+  <polygon points="76,2 140,38 140,114 76,150 12,114 12,38" fill="none" stroke="#0072CE" stroke-width="2" opacity="0.3"/>
+  <polygon points="76,14 130,47 130,105 76,138 22,105 22,47" fill="#000D2A" stroke="#0072CE" stroke-width="2"/>
+  <polygon points="76,30 114,52 114,100 76,122 38,100 38,52" fill="#001845" stroke="#00A3E0" stroke-width="1.5"/>
+  <line x1="76" y1="34" x2="76" y2="64" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <line x1="110" y1="54" x2="83" y2="69" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <line x1="110" y1="98" x2="83" y2="83" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <line x1="76" y1="118" x2="76" y2="88" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <line x1="42" y1="98" x2="69" y2="83" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <line x1="42" y1="54" x2="69" y2="69" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+  <circle cx="76" cy="34" r="7" fill="#6EC6FF"/>
+  <circle cx="110" cy="54" r="7" fill="#00A3E0"/>
+  <circle cx="110" cy="98" r="7" fill="#0072CE"/>
+  <circle cx="76" cy="118" r="7" fill="#00A3E0"/>
+  <circle cx="42" cy="98" r="7" fill="#0072CE"/>
+  <circle cx="42" cy="54" r="7" fill="#6EC6FF"/>
+  <circle cx="76" cy="76" r="14" fill="#0057A8" stroke="#00A3E0" stroke-width="2"/>
+  <circle cx="76" cy="76" r="8" fill="#00A3E0"/>
+  <circle cx="76" cy="76" r="4" fill="#6EC6FF"/>
+</svg><span style="font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;background:linear-gradient(90deg,#fff,#6EC6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Field Service AI</span></div>
   <div class="step-pill" id="stepLabel">Schritt 1 / 8</div>
   <button id="lang-btn" onclick="toggleAnimLang()" style="font-size:.68rem;color:rgba(255,255,255,.35);cursor:pointer;letter-spacing:.1em;border:1px solid rgba(255,255,255,.1);padding:.22rem .65rem;border-radius:5px;background:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s" onmouseover="this.style.color='#00A3E0';this.style.borderColor='rgba(0,163,224,.4)'" onmouseout="this.style.color='rgba(255,255,255,.35)';this.style.borderColor='rgba(255,255,255,.1)'">EN</button>
 </div>
@@ -334,8 +353,8 @@ body::before{
   <div class="info info-green">Mo 07.04.2026 · 07:04 Uhr · vollständig → Mail automatisch</div>
   <div class="mail">
     <div class="mail-h">
-      <div><strong style="color:var(--frost)">Von:</strong> service.repair@medtronic.com</div>
-      <div><strong style="color:var(--frost)">An:</strong> s.mueller@ukbonn.de</div>
+      <div><strong style="color:var(--frost)">Von:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2f5c4a5d59464c4a015d4a5f4e465d6f424a4b5b5d4041464c014c4042">[email&#160;protected]</a></div>
+      <div><strong style="color:var(--frost)">An:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f784d99a82929b9b9285b7829c95989999d99392">[email&#160;protected]</a></div>
       <div><strong style="color:var(--frost)">Betreff:</strong> Serviceberichte STK — EC300 + NIM — UKB Bonn</div>
     </div>
     <div class="mail-b">
@@ -380,7 +399,7 @@ body::before{
 
 <div class="footer">AI Assisted Field Service Assistant · Medtronic GmbH Service &amp; Repair · 516 Tests grün</div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const AT = {
 de:{
   'brand':'Medtronic · Field Service AI',
@@ -598,19 +617,13 @@ resetTimer();
       sessionStorage.setItem(K,H);
       document.getElementById('pw-overlay').style.display='none';
     } else {
-      document.getElementById('pw-err').style.display='block';
-      document.getElementById('pw-input').value='';
-      document.getElementById('pw-input').focus();
+
     }
   }
   window.checkPw=checkPw;
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',initPw);
-  } else {
-    initPw();
-  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initPw);}
+  else{initPw();}
 })();
 </script>
-
 </body>
 </html>
