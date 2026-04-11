@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Field Service AI â Medtronic GmbH</title>
+<title>Field Service AI — Medtronic GmbH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ââ RESET & ROOT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ RESET & ROOT ══════════════════════════════════════════════════════════ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
   --ink:   #000810;
@@ -33,7 +33,7 @@
 html{scroll-behavior:smooth}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--ink);color:var(--white);overflow-x:hidden;cursor:default}
 
-/* ââ GRAIN TEXTURE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ GRAIN TEXTURE ═════════════════════════════════════════════════════════ */
 body::before{
   content:'';pointer-events:none;
   position:fixed;inset:0;z-index:9999;
@@ -43,7 +43,7 @@ body::before{
   mix-blend-mode:overlay;
 }
 
-/* ââ LANGUAGE SPLASH âââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ LANGUAGE SPLASH ═══════════════════════════════════════════════════════ */
 #splash{
   position:fixed;inset:0;z-index:2000;
   background:var(--ink);
@@ -82,7 +82,7 @@ body::before{
 .sp-flag{font-size:1.4rem;display:block;margin-bottom:.4rem}
 .sp-name{display:block;font-size:.68rem;color:var(--mute);font-weight:400;font-family:'Plus Jakarta Sans',sans-serif;margin-top:.2rem;letter-spacing:.04em}
 
-/* ââ NAVIGATION ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ NAVIGATION ════════════════════════════════════════════════════════════ */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:1000;
   height:56px;display:flex;align-items:center;justify-content:space-between;
@@ -125,7 +125,7 @@ nav.scrolled{background:rgba(0,8,16,.9)}
 }
 .nav-demo-btn:hover{opacity:.88;transform:scale(1.03)}
 
-/* ââ HERO ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ HERO ══════════════════════════════════════════════════════════════════ */
 .hero{
   min-height:100vh;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -244,7 +244,7 @@ nav.scrolled{background:rgba(0,8,16,.9)}
 }
 .stat-label{font-size:.68rem;color:var(--mute);margin-top:.3rem;letter-spacing:.08em;text-transform:uppercase}
 
-/* ââ SECTION SYSTEM ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ SECTION SYSTEM ════════════════════════════════════════════════════════ */
 section{padding:clamp(5rem,10vw,9rem) clamp(1.5rem,5vw,3rem)}
 .sec-inner{max-width:1140px;margin:0 auto}
 
@@ -281,7 +281,7 @@ section{padding:clamp(5rem,10vw,9rem) clamp(1.5rem,5vw,3rem)}
   margin:0;
 }
 
-/* ââ FEATURE CARDS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ FEATURE CARDS ═════════════════════════════════════════════════════════ */
 .feat-grid{
   display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
   margin-top:3.5rem;
@@ -324,7 +324,7 @@ section{padding:clamp(5rem,10vw,9rem) clamp(1.5rem,5vw,3rem)}
   letter-spacing:.04em;
 }
 
-/* ââ SCORING âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ SCORING ═══════════════════════════════════════════════════════════════ */
 .score-layout{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
 .score-bars{display:flex;flex-direction:column;gap:2rem;margin-top:2.5rem}
 .sbar{display:flex;flex-direction:column;gap:.5rem}
@@ -388,7 +388,7 @@ section{padding:clamp(5rem,10vw,9rem) clamp(1.5rem,5vw,3rem)}
 }
 .donut-lbl{font-size:.65rem;color:var(--mute);letter-spacing:.12em;text-transform:uppercase;margin-top:.1rem}
 
-/* ââ CLUSTER TABLE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ CLUSTER TABLE ═════════════════════════════════════════════════════════ */
 .cluster-wrap{margin-top:3rem;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line)}
 .cluster-table{width:100%;border-collapse:collapse;font-size:.8rem}
 .cluster-table thead tr{background:rgba(0,87,168,.2)}
@@ -408,7 +408,7 @@ section{padding:clamp(5rem,10vw,9rem) clamp(1.5rem,5vw,3rem)}
 .lvl-3{background:rgba(204,0,0,.15);color:#FF8080;border:1px solid rgba(204,0,0,.25)}
 .lvl-x{color:rgba(255,255,255,.2);font-size:.75rem}
 
-/* ââ ROI SECTION âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ ROI SECTION ═══════════════════════════════════════════════════════════ */
 .roi-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem}
 .roi-calc{display:flex;flex-direction:column;gap:.8rem}
 .roi-row-item{
@@ -441,7 +441,7 @@ section{padding:clamp(5rem,10vw,9rem) clamp(1.5rem,5vw,3rem)}
 .pilot-cta-sub{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#5EDD9F;margin-bottom:.4rem}
 .pilot-cta-main{font-size:.95rem;font-weight:600;color:var(--white)}
 
-/* ââ PROTOTYPE STATUS ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ PROTOTYPE STATUS ══════════════════════════════════════════════════════ */
 .proto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
 .proto-card{
   background:var(--white);border-radius:var(--r-md);padding:2rem;
@@ -458,7 +458,7 @@ section{padding:clamp(5rem,10vw,9rem) clamp(1.5rem,5vw,3rem)}
 .proto-divider{height:1px;background:rgba(0,48,135,.08);margin:1.2rem 0}
 .proto-desc{font-size:.84rem;color:var(--text);line-height:1.65}
 
-/* ââ DEMO SECTION ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ DEMO SECTION ══════════════════════════════════════════════════════════ */
 .demo-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:2rem;margin-top:3rem}
 .demo-form{
   background:var(--glass);backdrop-filter:blur(24px);
@@ -532,7 +532,7 @@ section{padding:clamp(5rem,10vw,9rem) clamp(1.5rem,5vw,3rem)}
 .demo-bundle{background:rgba(94,221,159,.07);border:1px solid rgba(94,221,159,.2);color:#5EDD9F}
 .demo-warn{background:rgba(255,139,0,.07);border:1px solid rgba(255,139,0,.2);color:#FFB347}
 
-/* ââ ROADMAP âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ ROADMAP ═══════════════════════════════════════════════════════════════ */
 .roadmap-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:3rem}
 .timeline{display:flex;flex-direction:column;gap:0}
 .tl-item{display:flex;gap:1.5rem;align-items:flex-start}
@@ -563,9 +563,9 @@ section{padding:clamp(5rem,10vw,9rem) clamp(1.5rem,5vw,3rem)}
 .req-title.navy{color:var(--white)}
 .req-list{list-style:none;display:flex;flex-direction:column;gap:.45rem}
 .req-list li{font-size:.8rem;color:var(--dim);display:flex;align-items:flex-start;gap:.5rem;line-height:1.5}
-.req-list li::before{content:'â';color:var(--sky);flex-shrink:0;font-size:.72rem;margin-top:.1rem}
+.req-list li::before{content:'→';color:var(--sky);flex-shrink:0;font-size:.72rem;margin-top:.1rem}
 
-/* ââ CTA âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ CTA ═══════════════════════════════════════════════════════════════════ */
 .cta-section{
   padding:8rem clamp(1.5rem,5vw,3rem);
   background:linear-gradient(135deg,#000D24 0%,#001435 40%,#002050 100%);
@@ -604,14 +604,14 @@ section{padding:clamp(5rem,10vw,9rem) clamp(1.5rem,5vw,3rem)}
 .cta-step-l{font-size:.72rem;color:var(--mute);margin-top:.2rem}
 .cta-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
 
-/* ââ FOOTER ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ FOOTER ════════════════════════════════════════════════════════════════ */
 footer{
   padding:2rem clamp(1.5rem,5vw,3rem);text-align:center;
   background:var(--ink);font-size:.72rem;color:rgba(255,255,255,.18);
   border-top:1px solid rgba(255,255,255,.04);
 }
 
-/* ââ CONFIG PANEL ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ CONFIG PANEL ══════════════════════════════════════════════════════════ */
 #cfg-btn{
   position:fixed;bottom:1.8rem;left:1.8rem;z-index:500;
   width:44px;height:44px;border-radius:50%;
@@ -666,7 +666,7 @@ footer{
 .cfg-note{padding:.5rem 1.6rem 1.2rem;font-size:.68rem;color:rgba(255,255,255,.18)}
 .cfg-note code{color:rgba(0,163,224,.5);font-size:.66rem}
 
-/* ââ PREVIEW BADGE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ PREVIEW BADGE ═════════════════════════════════════════════════════════ */
 .pbadge{
   position:fixed;bottom:1.8rem;right:1.8rem;z-index:300;
   background:rgba(0,163,224,.1);border:1px solid rgba(0,163,224,.2);
@@ -674,12 +674,12 @@ footer{
   padding:.35rem 1rem;font-size:.68rem;color:var(--sky);letter-spacing:.1em;
 }
 
-/* ââ SCROLL REVEAL âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ SCROLL REVEAL ═════════════════════════════════════════════════════════ */
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .75s ease,transform .75s ease}
 .reveal.vis{opacity:1;transform:translateY(0)}
 .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
 
-/* ââ ANIMATIONS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ ANIMATIONS ════════════════════════════════════════════════════════════ */
 @keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 @keyframes breathe{0%,100%{transform:scale(1) translate(0,0);opacity:.7}50%{transform:scale(1.08) translate(-10px,10px);opacity:1}}
 
@@ -708,7 +708,7 @@ footer{
   letter-spacing:.06em;
 }
 
-/* ââ RESPONSIVE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ══ RESPONSIVE ════════════════════════════════════════════════════════════ */
 @media(max-width:900px){
   .feat-grid{grid-template-columns:1fr 1fr}
   .score-layout,.demo-grid,.roadmap-grid,.roi-grid{grid-template-columns:1fr}
@@ -727,23 +727,23 @@ footer{
 </head>
 <body>
 
-<!-- ââ LANGUAGE SPLASH âââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── LANGUAGE SPLASH ─────────────────────────────────────────────────── -->
 <div id="splash">
   <div class="sp-brand">Medtronic GmbH · Service &amp; Repair Deutschland</div>
   <div class="sp-wordmark">AI Assisted<br>Field Service Assistant</div>
   <div class="sp-line"></div>
-  <div class="sp-q" id="sp-q">Sprache wÃ¤hlen / Select language</div>
+  <div class="sp-q" id="sp-q">Sprache wählen / Select language</div>
   <div class="sp-btns">
     <button class="sp-btn" onclick="setLang('de')">
-      <span class="sp-flag">ð©ðª</span>DE<span class="sp-name">Deutsch</span>
+      <span class="sp-flag">🇩🇪</span>DE<span class="sp-name">Deutsch</span>
     </button>
     <button class="sp-btn" onclick="setLang('en')">
-      <span class="sp-flag">ð¬ð§</span>EN<span class="sp-name">English</span>
+      <span class="sp-flag">🇬🇧</span>EN<span class="sp-name">English</span>
     </button>
   </div>
 </div>
 
-<!-- ââ NAV âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── NAV ─────────────────────────────────────────────────────────────── -->
 <nav id="nav">
   <button class="nav-brand" onclick="goTo('top')">Field Service AI</button>
   <div class="nav-links">
@@ -760,7 +760,7 @@ footer{
   </div>
 </nav>
 
-<!-- ââ HERO ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── HERO ────────────────────────────────────────────────────────────── -->
 <section class="hero sec-dark" id="top">
   <div class="orb orb-a"></div>
   <div class="orb orb-b"></div>
@@ -771,14 +771,14 @@ footer{
       <span class="t1">AI Assisted</span>
       <span class="t2" id="h-t2">Field Service Assistant</span>
     </h1>
-    <p class="hero-sub" id="h-sub">KI-gestÃ¼tztes Planungs- und Dispositionssystem. Entwickelt fÃ¼r <strong id="cfg-tech-hero">14</strong> Techniker, <strong id="cfg-dev-hero">1.985</strong> GerÃ¤te, <strong id="cfg-cli-hero">82</strong> Kliniken.</p>
+    <p class="hero-sub" id="h-sub">KI-gestütztes Planungs- und Dispositionssystem. Entwickelt für <strong id="cfg-tech-hero">14</strong> Techniker, <strong id="cfg-dev-hero">1.985</strong> Geräte, <strong id="cfg-cli-hero">82</strong> Kliniken.</p>
     <div class="hero-btns">
-      <button class="btn-glow" id="btn-demo" onclick="openDemo()">Demo ansehen â</button>
+      <button class="btn-glow" id="btn-demo" onclick="openDemo()">Demo ansehen ↗</button>
       <button class="btn-outline" id="btn-proto" onclick="goTo('prototyp')">Prototyp erkunden</button>
     </div>
     <div class="stats-row">
       <div class="stat-cell"><div class="stat-num" id="sn-tests">516</div><div class="stat-label" id="sl-tests">Tests bestanden</div></div>
-      <div class="stat-cell"><div class="stat-num" id="sn-dev">1.985</div><div class="stat-label" id="sl-dev">VertragsgerÃ¤te</div></div>
+      <div class="stat-cell"><div class="stat-num" id="sn-dev">1.985</div><div class="stat-label" id="sl-dev">Vertragsgeräte</div></div>
       <div class="stat-cell"><div class="stat-num" id="sn-tech">14</div><div class="stat-label" id="sl-tech">Techniker</div></div>
       <div class="stat-cell"><div class="stat-num" id="sn-dash">11/11</div><div class="stat-label" id="sl-dash">Dashboard Checks</div></div>
     </div>
@@ -787,89 +787,89 @@ footer{
 
 <div class="divider"></div>
 
-<!-- ââ FEATURES ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── FEATURES ────────────────────────────────────────────────────────── -->
 <section class="sec-deep" id="features">
   <div class="sec-inner">
     <div class="reveal">
       <div class="eyebrow" id="f-eye">Kernfunktionen</div>
       <h2 class="sec-heading" id="f-heading">Sechs Module.<br>Ein System.</h2>
-      <p class="sec-body" id="f-body">Von der Techniker-Empfehlung bis zur Hugo-KapazitÃ¤tsplanung â alles in einem Copilot integriert.</p>
+      <p class="sec-body" id="f-body">Von der Techniker-Empfehlung bis zur Hugo-Kapazitätsplanung — alles in einem Copilot integriert.</p>
     </div>
     <div class="feat-grid reveal d1">
       <div class="feat-card">
-        <div class="feat-icon">ð¯</div>
+        <div class="feat-icon">🎯</div>
         <div class="feat-title" id="ft1">Techniker-Empfehlung</div>
-        <div class="feat-desc" id="fd1">Scoring nach Kompetenz, Fahrzeit und Auslastung. Top-3 Kandidaten mit BegrÃ¼ndung in Sekunden.</div>
+        <div class="feat-desc" id="fd1">Scoring nach Kompetenz, Fahrzeit und Auslastung. Top-3 Kandidaten mit Begründung in Sekunden.</div>
         <span class="feat-badge">Kompetenz 40%</span>
       </div>
       <div class="feat-card">
-        <div class="feat-icon">ðº</div>
-        <div class="feat-title" id="ft2">Tour-BÃ¼ndelung</div>
-        <div class="feat-desc" id="fd2">2. GerÃ¤t gleiche Familie = 70% Zeit. RÃ¼stzeit 30 min zwischen Familien. MoâMi fÃ¼r OP-Kliniken.</div>
+        <div class="feat-icon">🗺</div>
+        <div class="feat-title" id="ft2">Tour-Bündelung</div>
+        <div class="feat-desc" id="fd2">2. Gerät gleiche Familie = 70% Zeit. Rüstzeit 30 min zwischen Familien. Mo–Mi für OP-Kliniken.</div>
         <span class="feat-badge">Fahrzeit 35%</span>
       </div>
       <div class="feat-card">
-        <div class="feat-icon">â±</div>
+        <div class="feat-icon">⏱</div>
         <div class="feat-title" id="ft3">Puffer & SLA</div>
-        <div class="feat-desc" id="fd3">Einschleusung, Uniklinik, GroÃgerÃ¤t â automatisch. 48h Repair-SLA immer Ã¼berwacht.</div>
+        <div class="feat-desc" id="fd3">Einschleusung, Uniklinik, Großgerät — automatisch. 48h Repair-SLA immer überwacht.</div>
         <span class="feat-badge">SLA-Watch</span>
       </div>
       <div class="feat-card">
-        <div class="feat-icon">ð§ </div>
+        <div class="feat-icon">🧠</div>
         <div class="feat-title" id="ft4">Kompetenz-Matching</div>
         <div class="feat-desc" id="fd4">6 Cluster mit L2/L3-Regeln. Kein Techniker wird einer Aufgabe ohne Qualifikation zugewiesen.</div>
         <span class="feat-badge" id="fb4">6 Cluster</span>
       </div>
       <div class="feat-card">
-        <div class="feat-icon">â¡</div>
+        <div class="feat-icon">⚡</div>
         <div class="feat-title" id="ft5">Hugo Key Account</div>
-        <div class="feat-desc" id="fd5">T1/T6/T10/T11: 25,6h KapazitÃ¤t, 20% Reserve. FrÃ¼hwarnung bei &gt;80% Auslastung.</div>
+        <div class="feat-desc" id="fd5">T1/T6/T10/T11: 25,6h Kapazität, 20% Reserve. Frühwarnung bei &gt;80% Auslastung.</div>
         <span class="feat-badge">Hugo KA</span>
       </div>
       <div class="feat-card">
-        <div class="feat-icon">ð</div>
+        <div class="feat-icon">📈</div>
         <div class="feat-title" id="ft6">Cross-Training-Radar</div>
-        <div class="feat-desc" id="fd6">KompetenzlÃ¼cken erkannt. Training-MaÃnahmen nach Abdeckungsrisiko priorisiert.</div>
+        <div class="feat-desc" id="fd6">Kompetenzlücken erkannt. Training-Maßnahmen nach Abdeckungsrisiko priorisiert.</div>
         <span class="feat-badge" id="fb6">Training-Radar</span>
       </div>
     </div>
     <!-- Scalability note -->
     <div class="reveal d2" style="margin-top:2rem;background:rgba(255,183,0,.06);border:1px solid rgba(255,183,0,.2);border-radius:var(--r-lg);padding:1.2rem 1.8rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
-      <div style="font-size:1.5rem">ð§</div>
+      <div style="font-size:1.5rem">🔧</div>
       <div style="flex:1">
-        <div style="font-size:.78rem;font-weight:700;color:#FFD060;margin-bottom:.25rem" id="sc-note-title">Demo-Daten â beliebig erweiterbar</div>
-        <div style="font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6" id="sc-note-body">Techniker, Produktfamilien und Cluster sind Konfigurationsparameter â nicht hardcodiert. Das System passt sich an jede Unternehmensstruktur an: andere Regionen, mehr Produktlinien, abweichende Level-Regeln.</div>
+        <div style="font-size:.78rem;font-weight:700;color:#FFD060;margin-bottom:.25rem" id="sc-note-title">Demo-Daten — beliebig erweiterbar</div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6" id="sc-note-body">Techniker, Produktfamilien und Cluster sind Konfigurationsparameter — nicht hardcodiert. Das System passt sich an jede Unternehmensstruktur an: andere Regionen, mehr Produktlinien, abweichende Level-Regeln.</div>
       </div>
-      <button onclick="toggleCfg()" style="padding:.55rem 1.2rem;background:rgba(255,183,0,.15);border:1px solid rgba(255,183,0,.3);border-radius:8px;color:#FFD060;font-size:.76rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;transition:all .2s" id="sc-note-btn" onmouseover="this.style.background='rgba(255,183,0,.25)'" onmouseout="this.style.background='rgba(255,183,0,.15)'">â Daten anpassen</button>
+      <button onclick="toggleCfg()" style="padding:.55rem 1.2rem;background:rgba(255,183,0,.15);border:1px solid rgba(255,183,0,.3);border-radius:8px;color:#FFD060;font-size:.76rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;transition:all .2s" id="sc-note-btn" onmouseover="this.style.background='rgba(255,183,0,.25)'" onmouseout="this.style.background='rgba(255,183,0,.15)'">⚙ Daten anpassen</button>
     </div>
   </div>
 </section>
 
 <div class="divider"></div>
 
-<!-- ââ WORKFLOW ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── WORKFLOW ────────────────────────────────────────────────────────── -->
 <section class="sec-dark" id="workflow">
   <div class="sec-inner">
     <div class="reveal">
       <div class="eyebrow" id="wf-eye">Automatisierter Ablauf</div>
-      <h2 class="sec-heading" id="wf-heading">Vollautomatisch.<br>Copilot â kein Autopilot.</h2>
-      <p class="sec-body" id="wf-body">Das System liest AuftrÃ¤ge aus SMax Go, plant, informiert und prÃ¼ft â der Disponent bestÃ¤tigt die SchlÃ¼sselentscheidungen.</p>
+      <h2 class="sec-heading" id="wf-heading">Vollautomatisch.<br>Copilot — kein Autopilot.</h2>
+      <p class="sec-body" id="wf-body">Das System liest Aufträge aus SMax Go, plant, informiert und prüft — der Disponent bestätigt die Schlüsselentscheidungen.</p>
     </div>
 
     <!-- Copilot callout -->
     <div class="reveal d1" style="margin-top:2rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem">
       <div style="background:rgba(0,163,224,.06);border:1px solid rgba(0,163,224,.2);border-radius:var(--r-lg);padding:1.2rem 1.5rem;display:flex;align-items:flex-start;gap:1rem">
-        <div style="font-size:1.6rem;flex-shrink:0">ð¤</div>
+        <div style="font-size:1.6rem;flex-shrink:0">🤖</div>
         <div>
-          <div style="font-size:.8rem;font-weight:700;color:var(--sky);margin-bottom:.3rem" id="wf-auto-title">KI Ã¼bernimmt automatisch</div>
-          <div style="font-size:.78rem;color:var(--mute);line-height:1.65" id="wf-auto-body">FÃ¤lligkeiten erkennen · Scoring berechnen · Touren bÃ¼ndeln · Techniker benachrichtigen · Dokumente prÃ¼fen · Kundenmails senden</div>
+          <div style="font-size:.8rem;font-weight:700;color:var(--sky);margin-bottom:.3rem" id="wf-auto-title">KI übernimmt automatisch</div>
+          <div style="font-size:.78rem;color:var(--mute);line-height:1.65" id="wf-auto-body">Fälligkeiten erkennen · Scoring berechnen · Touren bündeln · Techniker benachrichtigen · Dokumente prüfen · Kundenmails senden</div>
         </div>
       </div>
       <div style="background:rgba(0,135,90,.06);border:1px solid rgba(0,135,90,.2);border-radius:var(--r-lg);padding:1.2rem 1.5rem;display:flex;align-items:flex-start;gap:1rem">
-        <div style="font-size:1.6rem;flex-shrink:0">ð¤</div>
+        <div style="font-size:1.6rem;flex-shrink:0">👤</div>
         <div>
           <div style="font-size:.8rem;font-weight:700;color:#5EDD9F;margin-bottom:.3rem" id="wf-human-title">Mensch entscheidet</div>
-          <div style="font-size:.78rem;color:var(--mute);line-height:1.65" id="wf-human-body">Techniker-Zuweisung bestÃ¤tigen · Termin freigeben · Ausnahmen setzen · SMax Go bleibt das Kernsystem</div>
+          <div style="font-size:.78rem;color:var(--mute);line-height:1.65" id="wf-human-body">Techniker-Zuweisung bestätigen · Termin freigeben · Ausnahmen setzen · SMax Go bleibt das Kernsystem</div>
         </div>
       </div>
     </div>
@@ -882,51 +882,51 @@ footer{
       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:.6rem;position:relative;z-index:1" id="wf-steps-grid">
 
         <div class="wf-step">
-          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">ð¥</div>
+          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">📥</div>
           <div class="wf-step-title" id="wfs1-t">Auftrag einlesen</div>
-          <div class="wf-step-body" id="wfs1-b">SMax Go tÃ¤glich automatisch ausgelesen â keine manuelle Eingabe</div>
+          <div class="wf-step-body" id="wfs1-b">SMax Go täglich automatisch ausgelesen — keine manuelle Eingabe</div>
           <div class="wf-auto-badge" id="wfs1-badge">Auto</div>
         </div>
 
         <div class="wf-step">
-          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">ð§ </div>
+          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">🧠</div>
           <div class="wf-step-title" id="wfs2-t">KI-Scoring</div>
-          <div class="wf-step-body" id="wfs2-b">Kompetenz · Fahrzeit · Auslastung â Top-3 Techniker mit BegrÃ¼ndung</div>
+          <div class="wf-step-body" id="wfs2-b">Kompetenz · Fahrzeit · Auslastung — Top-3 Techniker mit Begründung</div>
           <div class="wf-auto-badge" id="wfs2-badge">Auto</div>
         </div>
 
         <div class="wf-step" style="border-color:rgba(94,221,159,.25);background:rgba(0,135,90,.06)">
-          <div class="wf-dot" style="background:rgba(0,135,90,.3);border-color:rgba(94,221,159,.4)">â</div>
-          <div class="wf-step-title" id="wfs3-t">BestÃ¤tigung</div>
-          <div class="wf-step-body" id="wfs3-b">Disponent prÃ¼ft Empfehlung und bestÃ¤tigt die Zuweisung</div>
+          <div class="wf-dot" style="background:rgba(0,135,90,.3);border-color:rgba(94,221,159,.4)">✅</div>
+          <div class="wf-step-title" id="wfs3-t">Bestätigung</div>
+          <div class="wf-step-body" id="wfs3-b">Disponent prüft Empfehlung und bestätigt die Zuweisung</div>
           <div class="wf-human-badge" id="wfs3-badge">Mensch</div>
         </div>
 
         <div class="wf-step">
-          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">ð±</div>
+          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">📱</div>
           <div class="wf-step-title" id="wfs4-t">Techniker-Info</div>
-          <div class="wf-step-body" id="wfs4-b">Push + Mail: Klinik, Code, GerÃ¤te, Dauer, Checkliste â alles automatisch</div>
+          <div class="wf-step-body" id="wfs4-b">Push + Mail: Klinik, Code, Geräte, Dauer, Checkliste — alles automatisch</div>
           <div class="wf-auto-badge" id="wfs4-badge">Auto</div>
         </div>
 
         <div class="wf-step">
-          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">ð</div>
+          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">📅</div>
           <div class="wf-step-title" id="wfs5-t">PM Due-Date</div>
-          <div class="wf-step-body" id="wfs5-b">FÃ¤lligkeitserinnerung mit optimalem Vorlauf â 5 Tage vor Termin</div>
+          <div class="wf-step-body" id="wfs5-b">Fälligkeitserinnerung mit optimalem Vorlauf — 5 Tage vor Termin</div>
           <div class="wf-auto-badge" id="wfs5-badge">Auto</div>
         </div>
 
         <div class="wf-step">
-          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">ð</div>
-          <div class="wf-step-title" id="wfs6-t">TD-PrÃ¼fung</div>
-          <div class="wf-step-body" id="wfs6-b">VollstÃ¤ndigkeit · richtige Version · alle Pflichtdokumente nach Abschluss geprÃ¼ft</div>
+          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">🔍</div>
+          <div class="wf-step-title" id="wfs6-t">TD-Prüfung</div>
+          <div class="wf-step-body" id="wfs6-b">Vollständigkeit · richtige Version · alle Pflichtdokumente nach Abschluss geprüft</div>
           <div class="wf-auto-badge" id="wfs6-badge">Auto</div>
         </div>
 
         <div class="wf-step">
-          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">ð§</div>
+          <div class="wf-dot" style="background:rgba(0,114,206,.3);border-color:rgba(0,114,206,.5)">📧</div>
           <div class="wf-step-title" id="wfs7-t">Kundenmail</div>
-          <div class="wf-step-body" id="wfs7-b">Serviceberichte automatisch versandt â in SMax dokumentiert</div>
+          <div class="wf-step-body" id="wfs7-b">Serviceberichte automatisch versandt — in SMax dokumentiert</div>
           <div class="wf-auto-badge" id="wfs7-badge">Auto</div>
         </div>
 
@@ -943,22 +943,22 @@ footer{
       <div class="reveal">
         <div class="eyebrow" id="sc-eye">Algorithmus</div>
         <h2 class="sec-heading" id="sc-heading">Scoring.<br>Transparent.</h2>
-        <p class="sec-body" id="sc-body">Kein Black-Box-Resultat. Jede Empfehlung hat eine erklÃ¤rbare Berechnungsgrundlage.</p>
+        <p class="sec-body" id="sc-body">Kein Black-Box-Resultat. Jede Empfehlung hat eine erklärbare Berechnungsgrundlage.</p>
         <div class="score-bars">
           <div class="sbar">
             <div class="sbar-top"><span class="sbar-label" id="sb1l">Kompetenz</span><span class="sbar-pct">40%</span></div>
             <div class="sbar-track"><div class="sbar-fill" style="width:40%;background:linear-gradient(90deg,var(--navy),var(--mid))"></div></div>
-            <div class="sbar-note" id="sb1n">Pflichtvoraussetzung â L2 oder L3 je Cluster</div>
+            <div class="sbar-note" id="sb1n">Pflichtvoraussetzung — L2 oder L3 je Cluster</div>
           </div>
           <div class="sbar">
             <div class="sbar-top"><span class="sbar-label" id="sb2l">Fahrzeit</span><span class="sbar-pct">35%</span></div>
             <div class="sbar-track"><div class="sbar-fill" style="width:35%;background:linear-gradient(90deg,var(--mid),var(--sky))"></div></div>
-            <div class="sbar-note" id="sb2n">Haversine-Distanz Ã Faktor 1,35 (Realverkehr)</div>
+            <div class="sbar-note" id="sb2n">Haversine-Distanz × Faktor 1,35 (Realverkehr)</div>
           </div>
           <div class="sbar">
             <div class="sbar-top"><span class="sbar-label" id="sb3l">Auslastung</span><span class="sbar-pct">25%</span></div>
             <div class="sbar-track"><div class="sbar-fill" style="width:25%;background:linear-gradient(90deg,var(--sky),var(--frost))"></div></div>
-            <div class="sbar-note" id="sb3n">ArbZG-konform â Warnung 34h, Ausschluss 36h</div>
+            <div class="sbar-note" id="sb3n">ArbZG-konform — Warnung 34h, Ausschluss 36h</div>
           </div>
         </div>
       </div>
@@ -972,17 +972,17 @@ footer{
           </div>
         </div>
         <div class="score-card">
-          <div class="score-card-head" id="sc-rec">Empfehlung â UK Ulm (Hugo STK)</div>
+          <div class="score-card-head" id="sc-rec">Empfehlung — UK Ulm (Hugo STK)</div>
           <div class="score-result">
-            <div><span class="sr-rank">ð¥</span><span class="sr-name">T10 · Marc L.</span><div class="sr-loc">Balingen · 28km</div></div>
+            <div><span class="sr-rank">🥇</span><span class="sr-name">T10 · Marc L.</span><div class="sr-loc">Balingen · 28km</div></div>
             <div class="sr-score gold">94</div>
           </div>
           <div class="score-result">
-            <div><span class="sr-rank">ð¥</span><span class="sr-name">T2 · Lisa T.</span><div class="sr-loc">Wehingen · 35km</div></div>
+            <div><span class="sr-rank">🥈</span><span class="sr-name">T2 · Lisa T.</span><div class="sr-loc">Wehingen · 35km</div></div>
             <div class="sr-score silver">81</div>
           </div>
           <div class="score-result">
-            <div><span class="sr-rank">ð¥</span><span class="sr-name">T14 · Petra F.</span><div class="sr-loc">Waldachtal · 41km</div></div>
+            <div><span class="sr-rank">🥉</span><span class="sr-name">T14 · Petra F.</span><div class="sr-loc">Waldachtal · 41km</div></div>
             <div class="sr-score bronze">67</div>
           </div>
         </div>
@@ -993,13 +993,13 @@ footer{
 
 <div class="divider"></div>
 
-<!-- ââ CLUSTER âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── CLUSTER ─────────────────────────────────────────────────────────── -->
 <section class="sec-deep" id="clusters">
   <div class="sec-inner">
     <div class="reveal">
       <div class="eyebrow" id="cl-eye">Produktportfolio</div>
       <h2 class="sec-heading" id="cl-heading">6 Cluster.<br>15 Produktfamilien.</h2>
-      <p class="sec-body" id="cl-body">VollstÃ¤ndig klassifiziert mit L2/L3-Anforderungen je Auftragstyp.</p>
+      <p class="sec-body" id="cl-body">Vollständig klassifiziert mit L2/L3-Anforderungen je Auftragstyp.</p>
     </div>
     <div class="cluster-wrap reveal d1">
       <table class="cluster-table">
@@ -1012,25 +1012,25 @@ footer{
           </tr>
         </thead>
         <tbody>
-          <tr><td><span class="cluster-name">SMALL_CAP</span></td><td style="font-size:.75rem;color:var(--mute)">NIM, PROG, ACT, IPC/EC300/AEX, Neurophys.</td><td><span class="level lvl-2">L2</span></td><td><span class="level lvl-3">L3</span></td><td><span class="lvl-x">â</span></td><td style="font-size:.75rem;color:#5EDD9F" id="ctr1">intern</td></tr>
+          <tr><td><span class="cluster-name">SMALL_CAP</span></td><td style="font-size:.75rem;color:var(--mute)">NIM, PROG, ACT, IPC/EC300/AEX, Neurophys.</td><td><span class="level lvl-2">L2</span></td><td><span class="level lvl-3">L3</span></td><td><span class="lvl-x">—</span></td><td style="font-size:.75rem;color:#5EDD9F" id="ctr1">intern</td></tr>
           <tr><td><span class="cluster-name">HF-CHIRURGIE</span></td><td style="font-size:.75rem;color:var(--mute)">HF-Chirurgie (Sonderfall)</td><td><span class="level lvl-2">L2</span></td><td><span class="level lvl-2">L2</span></td><td><span class="level lvl-3">L3</span></td><td style="font-size:.75rem;color:var(--mute)" id="ctr2">T&E anfragen</td></tr>
           <tr><td><span class="cluster-name">CLUSTER1_OR</span></td><td style="font-size:.75rem;color:var(--mute)">Hugo, Mazor, StealthStation, O-arm</td><td><span class="level lvl-3">L3</span></td><td><span class="level lvl-3">L3</span></td><td><span class="level lvl-3">L3</span></td><td style="font-size:.75rem;color:var(--mute)" id="ctr3">TC+10h · T&E anfragen</td></tr>
           <tr><td><span class="cluster-name">CLUSTER2_CARDIAC</span></td><td style="font-size:.75rem;color:var(--mute)">Affera, Arctic Front, Nitron</td><td><span class="level lvl-3">L3</span></td><td><span class="level lvl-3">L3</span></td><td><span class="level lvl-3">L3</span></td><td style="font-size:.75rem;color:var(--mute)" id="ctr4">TC+8h · T&E anfragen</td></tr>
           <tr><td><span class="cluster-name">CLUSTER3_MON</span></td><td style="font-size:.75rem;color:var(--mute)">Ventilation (980X1DEDRAC), Monitoring</td><td><span class="level lvl-2">L2</span></td><td><span class="level lvl-3">L3</span></td><td><span class="level lvl-3">L3</span></td><td style="font-size:.75rem;color:var(--mute)" id="ctr5">TC+6h · T&E anfragen</td></tr>
-          <tr><td><span class="cluster-name">CLUSTER4_DIG</span></td><td style="font-size:.75rem;color:var(--mute)">Touch Surgery</td><td><span class="level lvl-2">L2</span></td><td><span class="level lvl-2">L2</span></td><td><span class="lvl-x">â</span></td><td style="font-size:.75rem;color:#5EDD9F" id="ctr6">Online/Teams</td></tr>
+          <tr><td><span class="cluster-name">CLUSTER4_DIG</span></td><td style="font-size:.75rem;color:var(--mute)">Touch Surgery</td><td><span class="level lvl-2">L2</span></td><td><span class="level lvl-2">L2</span></td><td><span class="lvl-x">—</span></td><td style="font-size:.75rem;color:#5EDD9F" id="ctr6">Online/Teams</td></tr>
         </tbody>
       </table>
     </div>
     <div style="margin-top:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem">
-      <div style="font-size:.72rem;color:rgba(255,255,255,.18)" id="cl-note">* Trainingskosten direkt bei Training &amp; Education anfragen â keine PauschalbetrÃ¤ge</div>
-      <div style="font-size:.72rem;color:#FFD060;background:rgba(255,183,0,.08);border:1px solid rgba(255,183,0,.18);border-radius:8px;padding:.3rem .8rem" id="cl-expand-note">+ Neue Cluster &amp; Familien jederzeit ergÃ¤nzbar</div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.18)" id="cl-note">* Trainingskosten direkt bei Training &amp; Education anfragen — keine Pauschalbeträge</div>
+      <div style="font-size:.72rem;color:#FFD060;background:rgba(255,183,0,.08);border:1px solid rgba(255,183,0,.18);border-radius:8px;padding:.3rem .8rem" id="cl-expand-note">+ Neue Cluster &amp; Familien jederzeit ergänzbar</div>
     </div>
   </div>
 </section>
 
 <div class="divider"></div>
 
-<!-- ââ ROI âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── ROI ─────────────────────────────────────────────────────────────── -->
 <section class="sec-dark" id="roi">
   <div class="sec-inner">
     <div class="reveal">
@@ -1041,39 +1041,39 @@ footer{
     <div class="roi-grid">
       <div class="roi-calc reveal d1">
         <div class="roi-row-item">
-          <div class="roi-row-title" id="roi-t1">ðº Fahrtzeitersparnis</div>
-          <div class="roi-formula" id="roi-f1"><span id="cfg-tech-roi">14</span> Techniker Ã [Ã Einsparung h/Woche] Ã 52 Ã [Stundensatz â¬]</div>
-          <div class="roi-measure" id="roi-m1">MessgrÃ¶Ãe: Ã Fahrzeit vor/nach System je Techniker</div>
+          <div class="roi-row-title" id="roi-t1">🗺 Fahrtzeitersparnis</div>
+          <div class="roi-formula" id="roi-f1"><span id="cfg-tech-roi">14</span> Techniker × [Ø Einsparung h/Woche] × 52 × [Stundensatz €]</div>
+          <div class="roi-measure" id="roi-m1">Messgröße: Ø Fahrzeit vor/nach System je Techniker</div>
         </div>
         <div class="roi-row-item">
-          <div class="roi-row-title" id="roi-t2">ð Cross-Training</div>
-          <div class="roi-formula" id="roi-f2">[AuftrÃ¤ge/Jahr verzÃ¶gert] Ã [Ã VerzÃ¶gerungskosten â¬]</div>
-          <div class="roi-measure" id="roi-m2">MessgrÃ¶Ãe: AuftrÃ¤ge ohne qualifizierten Techniker in Region</div>
+          <div class="roi-row-title" id="roi-t2">📚 Cross-Training</div>
+          <div class="roi-formula" id="roi-f2">[Aufträge/Jahr verzögert] × [Ø Verzögerungskosten €]</div>
+          <div class="roi-measure" id="roi-m2">Messgröße: Aufträge ohne qualifizierten Techniker in Region</div>
         </div>
         <div class="roi-row-item">
-          <div class="roi-row-title" id="roi-t3">â Admin-Effizienz</div>
-          <div class="roi-formula" id="roi-f3">[h/Woche Planungsaufwand] Ã 52 Ã [Stundensatz Disponent â¬]</div>
-          <div class="roi-measure" id="roi-m3">MessgrÃ¶Ãe: Zeiterfassung heute vs. mit System</div>
+          <div class="roi-row-title" id="roi-t3">⚙ Admin-Effizienz</div>
+          <div class="roi-formula" id="roi-f3">[h/Woche Planungsaufwand] × 52 × [Stundensatz Disponent €]</div>
+          <div class="roi-measure" id="roi-m3">Messgröße: Zeiterfassung heute vs. mit System</div>
         </div>
         <div class="roi-row-item">
-          <div class="roi-row-title" id="roi-t4">â¡ Hugo-Absicherung</div>
-          <div class="roi-formula" id="roi-f4">[gefÃ¤hrdete EinsÃ¤tze/Jahr] Ã [Wert je Hugo-Einsatz â¬]</div>
-          <div class="roi-measure" id="roi-m4">MessgrÃ¶Ãe: Hugo-EinsÃ¤tze mit KapazitÃ¤tskonflikt</div>
+          <div class="roi-row-title" id="roi-t4">⚡ Hugo-Absicherung</div>
+          <div class="roi-formula" id="roi-f4">[gefährdete Einsätze/Jahr] × [Wert je Hugo-Einsatz €]</div>
+          <div class="roi-measure" id="roi-m4">Messgröße: Hugo-Einsätze mit Kapazitätskonflikt</div>
         </div>
       </div>
       <div class="roi-invest reveal d2">
         <div class="invest-card">
           <div class="invest-title" id="inv-title">Investition (einmalig)</div>
-          <div class="invest-row"><span class="invest-label" id="inv-l1">IHK KI-Manager Zertifizierung</span><span class="invest-val">ca. 2.590 â¬</span></div>
-          <div class="invest-row"><span class="invest-label" id="inv-l2">Claude API (nutzungsabhÃ¤ngig)</span><span class="invest-val" id="inv-v2">T&E anfragen</span></div>
+          <div class="invest-row"><span class="invest-label" id="inv-l1">IHK KI-Manager Zertifizierung</span><span class="invest-val">ca. 2.590 €</span></div>
+          <div class="invest-row"><span class="invest-label" id="inv-l2">Claude API (nutzungsabhängig)</span><span class="invest-val" id="inv-v2">T&E anfragen</span></div>
         </div>
         <div class="invest-card" style="background:rgba(0,163,224,.05);border-color:rgba(0,163,224,.2)">
           <div class="invest-title" id="why-title">Warum keine festen Zahlen?</div>
-          <p style="font-size:.82rem;color:var(--dim);line-height:1.7" id="why-body">Die Berechnungslogik steht. StundensÃ¤tze, Ist-Aufwand und VerzÃ¶gerungskosten sind interne Daten â messbar in der Pilotphase.</p>
+          <p style="font-size:.82rem;color:var(--dim);line-height:1.7" id="why-body">Die Berechnungslogik steht. Stundensätze, Ist-Aufwand und Verzögerungskosten sind interne Daten — messbar in der Pilotphase.</p>
         </div>
         <div class="pilot-cta">
           <div class="pilot-cta-sub" id="pcta-sub">Ziel nach 4 Wochen Pilot</div>
-          <div class="pilot-cta-main" id="pcta-main">Echte Messwerte â belastbarer ROI</div>
+          <div class="pilot-cta-main" id="pcta-main">Echte Messwerte → belastbarer ROI</div>
         </div>
       </div>
     </div>
@@ -1082,12 +1082,12 @@ footer{
 
 <div class="divider"></div>
 
-<!-- ââ PROTOTYPE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── PROTOTYPE ───────────────────────────────────────────────────────── -->
 <section class="sec-light" id="prototyp">
   <div class="sec-inner">
     <div class="reveal">
       <div class="eyebrow" id="pr-eye">Prototyp</div>
-      <h2 class="sec-heading" id="pr-heading">Fertig. Getestet.<br>LauffÃ¤hig.</h2>
+      <h2 class="sec-heading" id="pr-heading">Fertig. Getestet.<br>Lauffähig.</h2>
       <p class="sec-body" id="pr-body">Kein Mock, keine Simulation. 516 Tests bestanden, Dashboard 11/11.</p>
     </div>
     <div class="proto-grid" style="grid-template-columns:repeat(2,1fr)">
@@ -1095,7 +1095,7 @@ footer{
         <div class="proto-num" id="pc1-n">516</div>
         <div class="proto-label" id="pc1-l">Tests · 0 Fehler</div>
         <div class="proto-divider"></div>
-        <div class="proto-desc" id="pc1-t">9 Testdateien · Python 3.12 · Pydantic v2 · vollstÃ¤ndig automatisiert</div>
+        <div class="proto-desc" id="pc1-t">9 Testdateien · Python 3.12 · Pydantic v2 · vollständig automatisiert</div>
       </div>
       <div class="proto-card reveal d2">
         <div class="proto-num" id="pc2-n">11/11</div>
@@ -1107,14 +1107,14 @@ footer{
         <div class="proto-num" id="pc3-n">6</div>
         <div class="proto-label" id="pc3-l">Produkt-Cluster</div>
         <div class="proto-divider"></div>
-        <div class="proto-desc" id="pc3-t">15 Produktfamilien · L2/L3-Regeln · HF-Sonderfall · vollstÃ¤ndig klassifiziert</div>
+        <div class="proto-desc" id="pc3-t">15 Produktfamilien · L2/L3-Regeln · HF-Sonderfall · vollständig klassifiziert</div>
       </div>
       <!-- Scalability card -->
       <div class="proto-card reveal d4" style="border:1px solid rgba(255,183,0,.25);background:rgba(255,183,0,.04)">
-        <div class="proto-num" style="font-size:2rem;color:#FFD060">â</div>
+        <div class="proto-num" style="font-size:2rem;color:#FFD060">∞</div>
         <div class="proto-label" id="pc4-l" style="color:#FFD060">Erweiterbar</div>
         <div class="proto-divider" style="background:rgba(255,183,0,.15)"></div>
-        <div class="proto-desc" id="pc4-t">Demo-Daten. Techniker, Cluster und Produktfamilien sind Konfigurationsparameter â jederzeit anpassbar an jede Unternehmensstruktur.</div>
+        <div class="proto-desc" id="pc4-t">Demo-Daten. Techniker, Cluster und Produktfamilien sind Konfigurationsparameter — jederzeit anpassbar an jede Unternehmensstruktur.</div>
       </div>
     </div>
   </div>
@@ -1122,41 +1122,41 @@ footer{
 
 <div class="divider"></div>
 
-<!-- ââ DEMO ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── DEMO ────────────────────────────────────────────────────────────── -->
 <section class="sec-deep" id="demo">
   <div class="sec-inner">
     <div class="reveal">
       <div class="eyebrow" id="dm-eye">Live Demo</div>
       <h2 class="sec-heading" id="dm-heading">Techniker-Empfehlung.<br>Live erleben.</h2>
-      <p class="sec-body" id="dm-body">Klinik, Auftragstyp und Cluster wÃ¤hlen â das System empfiehlt den optimalen Techniker.</p>
+      <p class="sec-body" id="dm-body">Klinik, Auftragstyp und Cluster wählen — das System empfiehlt den optimalen Techniker.</p>
     </div>
     <div class="demo-grid">
       <div class="demo-form reveal d1">
         <div>
           <div class="demo-label" id="dl1">Klinik</div>
           <select class="demo-select" id="d-klinik">
-            <option value="" id="d-kl0">â wÃ¤hlen â</option>
-            <option value="uklulm">UniversitÃ¤tsklinikum Ulm</option>
+            <option value="" id="d-kl0">— wählen —</option>
+            <option value="uklulm">Universitätsklinikum Ulm</option>
             <option value="uke">UKE Hamburg</option>
             <option value="mhh">MHH Hannover</option>
             <option value="tud">Uniklinik Dresden</option>
-            <option value="koeln">Uniklinik KÃ¶ln</option>
+            <option value="koeln">Uniklinik Köln</option>
             <option value="erlangen">UK Erlangen</option>
           </select>
         </div>
         <div>
           <div class="demo-label" id="dl2">Auftragstyp</div>
           <select class="demo-select" id="d-type">
-            <option value="" id="d-ty0">â wÃ¤hlen â</option>
-            <option value="stk" id="d-ty1">STK â Sicherheitstechnische Kontrolle</option>
-            <option value="pm" id="d-ty2">PM â PrÃ¤ventive Wartung</option>
-            <option value="repair" id="d-ty3">Repair â StÃ¶rungsbehebung</option>
+            <option value="" id="d-ty0">— wählen —</option>
+            <option value="stk" id="d-ty1">STK — Sicherheitstechnische Kontrolle</option>
+            <option value="pm" id="d-ty2">PM — Präventive Wartung</option>
+            <option value="repair" id="d-ty3">Repair — Störungsbehebung</option>
           </select>
         </div>
         <div>
           <div class="demo-label" id="dl3">Produkt-Cluster</div>
           <select class="demo-select" id="d-cluster">
-            <option value="" id="d-cl0">â wÃ¤hlen â</option>
+            <option value="" id="d-cl0">— wählen —</option>
             <option value="hugo">Hugo (OR-Cluster, L3)</option>
             <option value="hf">HF-Chirurgie (Sonderfall)</option>
             <option value="cardiac">Cardiac (Affera / Nitron)</option>
@@ -1164,13 +1164,13 @@ footer{
             <option value="monitoring">Monitoring / Ventilation</option>
           </select>
         </div>
-        <button class="demo-run-btn" id="d-run" onclick="runDemo()">ð Techniker finden</button>
+        <button class="demo-run-btn" id="d-run" onclick="runDemo()">🔍 Techniker finden</button>
         <div id="d-bundle" class="demo-notice demo-bundle" style="display:none"></div>
         <div id="d-warn" class="demo-notice demo-warn" style="display:none"></div>
       </div>
       <div class="demo-results" id="d-results">
         <div class="demo-empty">
-          <div class="demo-empty-icon">ð¤</div>
+          <div class="demo-empty-icon">🤖</div>
           <div id="dm-empty-txt">Auftrag eingeben und<br>Empfehlung starten</div>
         </div>
       </div>
@@ -1180,26 +1180,26 @@ footer{
 
 <div class="divider"></div>
 
-<!-- ââ ROADMAP âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── ROADMAP ─────────────────────────────────────────────────────────── -->
 <section class="sec-navy" id="roadmap">
   <div class="sec-inner">
     <div class="reveal">
-      <div class="eyebrow" id="rm-eye">NÃ¤chste Schritte</div>
+      <div class="eyebrow" id="rm-eye">Nächste Schritte</div>
       <h2 class="sec-heading" id="rm-heading">Roadmap &amp;<br>Antragsstellung.</h2>
     </div>
     <div class="roadmap-grid">
       <div class="timeline reveal d1">
         <div class="tl-item">
           <div class="tl-left"><div class="tl-dot done"></div><div class="tl-line"></div></div>
-          <div class="tl-content"><div class="tl-date done" id="tl1-d">â Abgeschlossen</div><div class="tl-title" id="tl1-t">Prototyp-Entwicklung</div><div class="tl-detail" id="tl1-dt">516 Tests · Dashboard 11/11 · Autodidaktisch vor formaler Ausbildung</div></div>
+          <div class="tl-content"><div class="tl-date done" id="tl1-d">✅ Abgeschlossen</div><div class="tl-title" id="tl1-t">Prototyp-Entwicklung</div><div class="tl-detail" id="tl1-dt">516 Tests · Dashboard 11/11 · Autodidaktisch vor formaler Ausbildung</div></div>
         </div>
         <div class="tl-item">
           <div class="tl-left"><div class="tl-dot now"></div><div class="tl-line"></div></div>
-          <div class="tl-content"><div class="tl-date now" id="tl2-d">â Jetzt</div><div class="tl-title" id="tl2-t">Antrag Projektfreigabe</div><div class="tl-detail" id="tl2-dt">Kein Budget · Pilotphase 2â3 Techniker · Sofort startbereit</div></div>
+          <div class="tl-content"><div class="tl-date now" id="tl2-d">→ Jetzt</div><div class="tl-title" id="tl2-t">Antrag Projektfreigabe</div><div class="tl-detail" id="tl2-dt">Kein Budget · Pilotphase 2–3 Techniker · Sofort startbereit</div></div>
         </div>
         <div class="tl-item">
           <div class="tl-left"><div class="tl-dot now"></div><div class="tl-line"></div></div>
-          <div class="tl-content"><div class="tl-date now" id="tl3-d">â Parallel</div><div class="tl-title" id="tl3-t">IHK KI-Manager</div><div class="tl-detail" id="tl3-dt">DIHK · 64 UE · Live-Online abends · AugâNov 2026 · ca. 2.590 â¬</div></div>
+          <div class="tl-content"><div class="tl-date now" id="tl3-d">→ Parallel</div><div class="tl-title" id="tl3-t">IHK KI-Manager</div><div class="tl-detail" id="tl3-dt">DIHK · 64 UE · Live-Online abends · Aug–Nov 2026 · ca. 2.590 €</div></div>
         </div>
         <div class="tl-item">
           <div class="tl-left"><div class="tl-dot future"></div><div class="tl-line"></div></div>
@@ -1207,26 +1207,26 @@ footer{
         </div>
         <div class="tl-item">
           <div class="tl-left"><div class="tl-dot future"></div></div>
-          <div class="tl-content"><div class="tl-date future" id="tl5-d">Q4 2026</div><div class="tl-title" id="tl5-t">FlÃ¤cheneinfÃ¼hrung</div><div class="tl-detail" id="tl5-dt">Alle 14 Techniker · Vollbetrieb · KPIs messen</div></div>
+          <div class="tl-content"><div class="tl-date future" id="tl5-d">Q4 2026</div><div class="tl-title" id="tl5-t">Flächeneinführung</div><div class="tl-detail" id="tl5-dt">Alle 14 Techniker · Vollbetrieb · KPIs messen</div></div>
         </div>
       </div>
       <div class="request-cards reveal d2">
         <div class="req-card dark">
-          <div class="req-title acc" id="req1-t">ð Antrag 1: Projektfreigabe</div>
+          <div class="req-title acc" id="req1-t">📋 Antrag 1: Projektfreigabe</div>
           <ul class="req-list">
-            <li id="req1-1">ZusÃ¤tzliches Budget: 0 â¬</li>
-            <li id="req1-2">Prototyp vollstÃ¤ndig fertig</li>
+            <li id="req1-1">Zusätzliches Budget: 0 €</li>
+            <li id="req1-2">Prototyp vollständig fertig</li>
             <li id="req1-3">Ziel: Offizielle Anerkennung als Unternehmensprojekt</li>
             <li id="req1-4">Pilotphase mit bestehender Arbeitszeit</li>
           </ul>
         </div>
         <div class="req-card light">
-          <div class="req-title acc" id="req2-t">ð Antrag 2: IHK KI-Manager</div>
+          <div class="req-title acc" id="req2-t">🎓 Antrag 2: IHK KI-Manager</div>
           <ul class="req-list">
             <li id="req2-1">DIHK-Bildungs-gGmbH · Live-Online abends</li>
             <li id="req2-2">64 Unterrichtseinheiten</li>
-            <li id="req2-3">Termine: 17.08.â26.11.2026</li>
-            <li id="req2-4">Kurskosten: ca. 2.590 â¬ (einmalig)</li>
+            <li id="req2-3">Termine: 17.08.–26.11.2026</li>
+            <li id="req2-4">Kurskosten: ca. 2.590 € (einmalig)</li>
             <li id="req2-5">Projektarbeit = dieses System</li>
           </ul>
         </div>
@@ -1235,18 +1235,18 @@ footer{
   </div>
 </section>
 
-<!-- ââ CTA âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── CTA ─────────────────────────────────────────────────────────────── -->
 <div class="cta-section">
   <div class="reveal">
-    <h2 class="cta-heading" id="cta-h">Bereit fÃ¼r den<br><span>Pilotstart.</span></h2>
-    <p class="cta-sub" id="cta-s">Drei Schritte. Kein zusÃ¤tzliches Budget. Sofort startbereit.</p>
+    <h2 class="cta-heading" id="cta-h">Bereit für den<br><span>Pilotstart.</span></h2>
+    <p class="cta-sub" id="cta-s">Drei Schritte. Kein zusätzliches Budget. Sofort startbereit.</p>
     <div class="cta-steps">
-      <div class="cta-step"><div class="cta-step-n">â </div><div class="cta-step-l" id="cs1">Pilotfreigabe</div></div>
-      <div class="cta-step"><div class="cta-step-n">â¡</div><div class="cta-step-l" id="cs2">IHK KI-Manager</div></div>
-      <div class="cta-step"><div class="cta-step-n">â¢</div><div class="cta-step-l" id="cs3">SMax Go Integration</div></div>
+      <div class="cta-step"><div class="cta-step-n">①</div><div class="cta-step-l" id="cs1">Pilotfreigabe</div></div>
+      <div class="cta-step"><div class="cta-step-n">②</div><div class="cta-step-l" id="cs2">IHK KI-Manager</div></div>
+      <div class="cta-step"><div class="cta-step-n">③</div><div class="cta-step-l" id="cs3">SMax Go Integration</div></div>
     </div>
     <div class="cta-btns">
-      <button class="btn-glow" onclick="openDemo()" id="cta-b1">Demo ansehen â</button>
+      <button class="btn-glow" onclick="openDemo()" id="cta-b1">Demo ansehen ↗</button>
       <button class="btn-outline" onclick="goTo('scoring')" id="cta-b2">Algorithmus erkunden</button>
     </div>
   </div>
@@ -1254,17 +1254,17 @@ footer{
 
 <footer id="footer">Medtronic GmbH · Service &amp; Repair Deutschland · Marc Liebhardt T10 · IHK KI-Manager Projekt 2026</footer>
 
-<!-- ââ CONFIG PANEL ââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
-<button id="cfg-btn" onclick="toggleCfg()" title="Projektdaten anpassen">â</button>
+<!-- ── CONFIG PANEL ────────────────────────────────────────────────────── -->
+<button id="cfg-btn" onclick="toggleCfg()" title="Projektdaten anpassen">⚙</button>
 <div id="cfg-ov">
   <div id="cfg-box">
     <div class="cfg-head">
       <div><div class="cfg-head-title" id="cfg-tit">Projektdaten anpassen</div><div class="cfg-head-sub" id="cfg-subt">Werte erscheinen auf der gesamten Seite</div></div>
-      <button id="cfg-close-btn" onclick="toggleCfg()">â</button>
+      <button id="cfg-close-btn" onclick="toggleCfg()">✕</button>
     </div>
     <div class="cfg-body">
       <div class="cfg-row"><label id="cfl1">Techniker</label><input id="ci-tech" type="number" value="14" min="1"></div>
-      <div class="cfg-row"><label id="cfl2">VertragsgerÃ¤te</label><input id="ci-dev" type="number" value="1985" min="1"></div>
+      <div class="cfg-row"><label id="cfl2">Vertragsgeräte</label><input id="ci-dev" type="number" value="1985" min="1"></div>
       <div class="cfg-row"><label id="cfl3">Kliniken</label><input id="ci-cli" type="number" value="82" min="1"></div>
       <div class="cfg-row"><label id="cfl4">Tests bestanden</label><input id="ci-tests" type="number" value="516" min="0"></div>
       <div class="cfg-row"><label id="cfl5">Dashboard Checks</label><input id="ci-dash" type="text" value="11/11" maxlength="10"></div>
@@ -1272,159 +1272,159 @@ footer{
       <div class="cfg-row"><label id="cfl7">Produktfamilien</label><input id="ci-pfam" type="number" value="15" min="1"></div>
     </div>
     <div class="cfg-foot">
-      <button id="cfg-reset-btn" onclick="resetCfg()">âº Reset</button>
-      <button id="cfg-apply-btn" onclick="applyCfg()">Ãbernehmen â</button>
+      <button id="cfg-reset-btn" onclick="resetCfg()">↺ Reset</button>
+      <button id="cfg-apply-btn" onclick="applyCfg()">Übernehmen ✓</button>
     </div>
-    <div class="cfg-note" id="cfg-nt">â Werte aus <code>config.py</code> (Pilotphase automatisch)</div>
+    <div class="cfg-note" id="cfg-nt">⚙ Werte aus <code>config.py</code> (Pilotphase automatisch)</div>
   </div>
 </div>
 
-<div class="pbadge" id="pbadge">â¦ Field Service AI</div>
+<div class="pbadge" id="pbadge">✦ Field Service AI</div>
 
-<!-- ââ SCRIPTS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ── SCRIPTS ─────────────────────────────────────────────────────────── -->
 <script>
-/* ââ TRANSLATIONS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ── TRANSLATIONS ──────────────────────────────────────────────────────── */
 const TX = {
 de:{
   'nl-feat':'Features','nl-workflow':'Workflow','nl-algo':'Algorithmus','nl-proto':'Prototyp','nl-demo-nav':'Demo','nl-road':'Roadmap',
   'nav-cta':'Demo starten','lang-tog':'EN',
   'h-eye':'Medtronic GmbH · Service & Repair Deutschland','h-t2':'Field Service Assistant',
-  'btn-demo':'Demo ansehen â','btn-proto':'Prototyp erkunden',
-  'sl-tests':'Tests bestanden','sl-dev':'VertragsgerÃ¤te','sl-tech':'Techniker','sl-dash':'Dashboard Checks',
-  'f-eye':'Kernfunktionen','f-heading':'Sechs Module.<br>Ein System.','f-body':'Von der Techniker-Empfehlung bis zur Hugo-KapazitÃ¤tsplanung â alles integriert.',
-  'ft1':'Techniker-Empfehlung','fd1':'Scoring nach Kompetenz, Fahrzeit und Auslastung. Top-3 Kandidaten mit BegrÃ¼ndung.',
-  'ft2':'Tour-BÃ¼ndelung','fd2':'2. GerÃ¤t gleiche Familie = 70% Zeit. MoâMi fÃ¼r OP-Kliniken.',
-  'ft3':'Puffer & SLA','fd3':'Einschleusung, Uniklinik, GroÃgerÃ¤t â automatisch. 48h Repair-SLA Ã¼berwacht.',
+  'btn-demo':'Demo ansehen ↗','btn-proto':'Prototyp erkunden',
+  'sl-tests':'Tests bestanden','sl-dev':'Vertragsgeräte','sl-tech':'Techniker','sl-dash':'Dashboard Checks',
+  'f-eye':'Kernfunktionen','f-heading':'Sechs Module.<br>Ein System.','f-body':'Von der Techniker-Empfehlung bis zur Hugo-Kapazitätsplanung — alles integriert.',
+  'ft1':'Techniker-Empfehlung','fd1':'Scoring nach Kompetenz, Fahrzeit und Auslastung. Top-3 Kandidaten mit Begründung.',
+  'ft2':'Tour-Bündelung','fd2':'2. Gerät gleiche Familie = 70% Zeit. Mo–Mi für OP-Kliniken.',
+  'ft3':'Puffer & SLA','fd3':'Einschleusung, Uniklinik, Großgerät — automatisch. 48h Repair-SLA überwacht.',
   'ft4':'Kompetenz-Matching','fd4':'6 Cluster mit L2/L3-Regeln. Kein Techniker ohne Qualifikation zugewiesen.','fb4':'6 Cluster',
-  'ft5':'Hugo Key Account','fd5':'T1/T6/T10/T11: 25,6h KapazitÃ¤t, 20% Reserve. FrÃ¼hwarnung >80%.',
-  'ft6':'Cross-Training-Radar','fd6':'KompetenzlÃ¼cken erkannt. Training nach Abdeckungsrisiko priorisiert.','fb6':'Training-Radar',
-  'sc-eye':'Algorithmus','sc-heading':'Scoring.<br>Transparent.','sc-body':'Kein Black-Box-Resultat. Jede Empfehlung erklÃ¤rbar.',
-  'sb1l':'Kompetenz','sb1n':'Pflichtvoraussetzung â L2 oder L3 je Cluster',
-  'sb2l':'Fahrzeit','sb2n':'Haversine-Distanz Ã Faktor 1,35 (Realverkehr)',
-  'sb3l':'Auslastung','sb3n':'ArbZG-konform â Warnung 34h, Ausschluss 36h',
-  'sc-rec':'Empfehlung â UK Ulm (Hugo STK)',
-  'cl-eye':'Produktportfolio','cl-heading':'6 Cluster.<br>15 Produktfamilien.','cl-body':'VollstÃ¤ndig klassifiziert mit L2/L3-Anforderungen.',
+  'ft5':'Hugo Key Account','fd5':'T1/T6/T10/T11: 25,6h Kapazität, 20% Reserve. Frühwarnung >80%.',
+  'ft6':'Cross-Training-Radar','fd6':'Kompetenzlücken erkannt. Training nach Abdeckungsrisiko priorisiert.','fb6':'Training-Radar',
+  'sc-eye':'Algorithmus','sc-heading':'Scoring.<br>Transparent.','sc-body':'Kein Black-Box-Resultat. Jede Empfehlung erklärbar.',
+  'sb1l':'Kompetenz','sb1n':'Pflichtvoraussetzung — L2 oder L3 je Cluster',
+  'sb2l':'Fahrzeit','sb2n':'Haversine-Distanz × Faktor 1,35 (Realverkehr)',
+  'sb3l':'Auslastung','sb3n':'ArbZG-konform — Warnung 34h, Ausschluss 36h',
+  'sc-rec':'Empfehlung — UK Ulm (Hugo STK)',
+  'cl-eye':'Produktportfolio','cl-heading':'6 Cluster.<br>15 Produktfamilien.','cl-body':'Vollständig klassifiziert mit L2/L3-Anforderungen.',
   'cth1':'Cluster','cth2':'Produktfamilien','cth5':'Training',
   'ctr1':'intern','ctr2':'T&E anfragen','ctr3':'TC+10h · T&E anfragen','ctr4':'TC+8h · T&E anfragen','ctr5':'TC+6h · T&E anfragen','ctr6':'Online/Teams',
   'cl-note':'* Trainingskosten direkt bei Training & Education anfragen',
   'roi-eye':'Business Case','roi-heading':'Nutzenpotenziale.<br>Transparent berechnet.','roi-body':'Echte Zahlen nach Pilotphase. Hier die Berechnungslogik.',
-  'roi-t1':'ðº Fahrtzeitersparnis','roi-t2':'ð Cross-Training','roi-t3':'â Admin-Effizienz','roi-t4':'â¡ Hugo-Absicherung',
-  'roi-m1':'MessgrÃ¶Ãe: Ã Fahrzeit vor/nach System','roi-m2':'MessgrÃ¶Ãe: AuftrÃ¤ge ohne qualifizierten Techniker','roi-m3':'MessgrÃ¶Ãe: Zeiterfassung heute vs. mit System','roi-m4':'MessgrÃ¶Ãe: Hugo-EinsÃ¤tze mit KapazitÃ¤tskonflikt',
-  'inv-title':'Investition (einmalig)','inv-l1':'IHK KI-Manager Zertifizierung','inv-l2':'Claude API (nutzungsabhÃ¤ngig)','inv-v2':'T&E anfragen',
-  'why-title':'Warum keine festen Zahlen?','why-body':'Die Logik steht. StundensÃ¤tze und Ist-Aufwand sind intern messbar â in der Pilotphase.',
-  'pcta-sub':'Ziel nach 4 Wochen Pilot','pcta-main':'Echte Messwerte â belastbarer ROI',
-  'pr-eye':'Prototyp','pr-heading':'Fertig. Getestet.<br>LauffÃ¤hig.','pr-body':'Kein Mock, keine Simulation. 516 Tests, Dashboard 11/11.',
+  'roi-t1':'🗺 Fahrtzeitersparnis','roi-t2':'📚 Cross-Training','roi-t3':'⚙ Admin-Effizienz','roi-t4':'⚡ Hugo-Absicherung',
+  'roi-m1':'Messgröße: Ø Fahrzeit vor/nach System','roi-m2':'Messgröße: Aufträge ohne qualifizierten Techniker','roi-m3':'Messgröße: Zeiterfassung heute vs. mit System','roi-m4':'Messgröße: Hugo-Einsätze mit Kapazitätskonflikt',
+  'inv-title':'Investition (einmalig)','inv-l1':'IHK KI-Manager Zertifizierung','inv-l2':'Claude API (nutzungsabhängig)','inv-v2':'T&E anfragen',
+  'why-title':'Warum keine festen Zahlen?','why-body':'Die Logik steht. Stundensätze und Ist-Aufwand sind intern messbar — in der Pilotphase.',
+  'pcta-sub':'Ziel nach 4 Wochen Pilot','pcta-main':'Echte Messwerte → belastbarer ROI',
+  'pr-eye':'Prototyp','pr-heading':'Fertig. Getestet.<br>Lauffähig.','pr-body':'Kein Mock, keine Simulation. 516 Tests, Dashboard 11/11.',
   'pc1-l':'Tests · 0 Fehler','pc1-t':'9 Testdateien · Python 3.12 · Pydantic v2 · automatisiert',
   'pc2-l':'Dashboard Checks','pc2-t':'Medtronic Design · Auslastung · SLA · ROI',
   'pc3-l':'Produkt-Cluster','pc3-t':'15 Familien · L2/L3-Regeln · HF-Sonderfall abgebildet',
-  'pc4-l':'Erweiterbar','pc4-t':'Demo-Daten. Techniker, Cluster und Produktfamilien sind Konfigurationsparameter â jederzeit anpassbar an jede Unternehmensstruktur.',
-  'sc-note-title':'Demo-Daten â beliebig erweiterbar',
-  'sc-note-body':'Techniker, Produktfamilien und Cluster sind Konfigurationsparameter â nicht hardcodiert. Das System passt sich an jede Unternehmensstruktur an.',
-  'sc-note-btn':'â Daten anpassen',
-  'cl-expand-note':'+ Neue Cluster &amp; Familien jederzeit ergÃ¤nzbar',
+  'pc4-l':'Erweiterbar','pc4-t':'Demo-Daten. Techniker, Cluster und Produktfamilien sind Konfigurationsparameter — jederzeit anpassbar an jede Unternehmensstruktur.',
+  'sc-note-title':'Demo-Daten — beliebig erweiterbar',
+  'sc-note-body':'Techniker, Produktfamilien und Cluster sind Konfigurationsparameter — nicht hardcodiert. Das System passt sich an jede Unternehmensstruktur an.',
+  'sc-note-btn':'⚙ Daten anpassen',
+  'cl-expand-note':'+ Neue Cluster &amp; Familien jederzeit ergänzbar',
   'wf-eye':'Automatisierter Ablauf',
-  'wf-heading':'Vollautomatisch.<br>Copilot â kein Autopilot.',
-  'wf-body':'Das System liest AuftrÃ¤ge aus SMax Go, plant, informiert und prÃ¼ft â der Disponent bestÃ¤tigt die SchlÃ¼sselentscheidungen.',
-  'wf-auto-title':'KI Ã¼bernimmt automatisch',
-  'wf-auto-body':'FÃ¤lligkeiten erkennen · Scoring berechnen · Touren bÃ¼ndeln · Techniker benachrichtigen · Dokumente prÃ¼fen · Kundenmails senden',
+  'wf-heading':'Vollautomatisch.<br>Copilot — kein Autopilot.',
+  'wf-body':'Das System liest Aufträge aus SMax Go, plant, informiert und prüft — der Disponent bestätigt die Schlüsselentscheidungen.',
+  'wf-auto-title':'KI übernimmt automatisch',
+  'wf-auto-body':'Fälligkeiten erkennen · Scoring berechnen · Touren bündeln · Techniker benachrichtigen · Dokumente prüfen · Kundenmails senden',
   'wf-human-title':'Mensch entscheidet',
-  'wf-human-body':'Techniker-Zuweisung bestÃ¤tigen · Termin freigeben · Ausnahmen setzen · SMax Go bleibt das Kernsystem',
-  'wfs1-t':'Auftrag einlesen','wfs1-b':'SMax Go tÃ¤glich automatisch ausgelesen','wfs1-badge':'Auto',
-  'wfs2-t':'KI-Scoring','wfs2-b':'Kompetenz · Fahrzeit · Auslastung â Top-3 mit BegrÃ¼ndung','wfs2-badge':'Auto',
-  'wfs3-t':'BestÃ¤tigung','wfs3-b':'Disponent prÃ¼ft und bestÃ¤tigt die Zuweisung','wfs3-badge':'Mensch',
-  'wfs4-t':'Techniker-Info','wfs4-b':'Push + Mail mit Klinik, Code, GerÃ¤ten, Dauer, Checkliste','wfs4-badge':'Auto',
-  'wfs5-t':'PM Due-Date','wfs5-b':'FÃ¤lligkeitserinnerung automatisch â 5 Tage Vorlauf','wfs5-badge':'Auto',
-  'wfs6-t':'TD-PrÃ¼fung','wfs6-b':'VollstÃ¤ndigkeit · richtige Version · alle Pflichtdokumente geprÃ¼ft','wfs6-badge':'Auto',
-  'wfs7-t':'Kundenmail','wfs7-b':'Serviceberichte automatisch versandt â in SMax dokumentiert','wfs7-badge':'Auto',
-  'dm-eye':'Live Demo','dm-heading':'Techniker-Empfehlung.<br>Live erleben.','dm-body':'Klinik, Auftragstyp und Cluster wÃ¤hlen.',
-  'dl1':'Klinik','dl2':'Auftragstyp','dl3':'Produkt-Cluster','d-run':'ð Techniker finden','dm-empty-txt':'Auftrag eingeben und<br>Empfehlung starten',
-  'rm-eye':'NÃ¤chste Schritte','rm-heading':'Roadmap &amp;<br>Antragsstellung.',
-  'tl1-d':'â Abgeschlossen','tl1-t':'Prototyp-Entwicklung','tl1-dt':'516 Tests · Dashboard 11/11 · Autodidaktisch',
-  'tl2-d':'â Jetzt','tl2-t':'Antrag Projektfreigabe','tl2-dt':'Kein Budget · Pilotphase 2â3 Techniker · Sofort',
-  'tl3-d':'â Parallel','tl3-t':'IHK KI-Manager','tl3-dt':'DIHK · 64 UE · Live-Online · AugâNov 2026',
+  'wf-human-body':'Techniker-Zuweisung bestätigen · Termin freigeben · Ausnahmen setzen · SMax Go bleibt das Kernsystem',
+  'wfs1-t':'Auftrag einlesen','wfs1-b':'SMax Go täglich automatisch ausgelesen','wfs1-badge':'Auto',
+  'wfs2-t':'KI-Scoring','wfs2-b':'Kompetenz · Fahrzeit · Auslastung — Top-3 mit Begründung','wfs2-badge':'Auto',
+  'wfs3-t':'Bestätigung','wfs3-b':'Disponent prüft und bestätigt die Zuweisung','wfs3-badge':'Mensch',
+  'wfs4-t':'Techniker-Info','wfs4-b':'Push + Mail mit Klinik, Code, Geräten, Dauer, Checkliste','wfs4-badge':'Auto',
+  'wfs5-t':'PM Due-Date','wfs5-b':'Fälligkeitserinnerung automatisch — 5 Tage Vorlauf','wfs5-badge':'Auto',
+  'wfs6-t':'TD-Prüfung','wfs6-b':'Vollständigkeit · richtige Version · alle Pflichtdokumente geprüft','wfs6-badge':'Auto',
+  'wfs7-t':'Kundenmail','wfs7-b':'Serviceberichte automatisch versandt — in SMax dokumentiert','wfs7-badge':'Auto',
+  'dm-eye':'Live Demo','dm-heading':'Techniker-Empfehlung.<br>Live erleben.','dm-body':'Klinik, Auftragstyp und Cluster wählen.',
+  'dl1':'Klinik','dl2':'Auftragstyp','dl3':'Produkt-Cluster','d-run':'🔍 Techniker finden','dm-empty-txt':'Auftrag eingeben und<br>Empfehlung starten',
+  'rm-eye':'Nächste Schritte','rm-heading':'Roadmap &amp;<br>Antragsstellung.',
+  'tl1-d':'✅ Abgeschlossen','tl1-t':'Prototyp-Entwicklung','tl1-dt':'516 Tests · Dashboard 11/11 · Autodidaktisch',
+  'tl2-d':'→ Jetzt','tl2-t':'Antrag Projektfreigabe','tl2-dt':'Kein Budget · Pilotphase 2–3 Techniker · Sofort',
+  'tl3-d':'→ Parallel','tl3-t':'IHK KI-Manager','tl3-dt':'DIHK · 64 UE · Live-Online · Aug–Nov 2026',
   'tl4-d':'Q3 2026','tl4-t':'SMax Go Integration','tl4-dt':'API-Anbindung · Feedback-Loop',
-  'tl5-d':'Q4 2026','tl5-t':'FlÃ¤cheneinfÃ¼hrung','tl5-dt':'Alle 14 Techniker · Vollbetrieb',
-  'req1-t':'ð Antrag 1: Projektfreigabe','req1-1':'ZusÃ¤tzliches Budget: 0 â¬','req1-2':'Prototyp vollstÃ¤ndig fertig','req1-3':'Ziel: Offizielle Anerkennung','req1-4':'Pilotphase mit bestehender Arbeitszeit',
-  'req2-t':'ð Antrag 2: IHK KI-Manager','req2-1':'DIHK-Bildungs-gGmbH · Live-Online abends','req2-2':'64 Unterrichtseinheiten','req2-3':'Termine: 17.08.â26.11.2026','req2-4':'Kurskosten: ca. 2.590 â¬ (einmalig)','req2-5':'Projektarbeit = dieses System',
-  'cta-h':'Bereit fÃ¼r den<br><span>Pilotstart.</span>','cta-s':'Drei Schritte. Kein Budget. Sofort startbereit.',
+  'tl5-d':'Q4 2026','tl5-t':'Flächeneinführung','tl5-dt':'Alle 14 Techniker · Vollbetrieb',
+  'req1-t':'📋 Antrag 1: Projektfreigabe','req1-1':'Zusätzliches Budget: 0 €','req1-2':'Prototyp vollständig fertig','req1-3':'Ziel: Offizielle Anerkennung','req1-4':'Pilotphase mit bestehender Arbeitszeit',
+  'req2-t':'🎓 Antrag 2: IHK KI-Manager','req2-1':'DIHK-Bildungs-gGmbH · Live-Online abends','req2-2':'64 Unterrichtseinheiten','req2-3':'Termine: 17.08.–26.11.2026','req2-4':'Kurskosten: ca. 2.590 € (einmalig)','req2-5':'Projektarbeit = dieses System',
+  'cta-h':'Bereit für den<br><span>Pilotstart.</span>','cta-s':'Drei Schritte. Kein Budget. Sofort startbereit.',
   'cs1':'Pilotfreigabe','cs2':'IHK KI-Manager','cs3':'SMax Go Integration',
-  'cta-b1':'Demo ansehen â','cta-b2':'Algorithmus erkunden',
+  'cta-b1':'Demo ansehen ↗','cta-b2':'Algorithmus erkunden',
   'footer':'Medtronic GmbH · Service & Repair Deutschland · Marc Liebhardt T10 · IHK KI-Manager Projekt 2026',
   'cfg-tit':'Projektdaten anpassen','cfg-subt':'Werte erscheinen auf der gesamten Seite',
-  'cfl1':'Techniker','cfl2':'VertragsgerÃ¤te','cfl3':'Kliniken','cfl4':'Tests bestanden','cfl5':'Dashboard Checks','cfl6':'Produkt-Cluster','cfl7':'Produktfamilien',
-  'cfg-nt':'â Werte aus <code>config.py</code> (Pilotphase automatisch)'
+  'cfl1':'Techniker','cfl2':'Vertragsgeräte','cfl3':'Kliniken','cfl4':'Tests bestanden','cfl5':'Dashboard Checks','cfl6':'Produkt-Cluster','cfl7':'Produktfamilien',
+  'cfg-nt':'⚙ Werte aus <code>config.py</code> (Pilotphase automatisch)'
 },
 en:{
   'nl-feat':'Features','nl-workflow':'Workflow','nl-algo':'Algorithm','nl-proto':'Prototype','nl-demo-nav':'Demo','nl-road':'Roadmap',
   'nav-cta':'Start Demo','lang-tog':'DE',
   'h-eye':'Medtronic GmbH · Service & Repair Germany','h-t2':'Field Service Assistant',
-  'btn-demo':'View Demo â','btn-proto':'Explore Prototype',
+  'btn-demo':'View Demo ↗','btn-proto':'Explore Prototype',
   'sl-tests':'Tests passed','sl-dev':'Contract devices','sl-tech':'Technicians','sl-dash':'Dashboard Checks',
-  'f-eye':'Core Features','f-heading':'Six modules.<br>One system.','f-body':'From technician recommendation to Hugo capacity planning â all integrated.',
+  'f-eye':'Core Features','f-heading':'Six modules.<br>One system.','f-body':'From technician recommendation to Hugo capacity planning — all integrated.',
   'ft1':'Technician Recommendation','fd1':'Scoring by competency, travel time, utilization. Top-3 candidates with reasoning.',
-  'ft2':'Tour Bundling','fd2':'2nd device same family = 70% time. MonâWed for OR clinics.',
-  'ft3':'Buffer & SLA','fd3':'Check-in, university clinic, large device â automated. 48h SLA monitored.',
+  'ft2':'Tour Bundling','fd2':'2nd device same family = 70% time. Mon–Wed for OR clinics.',
+  'ft3':'Buffer & SLA','fd3':'Check-in, university clinic, large device — automated. 48h SLA monitored.',
   'ft4':'Competency Matching','fd4':'6 clusters with L2/L3 rules. No technician assigned without qualification.','fb4':'6 Clusters',
   'ft5':'Hugo Key Account','fd5':'T1/T6/T10/T11: 25.6h capacity, 20% reserve. Early warning >80%.',
   'ft6':'Cross-Training Radar','fd6':'Competency gaps identified. Training prioritized by coverage risk.','fb6':'Training Radar',
   'sc-eye':'Algorithm','sc-heading':'Scoring.<br>Transparent.','sc-body':'No black-box. Every recommendation is explainable.',
-  'sb1l':'Competency','sb1n':'Mandatory prerequisite â L2 or L3 per cluster',
-  'sb2l':'Travel time','sb2n':'Haversine distance Ã factor 1.35 (real traffic)',
-  'sb3l':'Utilization','sb3n':'Labor law compliant â warning 34h, exclusion 36h',
-  'sc-rec':'Recommendation â UK Ulm (Hugo PM)',
+  'sb1l':'Competency','sb1n':'Mandatory prerequisite — L2 or L3 per cluster',
+  'sb2l':'Travel time','sb2n':'Haversine distance × factor 1.35 (real traffic)',
+  'sb3l':'Utilization','sb3n':'Labor law compliant — warning 34h, exclusion 36h',
+  'sc-rec':'Recommendation — UK Ulm (Hugo PM)',
   'cl-eye':'Product Portfolio','cl-heading':'6 Clusters.<br>15 Product Families.','cl-body':'Fully classified with L2/L3 requirements per order type.',
   'cth1':'Cluster','cth2':'Product families','cth5':'Training',
   'ctr1':'internal','ctr2':'T&E enquire','ctr3':'TC+10h · T&E enquire','ctr4':'TC+8h · T&E enquire','ctr5':'TC+6h · T&E enquire','ctr6':'Online/Teams',
   'cl-note':'* Training costs: contact Training & Education directly',
   'roi-eye':'Business Case','roi-heading':'Value potential.<br>Transparently calculated.','roi-body':'Real numbers after pilot phase. Here is the calculation logic.',
-  'roi-t1':'ðº Travel savings','roi-t2':'ð Cross-training','roi-t3':'â Admin efficiency','roi-t4':'â¡ Hugo coverage',
+  'roi-t1':'🗺 Travel savings','roi-t2':'📚 Cross-training','roi-t3':'⚙ Admin efficiency','roi-t4':'⚡ Hugo coverage',
   'roi-m1':'Metric: avg. travel time before/after system','roi-m2':'Metric: orders delayed due to missing competency','roi-m3':'Metric: planning hours today vs. with system','roi-m4':'Metric: Hugo assignments with capacity conflict',
   'inv-title':'Investment (one-time)','inv-l1':'IHK AI Manager Certification','inv-l2':'Claude API (usage-based)','inv-v2':'T&E enquire',
-  'why-title':'Why no fixed numbers?','why-body':'The logic is set. Hourly rates and actual effort are internal data â measurable in the pilot.',
-  'pcta-sub':'Goal after 4 weeks pilot','pcta-main':'Real data â reliable ROI',
+  'why-title':'Why no fixed numbers?','why-body':'The logic is set. Hourly rates and actual effort are internal data — measurable in the pilot.',
+  'pcta-sub':'Goal after 4 weeks pilot','pcta-main':'Real data → reliable ROI',
   'pr-eye':'Prototype','pr-heading':'Complete. Tested.<br>Running.','pr-body':'No mock, no simulation. 516 tests, dashboard 11/11.',
   'pc1-l':'Tests · 0 Errors','pc1-t':'9 test files · Python 3.12 · Pydantic v2 · automated',
   'pc2-l':'Dashboard Checks','pc2-t':'Medtronic Design · Utilization · SLA · ROI',
   'pc3-l':'Product Clusters','pc3-t':'15 families · L2/L3 rules · HF special case mapped',
-  'pc4-l':'Scalable','pc4-t':'Demo data. Technicians, clusters and product families are config parameters â adaptable to any company structure at any time.',
-  'sc-note-title':'Demo data â freely expandable',
-  'sc-note-body':'Technicians, product families and clusters are configuration parameters â not hardcoded. The system adapts to any company structure.',
-  'sc-note-btn':'â Edit data',
+  'pc4-l':'Scalable','pc4-t':'Demo data. Technicians, clusters and product families are config parameters — adaptable to any company structure at any time.',
+  'sc-note-title':'Demo data — freely expandable',
+  'sc-note-body':'Technicians, product families and clusters are configuration parameters — not hardcoded. The system adapts to any company structure.',
+  'sc-note-btn':'⚙ Edit data',
   'cl-expand-note':'+ New clusters &amp; families can be added anytime',
   'wf-eye':'Automated Workflow',
-  'wf-heading':'Fully automated.<br>Copilot â not autopilot.',
-  'wf-body':'The system reads orders from SMax Go, plans, informs and checks â the dispatcher confirms key decisions.',
+  'wf-heading':'Fully automated.<br>Copilot — not autopilot.',
+  'wf-body':'The system reads orders from SMax Go, plans, informs and checks — the dispatcher confirms key decisions.',
   'wf-auto-title':'AI handles automatically',
   'wf-auto-body':'Detect due dates · Calculate scoring · Bundle tours · Notify technicians · Check documents · Send customer emails',
   'wf-human-title':'Human decides',
   'wf-human-body':'Confirm technician assignment · Release appointment · Set exceptions · SMax Go remains the core system',
   'wfs1-t':'Read order','wfs1-b':'SMax Go read automatically daily','wfs1-badge':'Auto',
-  'wfs2-t':'AI Scoring','wfs2-b':'Competency · Travel · Utilization â Top-3 with reasoning','wfs2-badge':'Auto',
+  'wfs2-t':'AI Scoring','wfs2-b':'Competency · Travel · Utilization — Top-3 with reasoning','wfs2-badge':'Auto',
   'wfs3-t':'Confirmation','wfs3-b':'Dispatcher reviews and confirms the assignment','wfs3-badge':'Human',
   'wfs4-t':'Tech notification','wfs4-b':'Push + email: clinic, code, devices, duration, checklist','wfs4-badge':'Auto',
-  'wfs5-t':'PM Due date','wfs5-b':'Automatic due date reminder â 5 days in advance','wfs5-badge':'Auto',
+  'wfs5-t':'PM Due date','wfs5-b':'Automatic due date reminder — 5 days in advance','wfs5-badge':'Auto',
   'wfs6-t':'TD check','wfs6-b':'Completeness · correct version · all mandatory docs verified','wfs6-badge':'Auto',
-  'wfs7-t':'Customer email','wfs7-b':'Service reports sent automatically â documented in SMax','wfs7-badge':'Auto',
+  'wfs7-t':'Customer email','wfs7-b':'Service reports sent automatically — documented in SMax','wfs7-badge':'Auto',
   'dm-eye':'Live Demo','dm-heading':'Technician Recommendation.<br>Live.','dm-body':'Select clinic, order type and cluster.',
-  'dl1':'Clinic','dl2':'Order type','dl3':'Product cluster','d-run':'ð Find technician','dm-empty-txt':'Enter order and<br>start recommendation',
+  'dl1':'Clinic','dl2':'Order type','dl3':'Product cluster','d-run':'🔍 Find technician','dm-empty-txt':'Enter order and<br>start recommendation',
   'rm-eye':'Next Steps','rm-heading':'Roadmap &amp;<br>Approval requests.',
-  'tl1-d':'â Complete','tl1-t':'Prototype Development','tl1-dt':'516 tests · Dashboard 11/11 · Self-taught',
-  'tl2-d':'â Now','tl2-t':'Project Approval Request','tl2-dt':'No budget · Pilot with 2â3 techs · Ready now',
-  'tl3-d':'â Parallel','tl3-t':'IHK AI Manager','tl3-dt':'DIHK · 64h · Live-Online · AugâNov 2026',
+  'tl1-d':'✅ Complete','tl1-t':'Prototype Development','tl1-dt':'516 tests · Dashboard 11/11 · Self-taught',
+  'tl2-d':'→ Now','tl2-t':'Project Approval Request','tl2-dt':'No budget · Pilot with 2–3 techs · Ready now',
+  'tl3-d':'→ Parallel','tl3-t':'IHK AI Manager','tl3-dt':'DIHK · 64h · Live-Online · Aug–Nov 2026',
   'tl4-d':'Q3 2026','tl4-t':'SMax Go Integration','tl4-dt':'API connection · Feedback loop',
   'tl5-d':'Q4 2026','tl5-t':'Full Rollout','tl5-dt':'All 14 technicians · Live operation',
-  'req1-t':'ð Request 1: Project Approval','req1-1':'Additional budget: â¬0','req1-2':'Prototype fully complete','req1-3':'Goal: Official project recognition','req1-4':'Pilot within existing working time',
-  'req2-t':'ð Request 2: IHK AI Manager','req2-1':'DIHK Education · Live-Online evenings','req2-2':'64 teaching units','req2-3':'Dates: 17 Aug â 26 Nov 2026','req2-4':'Course fee: ~â¬2,590 (one-time)','req2-5':'Project work = this system',
+  'req1-t':'📋 Request 1: Project Approval','req1-1':'Additional budget: €0','req1-2':'Prototype fully complete','req1-3':'Goal: Official project recognition','req1-4':'Pilot within existing working time',
+  'req2-t':'🎓 Request 2: IHK AI Manager','req2-1':'DIHK Education · Live-Online evenings','req2-2':'64 teaching units','req2-3':'Dates: 17 Aug – 26 Nov 2026','req2-4':'Course fee: ~€2,590 (one-time)','req2-5':'Project work = this system',
   'cta-h':'Ready for<br><span>Pilot launch.</span>','cta-s':'Three steps. No budget. Ready to start.',
   'cs1':'Pilot approval','cs2':'IHK AI Manager','cs3':'SMax Go Integration',
-  'cta-b1':'View Demo â','cta-b2':'Explore algorithm',
+  'cta-b1':'View Demo ↗','cta-b2':'Explore algorithm',
   'footer':'Medtronic GmbH · Service & Repair Germany · Marc Liebhardt T10 · IHK AI Manager Project 2026',
   'cfg-tit':'Edit project data','cfg-subt':'Values appear throughout the page',
   'cfl1':'Technicians','cfl2':'Contract devices','cfl3':'Clinics','cfl4':'Tests passed','cfl5':'Dashboard checks','cfl6':'Product clusters','cfl7':'Product families',
-  'cfg-nt':'â Values from <code>config.py</code> (auto in pilot)'
+  'cfg-nt':'⚙ Values from <code>config.py</code> (auto in pilot)'
 }};
 
-/* ââ CONFIG âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ── CONFIG ─────────────────────────────────────────────────────────────── */
 const DEFS={tech:14,dev:1985,cli:82,tests:516,dash:'11/11',clust:6,pfam:15};
 let cfg={...DEFS}, lang='de';
 
@@ -1445,11 +1445,11 @@ function applyStats(){
   if(fb4)fb4.textContent=(lang==='de'?cfg.clust+' Cluster':cfg.clust+' Clusters');
   document.getElementById('pc3-t').textContent=(lang==='de'?cfg.pfam+' Produktfamilien · L2/L3-Regeln · HF-Sonderfall abgebildet':cfg.pfam+' product families · L2/L3 rules · HF special case mapped');
   const roi=document.getElementById('roi-f1');
-  if(roi)roi.innerHTML=cfg.tech+(lang==='de'?' Techniker Ã [Ã Einsparung h/Woche] Ã 52 Ã [Stundensatz â¬]':' technicians Ã [avg. savings h/week] Ã 52 Ã [hourly rate â¬]');
+  if(roi)roi.innerHTML=cfg.tech+(lang==='de'?' Techniker × [Ø Einsparung h/Woche] × 52 × [Stundensatz €]':' technicians × [avg. savings h/week] × 52 × [hourly rate €]');
   document.getElementById('cfg-tech-roi').textContent=cfg.tech;
 }
 
-/* ââ LANGUAGE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ── LANGUAGE ───────────────────────────────────────────────────────────── */
 function openDemo(){
   location.href='demo.html?lang='+lang;
 }
@@ -1471,7 +1471,7 @@ function applyLang(l){
   document.documentElement.lang=l;
 }
 
-/* ââ NAVIGATION âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ── NAVIGATION ─────────────────────────────────────────────────────────── */
 function goTo(id){
   const el=document.getElementById(id);
   if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
@@ -1483,7 +1483,7 @@ document.getElementById('cfg-ov').addEventListener('click',function(e){
   if(e.target===this)this.classList.remove('open');
 });
 
-/* ââ CONFIG PANEL ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ── CONFIG PANEL ────────────────────────────────────────────────────────── */
 function toggleCfg(){
   document.getElementById('cfg-ov').classList.toggle('open');
   const ov=document.getElementById('cfg-ov');
@@ -1508,8 +1508,8 @@ function applyCfg(){
   applyStats();
   document.getElementById('cfg-ov').classList.remove('open');
   const b=document.getElementById('cfg-btn');
-  b.style.background='rgba(94,221,159,.2)';b.textContent='â';
-  setTimeout(()=>{b.style.background='';b.textContent='â'},1800);
+  b.style.background='rgba(94,221,159,.2)';b.textContent='✓';
+  setTimeout(()=>{b.style.background='';b.textContent='⚙'},1800);
 }
 function resetCfg(){
   cfg={...DEFS};
@@ -1519,11 +1519,11 @@ function resetCfg(){
   document.getElementById('ci-pfam').value=cfg.pfam;
 }
 
-/* ââ DEMO âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ── DEMO ───────────────────────────────────────────────────────────────── */
 const clinics={
   uklulm:{name:'UK Ulm',lat:48.42,lon:9.96},uke:{name:'UKE Hamburg',lat:53.59,lon:9.97},
   mhh:{name:'MHH Hannover',lat:52.38,lon:9.79},tud:{name:'UK Dresden',lat:51.06,lon:13.74},
-  koeln:{name:'Uniklinik KÃ¶ln',lat:50.92,lon:6.92},erlangen:{name:'UK Erlangen',lat:49.60,lon:11.00}
+  koeln:{name:'Uniklinik Köln',lat:50.92,lon:6.92},erlangen:{name:'UK Erlangen',lat:49.60,lon:11.00}
 };
 const techs=[
   {id:'T10',name:'Marc L.',loc:'Balingen',lat:48.27,lon:8.85,clusters:['hugo','hf','smallcap','monitoring'],load:62,hugo:true},
@@ -1543,11 +1543,11 @@ function runDemo(){
   const res=document.getElementById('d-results');
   const bnd=document.getElementById('d-bundle');
   const wrn=document.getElementById('d-warn');
-  if(!kl||!ty||!cl){res.innerHTML='<div class="demo-empty"><div class="demo-empty-icon">â ï¸</div><div>'+(lang==='de'?'Bitte alle Felder ausfÃ¼llen':'Please fill all fields')+'</div></div>';return}
+  if(!kl||!ty||!cl){res.innerHTML='<div class="demo-empty"><div class="demo-empty-icon">⚠️</div><div>'+(lang==='de'?'Bitte alle Felder ausfüllen':'Please fill all fields')+'</div></div>';return}
   const clinic=clinics[kl];
   let q=techs.filter(t=>t.clusters.includes(cl));
   if(cl==='hugo')q=q.filter(t=>t.hugo);
-  if(!q.length){res.innerHTML='<div class="demo-empty"><div class="demo-empty-icon">â</div><div>'+(lang==='de'?'Kein Techniker qualifiziert.<br>Cross-Training empfohlen!':'No qualified technician.<br>Cross-training recommended!')+'</div></div>';bnd.style.display='none';wrn.style.display='none';return}
+  if(!q.length){res.innerHTML='<div class="demo-empty"><div class="demo-empty-icon">❌</div><div>'+(lang==='de'?'Kein Techniker qualifiziert.<br>Cross-Training empfohlen!':'No qualified technician.<br>Cross-training recommended!')+'</div></div>';bnd.style.display='none';wrn.style.display='none';return}
   const scored=q.map(t=>{
     const d=hav(t.lat,t.lon,clinic.lat,clinic.lon);
     const k=t.clusters.length>=4?1:t.clusters.length===3?.85:.7;
@@ -1555,7 +1555,7 @@ function runDemo(){
     const a=Math.max(0,1-t.load/100);
     return{...t,score:Math.round((k*.4+f*.35+a*.25)*100),dist:Math.round(d)};
   }).sort((a,b)=>b.score-a.score).slice(0,3);
-  const ranks=['ð¥','ð¥','ð¥'];
+  const ranks=['🥇','🥈','🥉'];
   const rankColors=['gold','silver','bronze'];
   const topCls=['top','',''];
   res.innerHTML=scored.map((t,i)=>`
@@ -1572,15 +1572,58 @@ function runDemo(){
       </div>
     </div>`).join('');
   bnd.style.display='block';
-  bnd.textContent=(lang==='de'?'ð Tour-BÃ¼ndelung erkannt: weitere GerÃ¤te in Region mÃ¶glich â Synergie +30% Zeitersparnis':'ð Tour bundling detected: additional devices in region possible â synergy +30% time savings');
-  if(scored[0].load>75){wrn.style.display='block';wrn.textContent=(lang==='de'?`â  ${scored[0].id} bei ${scored[0].load}% Auslastung â Wochenlimit prÃ¼fen`:`â  ${scored[0].id} at ${scored[0].load}% load â check weekly limit`);}
+  bnd.textContent=(lang==='de'?'🔗 Tour-Bündelung erkannt: weitere Geräte in Region möglich — Synergie +30% Zeitersparnis':'🔗 Tour bundling detected: additional devices in region possible — synergy +30% time savings');
+  if(scored[0].load>75){wrn.style.display='block';wrn.textContent=(lang==='de'?`⚠ ${scored[0].id} bei ${scored[0].load}% Auslastung — Wochenlimit prüfen`:`⚠ ${scored[0].id} at ${scored[0].load}% load — check weekly limit`);}
   else wrn.style.display='none';
 }
 
-/* ââ SCROLL REVEAL ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ── SCROLL REVEAL ──────────────────────────────────────────────────────── */
 const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')}),{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 </script>
-<!-- PASSWORD PROTECTION --><div id="pw-overlay" style="position:fixed;inset:0;z-index:9998;background:#000810;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;font-family:'Plus Jakarta Sans',sans-serif">  <div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.25)">Medtronic GmbH · Field Service AI</div>  <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#00A3E0,#0072CE);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Zugangscode erforderlich</div>  <div style="display:flex;flex-direction:column;gap:.6rem;width:280px">    <input id="pw-input" type="password" placeholder="Passwort eingeben..."      style="padding:.75rem 1rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;outline:none;width:100%"      onkeydown="if(event.key==='Enter')checkPw()"      oninput="document.getElementById('pw-err').style.display='none'">    <button onclick="checkPw()"      style="padding:.75rem;background:linear-gradient(135deg,#0072CE,#00A3E0);border:none;border-radius:8px;color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">      Zugang â    </button>    <div id="pw-err" style="display:none;font-size:.75rem;color:#FF8080;text-align:center">Falsches Passwort</div>  </div>  <div style="font-size:.68rem;color:rgba(255,255,255,.18)">Vertraulich · Nur fÃ¼r autorisierte Personen</div></div><script>(function(){  const HASH='037453db72fb8a93ebe48d4ff52b1b493cdf56ef6a28240a65c6055b76d8f360';  const KEY='fsa_auth';  if(sessionStorage.getItem(KEY)===HASH){    document.getElementById('pw-overlay').style.display='none';    return;  }  async function checkPw(){    const val=document.getElementById('pw-input').value;    const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(val));    const hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');    if(hash===HASH){      sessionStorage.setItem(KEY,HASH);      document.getElementById('pw-overlay').style.display='none';    } else {      document.getElementById('pw-err').style.display='block';      document.getElementById('pw-input').value='';      document.getElementById('pw-input').focus();    }  }  window.checkPw=checkPw;  document.getElementById('pw-input').focus();})();</script>
+
+<!-- PASSWORD PROTECTION -->
+<div id="pw-overlay" style="position:fixed;inset:0;z-index:99999;background:#000810;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.25)">Medtronic GmbH · Field Service AI</div>
+  <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#00A3E0,#0072CE);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Zugangscode erforderlich</div>
+  <div style="display:flex;flex-direction:column;gap:.6rem;width:280px">
+    <input id="pw-input" type="password" placeholder="Passwort eingeben..." style="padding:.75rem 1rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;outline:none;width:100%" onkeydown="if(event.key==='Enter')checkPw()" oninput="document.getElementById('pw-err').style.display='none'">
+    <button onclick="checkPw()" style="padding:.75rem;background:linear-gradient(135deg,#0072CE,#00A3E0);border:none;border-radius:8px;color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">Zugang ↗</button>
+    <div id="pw-err" style="display:none;font-size:.75rem;color:#FF8080;text-align:center">Falsches Passwort</div>
+  </div>
+  <div style="font-size:.68rem;color:rgba(255,255,255,.18)">Vertraulich · Nur für autorisierte Personen</div>
+</div>
+<script>
+(function(){
+  var H='037453db72fb8a93ebe48d4ff52b1b493cdf56ef6a28240a65c6055b76d8f360';
+  var K='fsa_auth';
+  function initPw(){
+    var ov=document.getElementById('pw-overlay');
+    if(sessionStorage.getItem(K)===H){ov.style.display='none';return;}
+    ov.style.display='flex';
+    document.getElementById('pw-input').focus();
+  }
+  async function checkPw(){
+    var v=document.getElementById('pw-input').value;
+    var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));
+    var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+    if(h===H){
+      sessionStorage.setItem(K,H);
+      document.getElementById('pw-overlay').style.display='none';
+    } else {
+      document.getElementById('pw-err').style.display='block';
+      document.getElementById('pw-input').value='';
+      document.getElementById('pw-input').focus();
+    }
+  }
+  window.checkPw=checkPw;
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',initPw);
+  } else {
+    initPw();
+  }
+})();
+</script>
+
 </body>
 </html>
