@@ -745,7 +745,29 @@ footer{
 
 <!-- ── NAV ─────────────────────────────────────────────────────────────── -->
 <nav id="nav">
-  <button class="nav-brand" onclick="goTo('top')">Field Service AI</button>
+  <button class="nav-brand" onclick="goTo('top')" style="display:flex;align-items:center;gap:.65rem;background:none;border:none;cursor:pointer;padding:0">
+  <svg width="32" height="32" viewBox="0 0 152 152" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="76,2 140,38 140,114 76,150 12,114 12,38" fill="none" stroke="#0072CE" stroke-width="2" opacity="0.3"/>
+    <polygon points="76,14 130,47 130,105 76,138 22,105 22,47" fill="#000D2A" stroke="#0072CE" stroke-width="2"/>
+    <polygon points="76,30 114,52 114,100 76,122 38,100 38,52" fill="#001845" stroke="#00A3E0" stroke-width="1.5"/>
+    <line x1="76" y1="34" x2="76" y2="64" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+    <line x1="110" y1="54" x2="83" y2="69" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+    <line x1="110" y1="98" x2="83" y2="83" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+    <line x1="76" y1="118" x2="76" y2="88" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+    <line x1="42" y1="98" x2="69" y2="83" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+    <line x1="42" y1="54" x2="69" y2="69" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
+    <circle cx="76" cy="34" r="7" fill="#6EC6FF"/>
+    <circle cx="110" cy="54" r="7" fill="#00A3E0"/>
+    <circle cx="110" cy="98" r="7" fill="#0072CE"/>
+    <circle cx="76" cy="118" r="7" fill="#00A3E0"/>
+    <circle cx="42" cy="98" r="7" fill="#0072CE"/>
+    <circle cx="42" cy="54" r="7" fill="#6EC6FF"/>
+    <circle cx="76" cy="76" r="14" fill="#0057A8" stroke="#00A3E0" stroke-width="2"/>
+    <circle cx="76" cy="76" r="8" fill="#00A3E0"/>
+    <circle cx="76" cy="76" r="4" fill="#6EC6FF"/>
+  </svg>
+  <span style="font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;background:linear-gradient(90deg,#fff,#6EC6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Field Service AI</span>
+</button>
   <div class="nav-links">
     <button onclick="goTo('features')" id="nl-feat">Features</button>
     <button onclick="goTo('workflow')" id="nl-workflow">Workflow</button>
@@ -1290,7 +1312,7 @@ footer{
 /* ── TRANSLATIONS ──────────────────────────────────────────────────────── */
 const TX = {
 de:{
-  'nl-feat':'Features','nl-workflow':'Workflow','nl-algo':'Algorithmus','nl-proto':'Prototyp','nl-demo-nav':'Demo','nl-road':'Roadmap','nl-dash':'Dashboard',
+  'nl-feat':'Features','nl-workflow':'Workflow','nl-algo':'Algorithmus','nl-proto':'Prototyp','nl-demo-nav':'Demo','nl-dash':'Dashboard','nl-dash':'Dashboard','nl-road':'Roadmap','nl-dash':'Dashboard',
   'nav-cta':'Demo starten','lang-tog':'EN',
   'h-eye':'Medtronic GmbH · Service & Repair Deutschland','h-t2':'Field Service Assistant',
   'btn-demo':'Demo ansehen ↗','btn-proto':'Prototyp erkunden',
@@ -1360,7 +1382,7 @@ de:{
   'cfg-nt':'⚙ Werte aus <code>config.py</code> (Pilotphase automatisch)'
 },
 en:{
-  'nl-feat':'Features','nl-workflow':'Workflow','nl-algo':'Algorithm','nl-proto':'Prototype','nl-demo-nav':'Demo','nl-road':'Roadmap','nl-dash':'Dashboard',
+  'nl-feat':'Features','nl-workflow':'Workflow','nl-algo':'Algorithm','nl-proto':'Prototype','nl-demo-nav':'Demo','nl-dash':'Dashboard','nl-dash':'Dashboard','nl-road':'Roadmap','nl-dash':'Dashboard',
   'nav-cta':'Start Demo','lang-tog':'DE',
   'h-eye':'Medtronic GmbH · Service & Repair Germany','h-t2':'Field Service Assistant',
   'btn-demo':'View Demo ↗','btn-proto':'Explore Prototype',
