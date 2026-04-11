@@ -334,8 +334,8 @@ body::before{
   <div class="info info-green">Mo 07.04.2026 · 07:04 Uhr · vollständig → Mail automatisch</div>
   <div class="mail">
     <div class="mail-h">
-      <div><strong style="color:var(--frost)">Von:</strong> service.repair@medtronic.com</div>
-      <div><strong style="color:var(--frost)">An:</strong> s.mueller@ukbonn.de</div>
+      <div><strong style="color:var(--frost)">Von:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="47342235312e242269352237262e35072a2223333528292e246924282a">[email&#160;protected]</a></div>
+      <div><strong style="color:var(--frost)">An:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e596cb88908089898097a5908e878a8b8bcb8180">[email&#160;protected]</a></div>
       <div><strong style="color:var(--frost)">Betreff:</strong> Serviceberichte STK — EC300 + NIM — UKB Bonn</div>
     </div>
     <div class="mail-b">
@@ -380,7 +380,7 @@ body::before{
 
 <div class="footer">AI Assisted Field Service Assistant · Medtronic GmbH Service &amp; Repair · 516 Tests grün</div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const AT = {
 de:{
   'brand':'Medtronic · Field Service AI',
@@ -589,13 +589,4 @@ resetTimer();
     var v=document.getElementById('pw-input').value;
     var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));
     var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
-    if(h===H){sessionStorage.setItem(K,H);document.getElementById('pw-overlay').style.display='none';}
-    else{document.getElementById('pw-err').style.display='block';document.getElementById('pw-input').value='';document.getElementById('pw-input').focus();}
-  }
-  window.checkPw=checkPw;
-  document.getElementById('pw-input').focus();
-})();
-</script>
-
-</body>
-</html>
+    if(h

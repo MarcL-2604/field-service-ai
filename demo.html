@@ -521,8 +521,8 @@ textarea.chat-in::placeholder{color:var(--mute)}
   </div>
   <div class="mail-wrap">
     <div class="mail-head">
-      <div><strong style="color:var(--frost)">Von:</strong> service.repair@medtronic.com</div>
-      <div><strong style="color:var(--frost)">An:</strong> s.mueller@ukbonn.de</div>
+      <div><strong style="color:var(--frost)">Von:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e5968097938c8680cb978095848c97a588808191978a8b8c86cb868a88">[email&#160;protected]</a></div>
+      <div><strong style="color:var(--frost)">An:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bccf92d1c9d9d0d0d9cefcc9d7ded3d2d292d8d9">[email&#160;protected]</a></div>
       <div><strong style="color:var(--frost)">Betreff:</strong> Serviceberichte STK — EC300 + NIM4CM01 — UKB</div>
     </div>
     <div class="mail-body">Sehr geehrte Frau Dr. Müller,<br><br>anbei die Serviceunterlagen für die am 01.04.2026 durchgeführten STK.<br><br><strong style="color:var(--white)">EC300 Legend</strong> SN 35B2004118 — Freigegeben ✓<br><strong style="color:var(--white)">NIM4CM01</strong> SN 28A1003456 — Freigegeben ✓<br><br>Nächste STK jeweils: 01.04.2027<br><br>Mit freundlichen Grüssen<br>Medtronic GmbH · Service & Repair</div>
@@ -640,10 +640,12 @@ textarea.chat-in::placeholder{color:var(--mute)}
 <div class="right">
   <div class="chat-hdr">
     <div class="chat-av">AI</div>
-    <div>
+    <div style="flex:1">
       <div class="chat-t" id="chat-title-el">Field Service Assistent</div>
       <div class="chat-s" id="chat-sub-el">Claude-powered · Medtronic</div>
     </div>
+    </div>
+    <button onclick="document.getElementById('apiSetup').style.display='block'" title="API-Key ändern" style="padding:.25rem .5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:5px;color:rgba(255,255,255,.3);cursor:pointer;font-size:.75rem;transition:all .2s;flex-shrink:0" onmouseover="this.style.color='#00A3E0';this.style.borderColor='rgba(0,163,224,.3)'" onmouseout="this.style.color='rgba(255,255,255,.3)';this.style.borderColor='rgba(255,255,255,.1)'">🔑</button>
   </div>
   <div class="api-box" id="apiSetup">
     <div style="font-weight:600;margin-bottom:.3rem;font-size:.78rem" id="api-title-el">API-Key erforderlich</div>
@@ -676,7 +678,7 @@ textarea.chat-in::placeholder{color:var(--mute)}
 
 <div class="ftr" id="ftr-el">AI Assisted Field Service Assistant · Medtronic GmbH Service &amp; Repair · Demo v2 · 516 Tests grün</div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── LANGUAGE FROM URL ──────────────────────────────────────────────────────
 const urlLang = new URLSearchParams(location.search).get('lang') || 'de';
 
@@ -1004,13 +1006,4 @@ document.getElementById('chatMsgs').innerHTML =
     var v=document.getElementById('pw-input').value;
     var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));
     var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
-    if(h===H){sessionStorage.setItem(K,H);document.getElementById('pw-overlay').style.display='none';}
-    else{document.getElementById('pw-err').style.display='block';document.getElementById('pw-input').value='';document.getElementById('pw-input').focus();}
-  }
-  window.checkPw=checkPw;
-  document.getElementById('pw-input').focus();
-})();
-</script>
-
-</body>
-</html>
+    if(h
