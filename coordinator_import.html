@@ -5,1272 +5,779 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Koordinator Import — Field Service AI</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
-  --bg:#000810; --bg2:#010f1f;
-  --primary:#0072CE; --accent:#00A3E0;
-  --border:rgba(0,163,224,.18); --border2:rgba(0,114,206,.25);
-  --text:#e8f4fc; --muted:#7aa8c4; --card:rgba(1,15,31,.85);
-  --ok:#00c896; --warn:#f59e0b; --err:#ef4444;
-  --c1:#3b82f6; --c2:#a78bfa; --c3:#fb923c; --c4:#34d399; --cs:#f472b6; --ch:#facc15;
+  --bg:      #000810;
+  --bg2:     #010f1f;
+  --bg3:     #021428;
+  --glass:   rgba(255,255,255,0.04);
+  --glass2:  rgba(255,255,255,0.07);
+  --border:  rgba(0,114,206,0.18);
+  --border2: rgba(0,114,206,0.35);
+  --primary: #0072CE;
+  --accent:  #00A3E0;
+  --text:    #e8f0f8;
+  --muted:   #6b8aad;
+  --success: #00c48c;
+  --warn:    #f5a623;
+  --error:   #e05252;
+  --gold:    #f5a623;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;overflow-x:hidden}
 
-/* ── Auth ── */
-#auth-overlay{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center}
-.auth-box{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:48px 40px;width:360px;text-align:center;backdrop-filter:blur(20px);box-shadow:0 0 60px rgba(0,114,206,.15)}
-.auth-logo{width:52px;height:52px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:20px;box-shadow:0 0 30px rgba(0,163,224,.3)}
-.auth-box h2{font-family:'Syne',sans-serif;font-size:18px;margin-bottom:6px}
-.auth-box p{color:var(--muted);font-size:12px;margin-bottom:28px}
-.auth-input{width:100%;background:rgba(0,114,206,.08);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;padding:12px 16px;outline:none;margin-bottom:14px;transition:border-color .2s}
-.auth-input:focus{border-color:var(--accent)}
-.auth-btn{width:100%;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;padding:12px;cursor:pointer;transition:opacity .2s}
-.auth-btn:hover{opacity:.88}
-.auth-error{color:var(--err);font-size:12px;margin-top:10px}
+/* GRAIN */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");opacity:.4;pointer-events:none;z-index:0}
 
-/* ── Layout ── */
-#app{display:none;position:relative;z-index:1}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid var(--border);background:rgba(0,8,16,.92);backdrop-filter:blur(16px);position:sticky;top:0;z-index:100}
-.logo-area{display:flex;align-items:center;gap:14px}
-.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px}
-.logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
-.logo-sub{font-size:11px;color:var(--muted)}
-.topbar-right{display:flex;align-items:center;gap:10px}
-.badge-test{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.8px}
-.nav-link{color:var(--muted);font-size:12px;text-decoration:none;padding:6px 12px;border-radius:8px;border:1px solid var(--border);transition:all .2s}
-.nav-link:hover{color:var(--text);border-color:var(--accent)}
+/* PASSWORD OVERLAY */
+#pw-overlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+.pw-card{background:var(--glass2);border:1px solid var(--border2);border-radius:16px;padding:40px;width:360px;text-align:center;backdrop-filter:blur(20px)}
+.pw-card .logo-mark{margin-bottom:20px}
+.pw-card h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px}
+.pw-card p{color:var(--muted);font-size:13px;margin-bottom:24px}
+.pw-card input{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;color:var(--text);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;letter-spacing:2px;text-align:center;margin-bottom:12px}
+.pw-card input:focus{border-color:var(--primary)}
+.pw-btn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background .2s}
+.pw-btn:hover{background:var(--accent)}
+.pw-error{color:var(--error);font-size:12px;margin-top:8px;display:none}
 
-.page{max-width:1240px;margin:0 auto;padding:36px 40px 80px}
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(0,8,16,0.92);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-svg{width:32px;height:32px}
+.logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);line-height:1.2}
+.logo-text span{color:var(--accent);display:block;font-size:10px;font-weight:400;letter-spacing:.05em;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.badge-demo{background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.4);color:var(--gold);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.06em}
+.nav-links{display:flex;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:12px;padding:6px 10px;border-radius:6px;transition:all .2s}
+.nav-links a:hover{color:var(--text);background:var(--glass2)}
 
-.page-header{margin-bottom:28px}
-.page-header h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:5px}
-.page-header h1 span{background:linear-gradient(135deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.page-header p{color:var(--muted);font-size:13px;line-height:1.6;max-width:740px}
+/* LAYOUT */
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:32px 24px 80px}
 
-/* ── Status strip ── */
-.status-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:28px}
-.sc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 16px;backdrop-filter:blur(20px);transition:border-color .3s;display:flex;align-items:center;gap:10px}
-.sc.loaded{border-color:rgba(0,200,150,.45)}
-.sc-icon{width:34px;height:34px;border-radius:9px;background:rgba(0,114,206,.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;transition:background .3s}
-.sc.loaded .sc-icon{background:rgba(0,200,150,.12)}
-.sc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px}
-.sc-val{font-family:'Syne',sans-serif;font-size:14px;font-weight:700}
+/* PAGE HEADER */
+.page-header{margin-bottom:32px}
+.page-header h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;margin-bottom:8px}
+.page-header h1 span{color:var(--accent)}
+.page-header p{color:var(--muted);font-size:14px;line-height:1.6;max-width:640px}
 
-/* ── Module ── */
-.module{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;backdrop-filter:blur(20px);transition:border-color .3s}
-.module.loaded{border-color:rgba(0,200,150,.35)}
-.mod-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;cursor:pointer;user-select:none;transition:background .15s}
-.mod-head:hover{background:rgba(0,114,206,.04)}
-.mod-head-l{display:flex;align-items:center;gap:12px}
-.mod-num{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;flex-shrink:0}
-.mod-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700}
-.mod-sub{font-size:11px;color:var(--muted);margin-top:1px}
-.mod-head-r{display:flex;align-items:center;gap:10px}
-.mod-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,114,206,.1);border:1px solid var(--border2);color:var(--muted);white-space:nowrap}
-.mod-badge.ok{background:rgba(0,200,150,.1);border-color:rgba(0,200,150,.35);color:var(--ok)}
-.mod-chev{color:var(--muted);font-size:14px;transition:transform .25s;flex-shrink:0}
-.mod-chev.open{transform:rotate(180deg)}
-.mod-body{padding:22px;display:none;border-top:1px solid var(--border)}
-.mod-body.open{display:block}
+/* MODULE TABS */
+.module-tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:4px;flex-wrap:wrap}
+.mtab{padding:10px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:8px;border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap}
+.mtab:hover{color:var(--text);background:var(--glass2)}
+.mtab.active{background:var(--primary);color:#fff}
+.mtab .tab-num{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,0.15);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mtab.active .tab-num{background:rgba(255,255,255,0.25)}
+.mtab .tab-ok{color:var(--success);font-size:11px;display:none}
+.mtab.done .tab-ok{display:inline}
+.mtab.done .tab-num{display:none}
 
-/* ── Info note ── */
-.info-note{background:rgba(0,114,206,.07);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px}
-.info-note strong{color:var(--accent)}
+/* MODULE PANEL */
+.mpanel{display:none}
+.mpanel.active{display:block}
 
-/* ── Template buttons ── */
-.tpl-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.btn-tpl{display:flex;align-items:center;gap:5px;background:rgba(0,114,206,.1);border:1px solid var(--border2);border-radius:8px;color:var(--accent);font-size:11px;font-weight:600;padding:6px 14px;cursor:pointer;transition:all .2s}
-.btn-tpl:hover{background:rgba(0,114,206,.2);border-color:var(--accent);color:#fff}
+/* SECTION CARD */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px}
+.card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.card-sub{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.5}
+.sheet-badge{background:rgba(0,114,206,0.15);border:1px solid rgba(0,114,206,0.3);color:var(--accent);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.05em;white-space:nowrap}
 
-/* ── Drop zone ── */
-.dz{border:2px dashed var(--border2);border-radius:12px;padding:26px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(0,114,206,.03);position:relative}
-.dz:hover,.dz.over{border-color:var(--accent);background:rgba(0,163,224,.07)}
-.dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.dz-icon{font-size:28px;margin-bottom:7px;opacity:.7}
-.dz-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:3px}
-.dz-hint{font-size:11px;color:var(--muted)}
-.fmt-row{display:flex;gap:5px;justify-content:center;margin-top:9px}
-.fmt{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(0,114,206,.15);border:1px solid var(--border2);color:var(--accent)}
+/* FIELDS GRID */
+.fields-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.field-tag{background:var(--glass2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.field-tag .dot{width:5px;height:5px;border-radius:50%;background:var(--primary);flex-shrink:0}
+.field-tag.required .dot{background:var(--accent)}
 
-/* ── Mapping ── */
-.map-sec{margin-top:18px;display:none}
-.map-sec.vis{display:block}
-.sec-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+/* DROPZONE */
+.dropzone{border:2px dashed var(--border2);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.dropzone:hover,.dropzone.drag-over{border-color:var(--primary);background:rgba(0,114,206,0.06)}
+.dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-icon{font-size:28px;margin-bottom:10px}
+.dz-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.dz-sub{font-size:12px;color:var(--muted)}
+.dz-filename{margin-top:8px;font-size:12px;color:var(--success);font-weight:600;display:none}
 
-/* Cluster group for skillmatrix */
-.cluster-group{margin-bottom:16px}
-.cluster-group-title{font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;margin-bottom:8px;display:inline-flex;align-items:center;gap:6px}
-.cg-c1{background:rgba(59,130,246,.12);color:var(--c1)}
-.cg-c2{background:rgba(167,139,250,.12);color:var(--c2)}
-.cg-c3{background:rgba(251,146,60,.12);color:var(--c3)}
-.cg-c4{background:rgba(52,211,153,.12);color:var(--c4)}
-.cg-cs{background:rgba(244,114,182,.12);color:var(--cs)}
-.cg-ch{background:rgba(250,204,21,.12);color:var(--ch)}
+/* TEMPLATE BTN */
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;border:none;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;gap:6px}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--muted)}
+.btn-outline:hover{border-color:var(--primary);color:var(--text)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--accent)}
+.btn-success{background:var(--success);color:#000}
+.btn-success:hover{opacity:.9}
 
-.map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:7px}
-.map-row{display:flex;align-items:center;gap:8px;background:rgba(0,114,206,.04);border:1px solid var(--border);border-radius:9px;padding:8px 12px}
-.map-label{font-size:11px;font-weight:600;min-width:160px;display:flex;align-items:center;gap:5px;flex-shrink:0}
-.req-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
-.req-dot.opt{background:rgba(122,168,196,.4)}
-.map-sel{flex:1;background:rgba(0,8,16,.8);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;padding:4px 7px;outline:none;cursor:pointer;min-width:0}
-.map-sel:focus{border-color:var(--accent)}
+/* PREVIEW TABLE */
+.preview-wrap{overflow-x:auto;margin-top:16px;display:none}
+.preview-wrap.visible{display:block}
+.preview-label{font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{background:rgba(0,114,206,0.1)}
+th{padding:8px 12px;text-align:left;font-weight:600;color:var(--accent);font-size:11px;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:7px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--text)}
+tr:hover td{background:var(--glass2)}
+.table-more{font-size:11px;color:var(--muted);padding:8px 12px;font-style:italic}
 
-/* ── Preview ── */
-.prev-sec{margin-top:18px;display:none}
-.prev-sec.vis{display:block}
-.prev-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.prev-info{font-size:11px;color:var(--muted)}
-.prev-info strong{color:var(--ok)}
-.prev-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:9px;max-height:200px;overflow-y:auto}
-.prev-tbl{width:100%;border-collapse:collapse;font-size:11px}
-.prev-tbl th{background:rgba(0,114,206,.1);padding:7px 12px;text-align:left;font-weight:600;color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;position:sticky;top:0}
-.prev-tbl td{padding:6px 12px;border-top:1px solid var(--border);white-space:nowrap}
-.prev-tbl tr:hover td{background:rgba(0,114,206,.04)}
+/* STATUS ROW */
+.status-bar{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+.status-items{display:flex;gap:20px;flex-wrap:wrap}
+.status-item{display:flex;align-items:center;gap:8px;font-size:13px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.status-dot.ok{background:var(--success)}
+.status-dot.warn{background:var(--warn)}
+.status-label{color:var(--muted);font-size:11px}
 
-/* ── Validation ── */
-.val-box{margin-top:10px;display:none}
-.val-box.vis{display:block}
-.val-item{display:flex;align-items:flex-start;gap:7px;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.val-item:last-child{border-bottom:none}
+/* SAVE ALL BTN */
+.save-all-wrap{text-align:center;padding-top:16px}
+.btn-save-all{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border:none;border-radius:10px;padding:14px 40px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;letter-spacing:.03em;transition:all .2s;box-shadow:0 4px 20px rgba(0,114,206,0.3)}
+.btn-save-all:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,114,206,0.45)}
 
-/* ── Actions ── */
-.act-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
-.btn-primary{background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:9px;color:#fff;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:9px 18px;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px}
-.btn-primary:hover{opacity:.85}
-.btn-primary:disabled{opacity:.4;cursor:not-allowed}
-.btn-sec{background:rgba(0,114,206,.1);border:1px solid var(--border2);border-radius:9px;color:var(--accent);font-size:12px;font-weight:600;padding:8px 16px;cursor:pointer;transition:all .2s}
-.btn-sec:hover{background:rgba(0,114,206,.2);border-color:var(--accent);color:#fff}
-.act-hint{font-size:11px;color:var(--muted)}
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--success);color:#000;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:9998;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
 
-/* ── Analysis ── */
-.analysis{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-top:20px;backdrop-filter:blur(20px);display:none;overflow:hidden}
-.analysis.vis{display:block}
-.analysis-head{padding:22px 28px 0}
-.analysis-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:3px}
-.analysis-sub{font-size:12px;color:var(--muted);margin-bottom:18px}
-
-.tabs{display:flex;border-bottom:1px solid var(--border)}
-.tab{padding:10px 20px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;background:transparent;border:none;color:var(--muted);letter-spacing:.3px;transition:all .2s;border-bottom:2px solid transparent;margin-bottom:-1px}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-
-.tab-content{padding:24px 28px}
-.tab-panel{display:none}
-.tab-panel.active{display:block}
-
-/* Crosstraining matrix */
-.matrix-scroll{overflow-x:auto}
-.matrix-tbl{border-collapse:collapse;font-size:11px;min-width:100%}
-.matrix-tbl th{padding:8px 10px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;background:rgba(0,8,16,.5);border:1px solid var(--border);text-align:center}
-.matrix-tbl th.th-name{text-align:left;min-width:160px}
-.matrix-tbl td{padding:7px 10px;border:1px solid var(--border);text-align:center;white-space:nowrap;font-size:11px}
-.matrix-tbl td.td-name{text-align:left;font-weight:600;background:rgba(0,8,16,.3);padding:7px 14px}
-.matrix-tbl td.td-name small{color:var(--muted);font-weight:400}
-.cell-ok{background:rgba(0,200,150,.1);color:var(--ok);font-weight:700}
-.cell-partial{background:rgba(245,158,11,.09);color:var(--warn);font-weight:700}
-.cell-no{background:rgba(239,68,68,.08);color:var(--err);font-weight:600}
-.cell-na{background:rgba(255,255,255,.02);color:rgba(255,255,255,.18);font-size:10px}
-
-/* Gap grid */
-.gap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:16px}
-.gap-card{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:14px 16px}
-.gap-card.err{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.2)}
-.gap-card h4{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:8px}
-.gap-card ul{list-style:none;display:flex;flex-direction:column;gap:3px}
-.gap-card li{font-size:11px;color:var(--muted);display:flex;align-items:baseline;gap:5px}
-.gap-card li::before{content:'→';color:var(--accent);font-weight:700;flex-shrink:0}
-
-/* Techniker cards */
-.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
-.tech-card{background:rgba(0,114,206,.06);border:1px solid var(--border);border-radius:11px;padding:14px 16px}
-.tech-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.tech-id{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--accent)}
-.tech-hugo{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(245,158,11,.15);color:var(--warn)}
-.tech-stat{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.tech-stat:last-child{border-bottom:none}
-.tech-stat-l{color:var(--muted)}
-.tech-stat-v{font-weight:600}
-
-/* Duration grid */
-.dur-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
-.dur-card{background:rgba(0,114,206,.06);border:1px solid var(--border);border-radius:11px;padding:14px}
-.dur-fam{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
-.dur-fam span{background:rgba(0,114,206,.15);padding:2px 7px;border-radius:4px;font-weight:700;color:var(--accent)}
-.dur-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.dur-row:last-child{border-bottom:none}
-.dur-l{color:var(--muted)}
-.dur-v{font-weight:700}
-.dur-v.stk{color:#60a5fa}
-.dur-v.pm{color:#a78bfa}
-.dur-v.rep{color:var(--warn)}
-
-/* Tool grid */
-.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
-.tool-card{background:rgba(0,114,206,.06);border:1px solid var(--border);border-radius:11px;padding:14px}
-.tool-card h4{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
-.tool-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.tool-row:last-child{border-bottom:none}
-.tstatus{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
-.tstatus.ok{background:rgba(0,200,150,.12);color:var(--ok)}
-.tstatus.exp{background:rgba(245,158,11,.12);color:var(--warn)}
-.tstatus.miss{background:rgba(239,68,68,.12);color:var(--err)}
-
-/* Territory derived */
-.terr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
-.terr-card{background:rgba(0,114,206,.06);border:1px solid var(--border);border-radius:11px;padding:14px}
-.terr-card h4{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.terr-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(0,163,224,.12);color:var(--accent)}
-.terr-badge.hugo{background:rgba(245,158,11,.12);color:var(--warn)}
-.terr-stat{display:flex;justify-content:space-between;font-size:11px;padding:3px 0}
-.terr-stat-l{color:var(--muted)}
-.gap-warn{font-size:11px;color:var(--warn);margin-top:6px;padding-top:6px;border-top:1px solid rgba(245,158,11,.2)}
-
-/* Final bar */
-.final-bar{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-top:20px;backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.final-text h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px}
-.final-text p{font-size:12px;color:var(--muted)}
-.btn-final{background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:11px;color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;padding:13px 30px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;white-space:nowrap;box-shadow:0 0 40px rgba(0,163,224,.18)}
-.btn-final:hover{opacity:.88;transform:translateY(-1px)}
-.btn-final:disabled{opacity:.4;cursor:not-allowed;transform:none}
-
-/* Progress dots */
-.progress-dots{display:flex;gap:6px;align-items:center;margin-top:10px}
-.pdot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:background .3s}
-.pdot.done{background:var(--ok)}
-.pdot.active{background:var(--accent)}
-
-/* Toast */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 0 30px rgba(0,0,0,.4);z-index:999;transform:translateY(60px);opacity:0;transition:all .3s;max-width:400px}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.success{border-color:rgba(0,200,150,.4)}
-.toast.error{border-color:rgba(239,68,68,.4)}
-
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(0,163,224,.25);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:rgba(0,163,224,.45)}
-
-@media(max-width:900px){
-  .topbar,.page{padding-left:18px;padding-right:18px}
-  .status-strip{grid-template-columns:repeat(2,1fr)}
-  .final-bar{flex-direction:column}
-  .btn-final{width:100%;justify-content:center}
+/* RESPONSIVE */
+@media(max-width:640px){
+  .module-tabs{gap:2px}
+  .mtab{padding:8px 10px;font-size:12px}
+  .card{padding:16px}
 }
 </style>
 </head>
 <body>
 
-<!-- Auth -->
-<div id="auth-overlay">
-  <div class="auth-box">
-    <div class="auth-logo">AI</div>
-    <h2>Koordinator-Zugang</h2>
-    <p>Field Service AI — Datenimport</p>
-    <input type="password" class="auth-input" id="auth-pw" placeholder="Passwort eingeben" autocomplete="off">
-    <button class="auth-btn" onclick="checkAuth()">Zugang öffnen →</button>
-    <div class="auth-error" id="auth-err"></div>
+<!-- PASSWORD OVERLAY -->
+<div id="pw-overlay">
+  <div class="pw-card">
+    <div class="logo-mark">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="24,2 44,13 44,35 24,46 4,35 4,13" fill="none" stroke="#0072CE" stroke-width="1.5"/>
+        <polygon points="24,8 38,16 38,32 24,40 10,32 10,16" fill="none" stroke="#00A3E0" stroke-width="1" opacity=".5"/>
+        <circle cx="24" cy="24" r="4" fill="#0072CE"/>
+        <line x1="24" y1="8" x2="24" y2="20" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+        <line x1="24" y1="28" x2="24" y2="40" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+        <line x1="10" y1="16" x2="20" y2="22" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+        <line x1="28" y1="26" x2="38" y2="32" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+        <line x1="38" y1="16" x2="28" y2="22" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+        <line x1="20" y1="26" x2="10" y2="32" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+      </svg>
+    </div>
+    <h2>Koordinator Import</h2>
+    <p>Field Service AI — Datenzugang</p>
+    <input type="password" id="pw-input" placeholder="Passwort" autocomplete="off">
+    <button class="pw-btn" id="pw-btn">Anmelden</button>
+    <div class="pw-error" id="pw-error">Falsches Passwort</div>
   </div>
 </div>
 
-<!-- App -->
-<div id="app">
-  <nav class="topbar">
-    <div class="logo-area">
-      <div class="logo-icon">AI</div>
-      <div>
-        <div class="logo-text">Field Service AI</div>
-        <div class="logo-sub">Koordinator · Import v3</div>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <span class="badge-test">TEST MODUS</span>
-      <a href="index.html" class="nav-link">← Dashboard</a>
-      <a href="demo.html" class="nav-link">Demo</a>
-    </div>
-  </nav>
-
-  <div class="page">
-    <div class="page-header">
-      <h1><span>Koordinator</span> — Datenimport</h1>
-      <p>5 Module fließen automatisch in Crosstraining-Analyse, Gebietsplanung (abgeleitet aus PLZ) und Tool-Coverage ein.<br>
-         STK- und PM-Level sind identisch — ein Level-Wert pro Cluster. Repair ist separat.</p>
-    </div>
-
-    <!-- Status strip -->
-    <div class="status-strip">
-      <div class="sc" id="sc-dev"><div class="sc-icon">🏥</div><div><div class="sc-label">Gerätedaten</div><div class="sc-val" id="sv-dev">—</div></div></div>
-      <div class="sc" id="sc-sk"><div class="sc-icon">🎓</div><div><div class="sc-label">Skillmatrix</div><div class="sc-val" id="sv-sk">—</div></div></div>
-      <div class="sc" id="sc-tool"><div class="sc-icon">🔧</div><div><div class="sc-label">Messmittel</div><div class="sc-val" id="sv-tool">—</div></div></div>
-      <div class="sc" id="sc-hist"><div class="sc-icon">📊</div><div><div class="sc-label">Wartungshistorie</div><div class="sc-val" id="sv-hist">—</div></div></div>
-      <div class="sc" id="sc-tech"><div class="sc-icon">👤</div><div><div class="sc-label">Techniker</div><div class="sc-val" id="sv-tech">—</div></div></div>
-    </div>
-
-    <!-- ═══ MODULE 1: Gerätedaten ═══ -->
-    <div class="module" id="mod-dev">
-      <div class="mod-head" onclick="toggleMod('dev')">
-        <div class="mod-head-l">
-          <div class="mod-num">1</div>
-          <div>
-            <div class="mod-title">Gerätedaten &amp; Wartungsverträge</div>
-            <div class="mod-sub">Seriennummern · Kliniken · Vertragstypen · STK- &amp; PM-Fälligkeiten</div>
-          </div>
-        </div>
-        <div class="mod-head-r">
-          <span class="mod-badge" id="mb-dev">Ausstehend</span>
-          <span class="mod-chev" id="mc-dev">▾</span>
-        </div>
-      </div>
-      <div class="mod-body" id="mbb-dev">
-        <div class="tpl-row">
-          <button class="btn-tpl" onclick="dlTpl('dev')">⬇ CSV Template</button>
-        </div>
-        <div class="dz" id="dz-dev" ondragover="dzO(event,'dev')" ondragleave="dzL(event,'dev')" ondrop="dzD(event,'dev')">
-          <input type="file" accept=".csv,.xlsx,.xls" onchange="onFile(event,'dev')">
-          <div class="dz-icon">📂</div>
-          <div class="dz-title">Datei hier ablegen oder klicken</div>
-          <div class="dz-hint" id="dzn-dev">Geräte · Verträge · Kliniken · Fälligkeiten</div>
-          <div class="fmt-row"><span class="fmt">CSV</span><span class="fmt">XLSX</span></div>
-        </div>
-        <div class="map-sec" id="ms-dev">
-          <div class="sec-title">Spalten-Zuordnung</div>
-          <div class="map-grid" id="mg-dev"></div>
-        </div>
-        <div class="prev-sec" id="ps-dev">
-          <div class="prev-head">
-            <div class="sec-title" style="margin:0">Vorschau</div>
-            <span class="prev-info"><strong id="pc-dev">0</strong> Zeilen geladen</span>
-          </div>
-          <div class="prev-wrap"><table class="prev-tbl" id="pt-dev"></table></div>
-          <div class="val-box" id="vb-dev"></div>
-        </div>
-        <div class="act-row" id="ar-dev" style="display:none">
-          <button class="btn-primary" id="cb-dev" onclick="confirmMod('dev')">✓ Gerätedaten übernehmen</button>
-          <button class="btn-sec" onclick="clearMod('dev')">✕ Reset</button>
-          <span class="act-hint" id="ah-dev"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ MODULE 2: Skillmatrix ═══ -->
-    <div class="module" id="mod-sk">
-      <div class="mod-head" onclick="toggleMod('sk')">
-        <div class="mod-head-l">
-          <div class="mod-num">2</div>
-          <div>
-            <div class="mod-title">Skillmatrix — Level + Repair je Cluster</div>
-            <div class="mod-sub">STK = PM = Level · Repair separat · T1–T14 · Hugo KA</div>
-          </div>
-        </div>
-        <div class="mod-head-r">
-          <span class="mod-badge" id="mb-sk">Ausstehend</span>
-          <span class="mod-chev" id="mc-sk">▾</span>
-        </div>
-      </div>
-      <div class="mod-body" id="mbb-sk">
-        <div class="info-note">
-          Pro Cluster gibt es <strong>2 Spalten</strong>: 
-          <strong>Level</strong> (L2 oder L3, gilt für STK und PM gleichermaßen) und 
-          <strong>Repair</strong> (L3 oder leer = kein Feldeinsatz).<br>
-          HF-Chirurgie Sonderfall: Level=L2, Repair=L3.
-          CLUSTER4_DIGITAL &amp; SMALL_CAPITAL: kein Repair im Feld.
-        </div>
-        <div class="tpl-row">
-          <button class="btn-tpl" onclick="dlTpl('sk')">⬇ CSV Template</button>
-        </div>
-        <div class="dz" id="dz-sk" ondragover="dzO(event,'sk')" ondragleave="dzL(event,'sk')" ondrop="dzD(event,'sk')">
-          <input type="file" accept=".csv,.xlsx,.xls" onchange="onFile(event,'sk')">
-          <div class="dz-icon">🎓</div>
-          <div class="dz-title">Skillmatrix hochladen</div>
-          <div class="dz-hint" id="dzn-sk">T1–T14 · Level (STK=PM) + Repair je Cluster</div>
-          <div class="fmt-row"><span class="fmt">CSV</span><span class="fmt">XLSX</span></div>
-        </div>
-        <div class="map-sec" id="ms-sk">
-          <div class="sec-title">Stammdaten</div>
-          <div class="map-grid" id="mg-sk-base"></div>
-          <!-- Cluster groups rendered dynamically -->
-          <div id="mg-sk-clusters"></div>
-        </div>
-        <div class="prev-sec" id="ps-sk">
-          <div class="prev-head">
-            <div class="sec-title" style="margin:0">Vorschau</div>
-            <span class="prev-info"><strong id="pc-sk">0</strong> Techniker geladen</span>
-          </div>
-          <div class="prev-wrap"><table class="prev-tbl" id="pt-sk"></table></div>
-          <div class="val-box" id="vb-sk"></div>
-        </div>
-        <div class="act-row" id="ar-sk" style="display:none">
-          <button class="btn-primary" id="cb-sk" onclick="confirmMod('sk')">✓ Skillmatrix übernehmen</button>
-          <button class="btn-sec" onclick="clearMod('sk')">✕ Reset</button>
-          <span class="act-hint" id="ah-sk"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ MODULE 3: Messmittel ═══ -->
-    <div class="module" id="mod-tool">
-      <div class="mod-head" onclick="toggleMod('tool')">
-        <div class="mod-head-l">
-          <div class="mod-num">3</div>
-          <div>
-            <div class="mod-title">Messmittel &amp; Spezialwerkzeug</div>
-            <div class="mod-sub">Tool-ID · Typ · Techniker · Kalibrierung · Produktfamilie</div>
-          </div>
-        </div>
-        <div class="mod-head-r">
-          <span class="mod-badge" id="mb-tool">Ausstehend</span>
-          <span class="mod-chev" id="mc-tool">▾</span>
-        </div>
-      </div>
-      <div class="mod-body" id="mbb-tool">
-        <div class="tpl-row">
-          <button class="btn-tpl" onclick="dlTpl('tool')">⬇ CSV Template</button>
-        </div>
-        <div class="dz" id="dz-tool" ondragover="dzO(event,'tool')" ondragleave="dzL(event,'tool')" ondrop="dzD(event,'tool')">
-          <input type="file" accept=".csv,.xlsx,.xls" onchange="onFile(event,'tool')">
-          <div class="dz-icon">🔧</div>
-          <div class="dz-title">Messmittel-Liste hochladen</div>
-          <div class="dz-hint" id="dzn-tool">Tool-ID · Typ · Techniker-ID · Kalibrierung_bis</div>
-          <div class="fmt-row"><span class="fmt">CSV</span><span class="fmt">XLSX</span></div>
-        </div>
-        <div class="map-sec" id="ms-tool">
-          <div class="sec-title">Spalten-Zuordnung</div>
-          <div class="map-grid" id="mg-tool"></div>
-        </div>
-        <div class="prev-sec" id="ps-tool">
-          <div class="prev-head">
-            <div class="sec-title" style="margin:0">Vorschau</div>
-            <span class="prev-info"><strong id="pc-tool">0</strong> Tools geladen</span>
-          </div>
-          <div class="prev-wrap"><table class="prev-tbl" id="pt-tool"></table></div>
-          <div class="val-box" id="vb-tool"></div>
-        </div>
-        <div class="act-row" id="ar-tool" style="display:none">
-          <button class="btn-primary" id="cb-tool" onclick="confirmMod('tool')">✓ Messmittel übernehmen</button>
-          <button class="btn-sec" onclick="clearMod('tool')">✕ Reset</button>
-          <span class="act-hint" id="ah-tool"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ MODULE 4: Wartungshistorie ═══ -->
-    <div class="module" id="mod-hist">
-      <div class="mod-head" onclick="toggleMod('hist')">
-        <div class="mod-head-l">
-          <div class="mod-num">4</div>
-          <div>
-            <div class="mod-title">Wartungshistorie (3 Jahre)</div>
-            <div class="mod-sub">STK · PM · Repair · Ø Einsatzdauer je Produktfamilie &amp; Typ</div>
-          </div>
-        </div>
-        <div class="mod-head-r">
-          <span class="mod-badge" id="mb-hist">Ausstehend</span>
-          <span class="mod-chev" id="mc-hist">▾</span>
-        </div>
-      </div>
-      <div class="mod-body" id="mbb-hist">
-        <div class="info-note">
-          Empfohlener Zeitraum: <strong>01.01.2022 – heute</strong> · Alle Auftragstypen (STK, PM, Repair) werden separat ausgewertet.<br>
-          Mindestens 20 Einträge pro Produktfamilie für valide Durchschnittswerte.
-        </div>
-        <div class="tpl-row">
-          <button class="btn-tpl" onclick="dlTpl('hist')">⬇ CSV Template</button>
-        </div>
-        <div class="dz" id="dz-hist" ondragover="dzO(event,'hist')" ondragleave="dzL(event,'hist')" ondrop="dzD(event,'hist')">
-          <input type="file" accept=".csv,.xlsx,.xls" onchange="onFile(event,'hist')">
-          <div class="dz-icon">📅</div>
-          <div class="dz-title">Wartungshistorie hochladen</div>
-          <div class="dz-hint" id="dzn-hist">STK · PM · Repair · Produktfamilie · Dauer</div>
-          <div class="fmt-row"><span class="fmt">CSV</span><span class="fmt">XLSX</span></div>
-        </div>
-        <div class="map-sec" id="ms-hist">
-          <div class="sec-title">Spalten-Zuordnung</div>
-          <div class="map-grid" id="mg-hist"></div>
-        </div>
-        <div class="prev-sec" id="ps-hist">
-          <div class="prev-head">
-            <div class="sec-title" style="margin:0">Vorschau</div>
-            <span class="prev-info"><strong id="pc-hist">0</strong> Aufträge geladen</span>
-          </div>
-          <div class="prev-wrap"><table class="prev-tbl" id="pt-hist"></table></div>
-          <div class="val-box" id="vb-hist"></div>
-        </div>
-        <div class="act-row" id="ar-hist" style="display:none">
-          <button class="btn-primary" id="cb-hist" onclick="confirmMod('hist')">✓ Wartungshistorie übernehmen</button>
-          <button class="btn-sec" onclick="clearMod('hist')">✕ Reset</button>
-          <span class="act-hint" id="ah-hist"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ MODULE 5: Techniker-Stammdaten ═══ -->
-    <div class="module" id="mod-tech">
-      <div class="mod-head" onclick="toggleMod('tech')">
-        <div class="mod-head-l">
-          <div class="mod-num">5</div>
-          <div>
-            <div class="mod-title">Techniker-Stammdaten</div>
-            <div class="mod-sub">Wohnort · PLZ · Koordinaten · Kontakt · Kapazität → Gebietsplanung wird abgeleitet</div>
-          </div>
-        </div>
-        <div class="mod-head-r">
-          <span class="mod-badge" id="mb-tech">Ausstehend</span>
-          <span class="mod-chev" id="mc-tech">▾</span>
-        </div>
-      </div>
-      <div class="mod-body" id="mbb-tech">
-        <div class="info-note">
-          Die Gebietsplanung wird <strong>automatisch abgeleitet</strong> aus Techniker-PLZ und Geräte-PLZ (Haversine-Distanz, Faktor 1.35).<br>
-          Koordinaten (lat/lon) optional — falls leer, werden PLZ-Mittelpunkte verwendet.
-        </div>
-        <div class="tpl-row">
-          <button class="btn-tpl" onclick="dlTpl('tech')">⬇ CSV Template</button>
-        </div>
-        <div class="dz" id="dz-tech" ondragover="dzO(event,'tech')" ondragleave="dzL(event,'tech')" ondrop="dzD(event,'tech')">
-          <input type="file" accept=".csv,.xlsx,.xls" onchange="onFile(event,'tech')">
-          <div class="dz-icon">👤</div>
-          <div class="dz-title">Techniker-Stammdaten hochladen</div>
-          <div class="dz-hint" id="dzn-tech">T1–T14 · Wohnort · PLZ · Kontakt · Kapazität</div>
-          <div class="fmt-row"><span class="fmt">CSV</span><span class="fmt">XLSX</span></div>
-        </div>
-        <div class="map-sec" id="ms-tech">
-          <div class="sec-title">Spalten-Zuordnung</div>
-          <div class="map-grid" id="mg-tech"></div>
-        </div>
-        <div class="prev-sec" id="ps-tech">
-          <div class="prev-head">
-            <div class="sec-title" style="margin:0">Vorschau</div>
-            <span class="prev-info"><strong id="pc-tech">0</strong> Techniker geladen</span>
-          </div>
-          <div class="prev-wrap"><table class="prev-tbl" id="pt-tech"></table></div>
-          <div class="val-box" id="vb-tech"></div>
-        </div>
-        <div class="act-row" id="ar-tech" style="display:none">
-          <button class="btn-primary" id="cb-tech" onclick="confirmMod('tech')">✓ Stammdaten übernehmen</button>
-          <button class="btn-sec" onclick="clearMod('tech')">✕ Reset</button>
-          <span class="act-hint" id="ah-tech"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ ANALYSIS ═══ -->
-    <div class="analysis" id="analysis">
-      <div class="analysis-head">
-        <div class="analysis-title">⚡ Integrierte Analyse</div>
-        <div class="analysis-sub">Wird automatisch berechnet sobald Module importiert sind</div>
-        <div class="tabs">
-          <button class="tab active" onclick="switchTab('xt',this)">🎓 Crosstraining</button>
-          <button class="tab" onclick="switchTab('terr',this)">🗺 Gebietsplanung</button>
-          <button class="tab" onclick="switchTab('dur',this)">⏱ Einsatzdauer</button>
-          <button class="tab" onclick="switchTab('tools',this)">🔧 Tool-Coverage</button>
-          <button class="tab" onclick="switchTab('techs',this)">👤 Techniker</button>
-        </div>
-      </div>
-      <div class="tab-content">
-        <div class="tab-panel active" id="tp-xt">
-          <div style="margin-bottom:14px">
-            <span style="font-size:12px;color:var(--muted)">
-              🟢 Level+Repair vollständig &nbsp;🟡 Nur Level (kein Repair) &nbsp;🔴 Nicht qualifiziert &nbsp;⬛ Kein Repair vorgesehen
-            </span>
-          </div>
-          <div class="matrix-scroll" id="xt-matrix"></div>
-          <div class="gap-grid" id="xt-gaps"></div>
-        </div>
-        <div class="tab-panel" id="tp-terr">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
-            Abgeleitet aus Techniker-PLZ (Modul 5) und Geräte-PLZ (Modul 1) · Haversine-Distanz × 1.35
-          </div>
-          <div class="terr-grid" id="terr-out"></div>
-        </div>
-        <div class="tab-panel" id="tp-dur">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
-            Ø Minuten je Produktfamilie und Auftragstyp aus Wartungshistorie
-          </div>
-          <div class="dur-grid" id="dur-out"></div>
-        </div>
-        <div class="tab-panel" id="tp-tools">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
-            Kalibrierungsstatus je Techniker · Rot = abgelaufen · Gelb = &lt;90 Tage
-          </div>
-          <div class="tool-grid" id="tool-out"></div>
-        </div>
-        <div class="tab-panel" id="tp-techs">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
-            Übersicht aller Techniker-Stammdaten
-          </div>
-          <div class="tech-grid" id="tech-out"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Final bar -->
-    <div class="final-bar">
-      <div class="final-text">
-        <h3>Alle Daten importieren &amp; speichern</h3>
-        <p id="final-hint">Bitte alle 5 Module laden</p>
-        <div class="progress-dots">
-          <div class="pdot" id="pd-dev"></div>
-          <div class="pdot" id="pd-sk"></div>
-          <div class="pdot" id="pd-tool"></div>
-          <div class="pdot" id="pd-hist"></div>
-          <div class="pdot" id="pd-tech"></div>
-        </div>
-      </div>
-      <button class="btn-final" id="btn-final" onclick="finalImport()" disabled>
-        ⬆ Import abschließen
-      </button>
-    </div>
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="index.html" class="logo">
+    <svg class="logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="none" stroke="#0072CE" stroke-width="1.5"/>
+      <polygon points="20,7 31,13.5 31,26.5 20,33 9,26.5 9,13.5" fill="none" stroke="#00A3E0" stroke-width="1" opacity=".45"/>
+      <circle cx="20" cy="20" r="3.5" fill="#0072CE"/>
+      <line x1="20" y1="7" x2="20" y2="16.5" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+      <line x1="20" y1="23.5" x2="20" y2="33" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+      <line x1="9" y1="13.5" x2="17" y2="18" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+      <line x1="23" y1="22" x2="31" y2="26.5" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+      <line x1="31" y1="13.5" x2="23" y2="18" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+      <line x1="17" y1="22" x2="9" y2="26.5" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+    </svg>
+    <div class="logo-text">Field Service AI<span>Coordinator Import</span></div>
+  </a>
+  <div class="topbar-right">
+    <div class="badge-demo">⬡ DEMO MODUS</div>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="demo.html">Demo</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
   </div>
 </div>
-<div class="toast" id="toast"></div>
+
+<!-- MAIN -->
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <h1>Daten <span>importieren</span></h1>
+    <p>Lade die benötigten Datensheets hoch um die KI-Planung mit echten Daten zu versorgen. Alle Felder werden validiert bevor die Daten gespeichert werden.</p>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div class="status-items">
+      <div class="status-item"><div class="status-dot" id="dot-1"></div><span>Sheet 1: Skills Matrix</span></div>
+      <div class="status-item"><div class="status-dot" id="dot-2"></div><span>Sheet 2: Einsatzdauer</span></div>
+      <div class="status-item"><div class="status-dot" id="dot-3"></div><span>Sheet 3: Historische Daten</span></div>
+      <div class="status-item"><div class="status-dot" id="dot-4"></div><span>Sheet 4: Offene Jobs</span></div>
+      <div class="status-item"><div class="status-dot" id="dot-5"></div><span>Sheet 5: Techniker</span></div>
+    </div>
+    <span class="status-label" id="status-label">0 / 5 Sheets importiert</span>
+  </div>
+
+  <!-- MODULE TABS -->
+  <div class="module-tabs">
+    <button class="mtab active" onclick="switchTab(1)" id="tab-1">
+      <span class="tab-num">1</span><span class="tab-ok">✓</span> Skills Matrix
+    </button>
+    <button class="mtab" onclick="switchTab(2)" id="tab-2">
+      <span class="tab-num">2</span><span class="tab-ok">✓</span> Einsatzdauer
+    </button>
+    <button class="mtab" onclick="switchTab(3)" id="tab-3">
+      <span class="tab-num">3</span><span class="tab-ok">✓</span> Historische Daten
+    </button>
+    <button class="mtab active-new" onclick="switchTab(4)" id="tab-4">
+      <span class="tab-num">4</span><span class="tab-ok">✓</span> Offene Jobs
+    </button>
+    <button class="mtab" onclick="switchTab(5)" id="tab-5">
+      <span class="tab-num">5</span><span class="tab-ok">✓</span> Techniker
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SHEET 1 — SKILLS MATRIX (Rebecca)
+  ════════════════════════════════════════════════════ -->
+  <div class="mpanel active" id="panel-1">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Skills Matrix</div>
+          <div class="card-sub">Binäre Qualifikation je Techniker und Model Code (Rebecca) — trainiert: ja / nein</div>
+        </div>
+        <span class="sheet-badge">SHEET 1</span>
+      </div>
+      <!-- Qualification level legend -->
+      <div style="background:var(--glass2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--accent)">Qualifikationsstufen</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:rgba(229,57,53,0.15);border:1px solid rgba(229,57,53,0.35);color:#e05252;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.04em">0</span>
+            <span style="font-size:12px;color:var(--muted)">Nicht trainiert</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.35);color:var(--warn);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.04em">PM</span>
+            <span style="font-size:12px;color:var(--muted)">PM / STK — selbe Stufe, kein Feldeinsatz Repair</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:rgba(0,196,140,0.15);border:1px solid rgba(0,196,140,0.35);color:var(--success);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.04em">PM+R</span>
+            <span style="font-size:12px;color:var(--muted)">PM / STK + Repair (Feldeinsatz berechtigt)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fields-grid">
+        <div class="field-tag required"><span class="dot"></span>Techniker_ID</div>
+        <div class="field-tag required"><span class="dot"></span>Model_Code</div>
+        <div class="field-tag required"><span class="dot"></span>Qualifikation (0 · PM · PM+R)</div>
+        <div class="field-tag"><span class="dot"></span>Zertifizierungs_Datum (opt.)</div>
+        <div class="field-tag"><span class="dot"></span>Ablauf_Datum (opt.)</div>
+      </div>
+      <div class="dropzone" id="dz-1" ondragover="dzOver(event,'dz-1')" ondragleave="dzLeave('dz-1')" ondrop="dzDrop(event,'dz-1',1)">
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="fileSelected(this,1)">
+        <div class="dz-icon">📋</div>
+        <div class="dz-title">CSV oder Excel hier ablegen</div>
+        <div class="dz-sub">oder klicken zum Auswählen · .csv, .xlsx</div>
+        <div class="dz-filename" id="fn-1"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="downloadTemplate(1)">⬇ CSV Template</button>
+        <button class="btn btn-primary" onclick="importSheet(1)" id="import-btn-1" style="display:none">Import starten</button>
+      </div>
+      <div class="preview-wrap" id="preview-1">
+        <div class="preview-label">Vorschau (erste 5 Zeilen)</div>
+        <table id="table-1"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SHEET 2 — EINSATZDAUER (Jürgen / Rebecca)
+  ════════════════════════════════════════════════════ -->
+  <div class="mpanel" id="panel-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Durchschnittliche Einsatzdauer</div>
+          <div class="card-sub">Median-Einsatzzeit je Model Code, DACH, 3 Jahre, ohne Wartezeit (Jürgen / Rebecca)</div>
+        </div>
+        <span class="sheet-badge">SHEET 2</span>
+      </div>
+      <div class="fields-grid">
+        <div class="field-tag required"><span class="dot"></span>Model_Code</div>
+        <div class="field-tag required"><span class="dot"></span>Median_Minuten</div>
+        <div class="field-tag required"><span class="dot"></span>Anzahl_Einsaetze</div>
+        <div class="field-tag"><span class="dot"></span>Min_Minuten (opt.)</div>
+        <div class="field-tag"><span class="dot"></span>Max_Minuten (opt.)</div>
+        <div class="field-tag"><span class="dot"></span>Zeitraum_Von (opt.)</div>
+        <div class="field-tag"><span class="dot"></span>Zeitraum_Bis (opt.)</div>
+      </div>
+      <div class="dropzone" id="dz-2" ondragover="dzOver(event,'dz-2')" ondragleave="dzLeave('dz-2')" ondrop="dzDrop(event,'dz-2',2)">
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="fileSelected(this,2)">
+        <div class="dz-icon">⏱</div>
+        <div class="dz-title">CSV oder Excel hier ablegen</div>
+        <div class="dz-sub">oder klicken zum Auswählen · .csv, .xlsx</div>
+        <div class="dz-filename" id="fn-2"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="downloadTemplate(2)">⬇ CSV Template</button>
+        <button class="btn btn-primary" onclick="importSheet(2)" id="import-btn-2" style="display:none">Import starten</button>
+      </div>
+      <div class="preview-wrap" id="preview-2">
+        <div class="preview-label">Vorschau (erste 5 Zeilen)</div>
+        <table id="table-2"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SHEET 3 — HISTORISCHE DATEN (Stefan)
+  ════════════════════════════════════════════════════ -->
+  <div class="mpanel" id="panel-3">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Historische Gerätedaten</div>
+          <div class="card-sub">Abgeschlossene Wartungen, Vertragsgeräte, Fälligkeiten (Stefan) · ohne Duplikate als SN</div>
+        </div>
+        <span class="sheet-badge">SHEET 3</span>
+      </div>
+      <div class="fields-grid">
+        <div class="field-tag required"><span class="dot"></span>Auftragsnummer</div>
+        <div class="field-tag required"><span class="dot"></span>Account</div>
+        <div class="field-tag required"><span class="dot"></span>Location</div>
+        <div class="field-tag required"><span class="dot"></span>Ort</div>
+        <div class="field-tag required"><span class="dot"></span>PLZ</div>
+        <div class="field-tag required"><span class="dot"></span>Model_Code</div>
+        <div class="field-tag required"><span class="dot"></span>Next_PM_Due_Date</div>
+        <div class="field-tag required"><span class="dot"></span>Seriennummer</div>
+        <div class="field-tag"><span class="dot"></span>Warranty_Date (opt.)</div>
+        <div class="field-tag"><span class="dot"></span>Contract_End_Date (opt.)</div>
+        <div class="field-tag"><span class="dot"></span>GCH_Code (opt.)</div>
+      </div>
+      <div class="dropzone" id="dz-3" ondragover="dzOver(event,'dz-3')" ondragleave="dzLeave('dz-3')" ondrop="dzDrop(event,'dz-3',3)">
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="fileSelected(this,3)">
+        <div class="dz-icon">🗂</div>
+        <div class="dz-title">CSV oder Excel hier ablegen</div>
+        <div class="dz-sub">oder klicken zum Auswählen · .csv, .xlsx</div>
+        <div class="dz-filename" id="fn-3"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="downloadTemplate(3)">⬇ CSV Template</button>
+        <button class="btn btn-primary" onclick="importSheet(3)" id="import-btn-3" style="display:none">Import starten</button>
+      </div>
+      <div class="preview-wrap" id="preview-3">
+        <div class="preview-label">Vorschau (erste 5 Zeilen)</div>
+        <table id="table-3"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SHEET 4 — OFFENE JOBS (Stefan)  ← NEU
+  ════════════════════════════════════════════════════ -->
+  <div class="mpanel" id="panel-4">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Offene Jobs</div>
+          <div class="card-sub">Aktuell offene Aufträge mit Fälligkeiten und Vertragsdaten (Stefan) · GCH-2004 Filter aktiv</div>
+        </div>
+        <span class="sheet-badge" style="background:rgba(0,196,140,0.12);border-color:rgba(0,196,140,0.35);color:#00c48c">SHEET 4 · NEU</span>
+      </div>
+
+      <!-- Info box -->
+      <div style="background:rgba(0,196,140,0.06);border:1px solid rgba(0,196,140,0.2);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#6bb8a0;line-height:1.6">
+        <strong style="color:var(--success)">ℹ Offene Jobs vs. Historische Daten:</strong>
+        Sheet 3 enthält abgeschlossene Wartungen als Referenz. Sheet 4 enthält die <strong>aktuell zu planenden offenen Aufträge</strong> — diese fließen direkt in die Planungslogik. Keine Duplikate als Seriennummer.
+      </div>
+
+      <div class="fields-grid">
+        <div class="field-tag required"><span class="dot"></span>Auftragsnummer</div>
+        <div class="field-tag required"><span class="dot"></span>Account</div>
+        <div class="field-tag required"><span class="dot"></span>Location</div>
+        <div class="field-tag required"><span class="dot"></span>Ort</div>
+        <div class="field-tag required"><span class="dot"></span>PLZ</div>
+        <div class="field-tag required"><span class="dot"></span>Model_Code</div>
+        <div class="field-tag required"><span class="dot"></span>Next_PM_Due_Date</div>
+        <div class="field-tag required"><span class="dot"></span>Seriennummer</div>
+        <div class="field-tag"><span class="dot"></span>Warranty_Date (opt.)</div>
+        <div class="field-tag"><span class="dot"></span>Contract_End_Date (opt.)</div>
+        <div class="field-tag required"><span class="dot"></span>GCH_Code</div>
+        <div class="field-tag"><span class="dot"></span>Auftragstyp (STK/PM/Repair)</div>
+        <div class="field-tag"><span class="dot"></span>Prioritaet (opt.)</div>
+      </div>
+
+      <!-- GCH Filter -->
+      <div style="background:var(--glass2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--accent)">GCH-Filter</div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="gch-filter" checked style="accent-color:var(--primary)">
+            Nur GCH-2004 importieren
+          </label>
+          <span style="font-size:11px;color:var(--muted)">Deaktivieren um alle GCH-Codes zu importieren</span>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap" id="gch-tags">
+          <span style="background:rgba(0,114,206,0.15);border:1px solid rgba(0,114,206,0.3);border-radius:4px;padding:2px 8px;font-size:11px;color:var(--accent)">GCH-2004 ✓</span>
+          <span style="background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;color:var(--muted);cursor:pointer" onclick="addGCH(this)">+ weiteren Code hinzufügen</span>
+        </div>
+      </div>
+
+      <!-- Validierung Info -->
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:600;margin-bottom:10px">Automatische Validierung beim Import</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> Duplikat-Seriennummern entfernen</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> PLZ-Format prüfen (5-stellig)</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> Datumsformat normalisieren</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> Leere Pflichtfelder markieren</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> GCH-Code Filter anwenden</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> Fälligkeits-Ampel berechnen</div>
+        </div>
+      </div>
+
+      <div class="dropzone" id="dz-4" ondragover="dzOver(event,'dz-4')" ondragleave="dzLeave('dz-4')" ondrop="dzDrop(event,'dz-4',4)">
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="fileSelected(this,4)">
+        <div class="dz-icon">📂</div>
+        <div class="dz-title">Offene Jobs — CSV oder Excel ablegen</div>
+        <div class="dz-sub">oder klicken zum Auswählen · .csv, .xlsx · SMax Go Export empfohlen</div>
+        <div class="dz-filename" id="fn-4"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="downloadTemplate(4)">⬇ CSV Template</button>
+        <button class="btn btn-primary" onclick="importSheet(4)" id="import-btn-4" style="display:none">Import starten</button>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="preview-wrap" id="preview-4">
+        <div class="preview-label">Vorschau (erste 5 Zeilen)</div>
+        <table id="table-4"></table>
+      </div>
+
+      <!-- STATS (shown after import) -->
+      <div id="stats-4" style="display:none;margin-top:16px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Import Ergebnis</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+          <div style="background:var(--glass2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text)" id="stat-total">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Aufträge gesamt</div>
+          </div>
+          <div style="background:rgba(229,57,53,0.08);border:1px solid rgba(229,57,53,0.2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#e05252" id="stat-overdue">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Überfällig</div>
+          </div>
+          <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--warn)" id="stat-soon">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Fällig &lt;30 Tage</div>
+          </div>
+          <div style="background:rgba(0,196,140,0.08);border:1px solid rgba(0,196,140,0.2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--success)" id="stat-ok">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Fällig &gt;30 Tage</div>
+          </div>
+          <div style="background:rgba(0,114,206,0.08);border:1px solid rgba(0,114,206,0.2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--accent)" id="stat-dupes">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Duplikate entfernt</div>
+          </div>
+          <div style="background:var(--glass2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text)" id="stat-gch">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">GCH-gefiltert</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SHEET 5 — TECHNIKER WOHNORTE (Rolf)
+  ════════════════════════════════════════════════════ -->
+  <div class="mpanel" id="panel-5">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Techniker Stammdaten</div>
+          <div class="card-sub">Wohnorte und Basisdaten für Gebietsplanung (Rolf) — Gebiet wird automatisch aus PLZ abgeleitet</div>
+        </div>
+        <span class="sheet-badge">SHEET 5</span>
+      </div>
+      <div class="fields-grid">
+        <div class="field-tag required"><span class="dot"></span>Techniker_ID</div>
+        <div class="field-tag required"><span class="dot"></span>Name</div>
+        <div class="field-tag required"><span class="dot"></span>Wohnort</div>
+        <div class="field-tag required"><span class="dot"></span>PLZ</div>
+        <div class="field-tag"><span class="dot"></span>Bundesland (opt.)</div>
+        <div class="field-tag"><span class="dot"></span>Hugo_KA (ja/nein, opt.)</div>
+        <div class="field-tag"><span class="dot"></span>Wochenkapazitaet_h (opt.)</div>
+        <div class="field-tag"><span class="dot"></span>Telefon (opt.)</div>
+        <div class="field-tag"><span class="dot"></span>Email (opt.)</div>
+      </div>
+      <div class="dropzone" id="dz-5" ondragover="dzOver(event,'dz-5')" ondragleave="dzLeave('dz-5')" ondrop="dzDrop(event,'dz-5',5)">
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="fileSelected(this,5)">
+        <div class="dz-icon">👤</div>
+        <div class="dz-title">CSV oder Excel hier ablegen</div>
+        <div class="dz-sub">oder klicken zum Auswählen · .csv, .xlsx</div>
+        <div class="dz-filename" id="fn-5"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="downloadTemplate(5)">⬇ CSV Template</button>
+        <button class="btn btn-primary" onclick="importSheet(5)" id="import-btn-5" style="display:none">Import starten</button>
+      </div>
+      <div class="preview-wrap" id="preview-5">
+        <div class="preview-label">Vorschau (erste 5 Zeilen)</div>
+        <table id="table-5"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVE ALL -->
+  <div class="save-all-wrap">
+    <button class="btn-save-all" onclick="saveAll()">💾 Alle Daten importieren &amp; speichern</button>
+  </div>
+
+</div><!-- /page -->
+
+<div id="toast">✓ Gespeichert</div>
 
 <script>
-// ─── Auth ────────────────────────────────────────────────────────────────────
-const PW_HASH='037453db72fb8a93ebe48d4ff52b1b493cdf56ef6a28240a65c6055b76d8f360';
-async function sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}
-async function checkAuth(){
-  const pw=document.getElementById('auth-pw').value;
-  if(await sha(pw)===PW_HASH){
-    sessionStorage.setItem('fsa_auth','true');
-    document.getElementById('auth-overlay').style.display='none';
-    document.getElementById('app').style.display='block';
-    toggleMod('dev');
-  }else{
-    const e=document.getElementById('auth-err');
-    e.textContent='✕ Falsches Passwort';
-    setTimeout(()=>e.textContent='',2500);
+document.addEventListener('DOMContentLoaded', function() {
+
+  // ── PASSWORD ──────────────────────────────────────────
+  async function sha256(msg) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
   }
-}
-document.addEventListener('DOMContentLoaded',()=>{
-  if(sessionStorage.getItem('fsa_auth')==='true'){
-    document.getElementById('auth-overlay').style.display='none';
-    document.getElementById('app').style.display='block';
-    toggleMod('dev');
+  const HASH = '037453db72fb8a93ebe48d4ff52b1b493cdf56ef6a28240a65c6055b76d8f360';
+  const ov = document.getElementById('pw-overlay');
+  if (sessionStorage.getItem('fsa_auth') === '1') {
+    ov.style.display = 'none';
   }
-  document.getElementById('auth-pw').addEventListener('keydown',e=>{if(e.key==='Enter')checkAuth()});
-});
-
-// ─── Module field definitions ─────────────────────────────────────────────────
-const CLUSTERS=[
-  {id:'c1',label:'CLUSTER1_OR',hint:'Hugo·Mazor·StealthStation·O-arm',cls:'cg-c1',repair:true},
-  {id:'c2',label:'CLUSTER2_CARDIAC',hint:'Affera·Arctic Front·Nitron',cls:'cg-c2',repair:true},
-  {id:'c3',label:'CLUSTER3_MONITORING',hint:'Ventilation·Monitoring',cls:'cg-c3',repair:true},
-  {id:'c4',label:'CLUSTER4_DIGITAL',hint:'Touch Surgery',cls:'cg-c4',repair:false},
-  {id:'cs',label:'SMALL_CAPITAL',hint:'NIM·PROG·ACT·IPC/EC300·Neurophysio',cls:'cg-cs',repair:false},
-  {id:'ch',label:'HF_CHIRURGIE',hint:'Sonderfall: Level=L2, Repair=L3',cls:'cg-ch',repair:true},
-];
-
-const FIELDS={
-  dev:[
-    {k:'seriennummer',l:'Seriennummer',r:true},
-    {k:'geraetetyp',l:'Gerätetyp',r:true},
-    {k:'produktfamilie',l:'Produktfamilie',r:true},
-    {k:'cluster',l:'Cluster',r:true},
-    {k:'klinik_name',l:'Klinik Name',r:true},
-    {k:'klinik_plz',l:'Klinik PLZ',r:true},
-    {k:'klinik_ort',l:'Klinik Ort',r:true},
-    {k:'vertragstyp',l:'Vertragstyp',r:true},
-    {k:'faell_stk',l:'Fälligkeit STK',r:false},
-    {k:'faell_pm',l:'Fälligkeit PM',r:false},
-    {k:'prioritaet',l:'Priorität',r:false},
-    {k:'op_klinik',l:'OP-Klinik (j/n)',r:false},
-    {k:'uniklinik',l:'Uniklinik (j/n)',r:false},
-  ],
-  // sk fields built dynamically
-  tool:[
-    {k:'tool_id',l:'Tool-ID',r:true},
-    {k:'tool_typ',l:'Tool-Typ / Bezeichnung',r:true},
-    {k:'tech_id',l:'Techniker-ID',r:true},
-    {k:'produktfamilie',l:'Produktfamilie',r:true},
-    {k:'kalib_bis',l:'Kalibrierung bis',r:false},
-    {k:'sn_tool',l:'Seriennummer (Tool)',r:false},
-    {k:'lagerort',l:'Lagerort',r:false},
-  ],
-  hist:[
-    {k:'auftrag_nr',l:'Auftragsnummer',r:true},
-    {k:'datum',l:'Datum',r:true},
-    {k:'tech_id',l:'Techniker-ID',r:true},
-    {k:'klinik',l:'Klinik',r:true},
-    {k:'seriennummer',l:'Seriennummer',r:false},
-    {k:'produktfamilie',l:'Produktfamilie',r:true},
-    {k:'auftragstyp',l:'Auftragstyp (STK/PM/Repair)',r:true},
-    {k:'dauer_min',l:'Einsatzdauer (Min)',r:true},
-    {k:'fahrzeit_min',l:'Fahrzeit (Min)',r:false},
-    {k:'ergebnis',l:'Ergebnis (PASS/FAIL)',r:false},
-    {k:'eskalation',l:'Eskalation (j/n)',r:false},
-  ],
-  tech:[
-    {k:'tech_id',l:'Techniker-ID',r:true},
-    {k:'nachname',l:'Nachname',r:true},
-    {k:'vorname',l:'Vorname',r:true},
-    {k:'strasse',l:'Straße',r:false},
-    {k:'plz',l:'PLZ (Wohnort)',r:true},
-    {k:'ort',l:'Ort (Wohnort)',r:true},
-    {k:'bundesland',l:'Bundesland',r:false},
-    {k:'lat',l:'Latitude (opt.)',r:false},
-    {k:'lon',l:'Longitude (opt.)',r:false},
-    {k:'telefon',l:'Telefon',r:false},
-    {k:'email',l:'E-Mail',r:false},
-    {k:'kapazitaet_h',l:'Kapazität h/Woche',r:false},
-    {k:'hugo_ka',l:'Hugo KA (j/n)',r:false},
-  ],
-};
-
-// Skill fields (base + per-cluster)
-const SK_BASE=[
-  {k:'tech_id',l:'Techniker-ID',r:true},
-  {k:'name',l:'Name',r:true},
-  {k:'plz',l:'PLZ',r:false},
-  {k:'hugo_ka',l:'Hugo KA (j/n)',r:false},
-  {k:'cert_bis',l:'Zertifiziert bis',r:false},
-];
-
-// ─── State ────────────────────────────────────────────────────────────────────
-const IDS=['dev','sk','tool','hist','tech'];
-const S={};
-IDS.forEach(id=>S[id]={raw:null,mapped:null,hdrs:[],done:false});
-
-// ─── Accordion ────────────────────────────────────────────────────────────────
-function toggleMod(id){
-  const b=document.getElementById(`mbb-${id}`);
-  const c=document.getElementById(`mc-${id}`);
-  const open=b.classList.contains('open');
-  b.classList.toggle('open',!open);
-  c.classList.toggle('open',!open);
-  c.textContent=!open?'▴':'▾';
-}
-
-// ─── DnD ──────────────────────────────────────────────────────────────────────
-function dzO(e,id){e.preventDefault();document.getElementById(`dz-${id}`).classList.add('over')}
-function dzL(e,id){document.getElementById(`dz-${id}`).classList.remove('over')}
-function dzD(e,id){e.preventDefault();dzL(e,id);const f=e.dataTransfer.files[0];if(f)procFile(f,id)}
-function onFile(e,id){const f=e.target.files[0];if(f)procFile(f,id)}
-
-// ─── File processing ──────────────────────────────────────────────────────────
-function procFile(file,id){
-  const ext=file.name.split('.').pop().toLowerCase();
-  document.getElementById(`dzn-${id}`).textContent='📄 '+file.name;
-  toast('Lese '+file.name+' …','info');
-  const r=new FileReader();
-  if(ext==='csv'){r.onload=e=>parseCSV(e.target.result,id,file.name);r.readAsText(file,'UTF-8');}
-  else if(['xlsx','xls'].includes(ext)){r.onload=e=>parseXL(e.target.result,id,file.name);r.readAsArrayBuffer(file);}
-  else toast('Format nicht unterstützt — bitte CSV oder XLSX','error');
-}
-
-function parseCSV(txt,id,name){
-  const lines=txt.trim().split(/\r?\n/);
-  if(lines.length<2){toast('CSV leer oder ungültig','error');return}
-  const d=lines[0].includes(';')?';':',';
-  const hdrs=lines[0].split(d).map(h=>h.replace(/^"|"$/g,'').trim());
-  const rows=[];
-  for(let i=1;i<Math.min(lines.length,10001);i++){
-    if(!lines[i].trim())continue;
-    const c=csvSplit(lines[i],d);
-    const row={};hdrs.forEach((h,j)=>row[h]=(c[j]||'').replace(/^"|"$/g,'').trim());
-    rows.push(row);
-  }
-  onLoaded(id,hdrs,rows,name);
-}
-
-function csvSplit(line,d){
-  const res=[];let cur='',q=false;
-  for(const c of line){if(c==='"'){q=!q}else if(c===d&&!q){res.push(cur);cur=''}else cur+=c}
-  res.push(cur);return res;
-}
-
-async function parseXL(buf,id,name){
-  if(!window.XLSX)await ldScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
-  try{
-    const wb=XLSX.read(buf,{type:'array'});
-    const ws=wb.Sheets[wb.SheetNames[0]];
-    const data=XLSX.utils.sheet_to_json(ws,{header:1,raw:false});
-    if(data.length<2){toast('Excel-Datei leer','error');return}
-    const hdrs=data[0].map(h=>String(h||'').trim());
-    const rows=[];
-    for(let i=1;i<Math.min(data.length,10001);i++){
-      if(!data[i]||data[i].every(c=>!c))continue;
-      const row={};hdrs.forEach((h,j)=>row[h]=String(data[i][j]??'').trim());
-      rows.push(row);
+  document.getElementById('pw-btn').addEventListener('click', async function() {
+    const pw = document.getElementById('pw-input').value;
+    const h = await sha256(pw);
+    if (h === HASH) {
+      sessionStorage.setItem('fsa_auth', '1');
+      ov.style.display = 'none';
+    } else {
+      document.getElementById('pw-error').style.display = 'block';
+      document.getElementById('pw-input').value = '';
     }
-    onLoaded(id,hdrs,rows,name);
-  }catch(e){toast('Excel-Fehler: '+e.message,'error')}
-}
+  });
+  document.getElementById('pw-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('pw-btn').click();
+  });
 
-function ldScript(src){return new Promise((r,j)=>{const s=document.createElement('script');s.src=src;s.onload=r;s.onerror=j;document.head.appendChild(s)})}
+  // ── STATE ─────────────────────────────────────────────
+  const fileData = {1: null, 2: null, 3: null, 4: null, 5: null};
+  const imported = {1: false, 2: false, 3: false, 4: false, 5: false};
 
-function onLoaded(id,hdrs,rows,name){
-  S[id].hdrs=hdrs;S[id].raw=rows;S[id].done=false;
-  document.getElementById(`sv-${id}`).textContent=rows.length+(id==='tech'||id==='sk'?' Tech':' Zeilen');
-  buildMapping(id,hdrs);
-  showPreview(id,rows,hdrs);
-  document.getElementById(`ar-${id}`).style.display='flex';
-  toast(`✓ ${rows.length} Zeilen aus "${name}" geladen`,'success');
-}
-
-// ─── Mapping ──────────────────────────────────────────────────────────────────
-function norm(s){return s.toLowerCase().replace(/[^a-z0-9]/g,'')}
-function autoMatch(hdrs,key){return hdrs.find(h=>norm(h)===norm(key)||norm(h).includes(norm(key))||norm(key).includes(norm(h)))||''}
-
-function buildMapping(id,hdrs){
-  const opts=['— nicht zuordnen —',...hdrs];
-  const makeRow=(f)=>{
-    const best=autoMatch(hdrs,f.k);
-    const d=document.createElement('div');d.className='map-row';
-    d.innerHTML=`<div class="map-label"><span class="req-dot ${f.r?'':'opt'}"></span>${f.l}</div>
-    <select class="map-sel" id="sel-${id}-${f.k}">
-      ${opts.map(o=>`<option value="${o}" ${o===best?'selected':''}>${o}</option>`).join('')}
-    </select>`;
-    return d;
+  // ── TEMPLATES ─────────────────────────────────────────
+  const templates = {
+    1: {
+      name: 'SkillsMatrix_Template.csv',
+      content: 'Techniker_ID,Model_Code,Qualifikation,Zertifizierungs_Datum,Ablauf_Datum\nT1,980X1DEDRAC,PM+R,2023-03-15,2025-03-15\nT1,NIM,PM,2022-11-01,\nT1,HF_Chirurgie,PM+R,2023-05-01,\nT2,PROG,PM,2023-06-20,\nT3,ACT,PM,2022-08-10,\nT3,NIM,0,,\nT4,Hugo,PM+R,2024-01-10,2026-01-10\nT5,Affera,PM+R,2023-09-05,2025-09-05\nT5,Arctic_Front,PM,2022-12-01,\nT6,Arctic_Front,0,,\nT6,Hugo,PM+R,2023-11-20,2025-11-20\nT10,StealthStation,PM+R,2024-02-28,\nT10,Hugo,PM+R,2023-07-15,2025-07-15\nT11,Mazor,PM+R,2023-12-01,2025-12-01\nT11,HF_Chirurgie,PM,2024-03-10,'
+    },
+    2: {
+      name: 'Einsatzdauer_Template.csv',
+      content: 'Model_Code,Median_Minuten,Anzahl_Einsaetze,Min_Minuten,Max_Minuten,Zeitraum_Von,Zeitraum_Bis\n980X1DEDRAC,95,142,60,180,2022-01-01,2024-12-31\nNIM,45,210,30,90,2022-01-01,2024-12-31\nPROG,60,88,45,120,2022-01-01,2024-12-31\nACT,50,176,30,100,2022-01-01,2024-12-31\nHugo,180,34,120,240,2022-01-01,2024-12-31\nAffera,150,22,100,200,2022-01-01,2024-12-31\nArctic_Front,120,45,90,180,2022-01-01,2024-12-31\nStealthStation,210,18,150,300,2022-01-01,2024-12-31'
+    },
+    3: {
+      name: 'HistorischeDaten_Template.csv',
+      content: 'Auftragsnummer,Account,Location,Ort,PLZ,Model_Code,Next_PM_Due_Date,Seriennummer,Warranty_Date,Contract_End_Date,GCH_Code\nWO-2024-001,UKE Hamburg,Chirurgie B,Hamburg,20246,Hugo,2025-03-15,HG-001234,2026-12-31,2027-06-30,GCH-2004\nWO-2024-002,Charite Berlin,Neuroradiologie,Berlin,10117,StealthStation,2025-04-01,SS-005678,2025-06-30,2026-12-31,GCH-2004\nWO-2024-003,UKL Ulm,Herzkatheterlabor,Ulm,89081,Affera,2025-02-28,AF-009012,2027-01-15,2027-01-15,GCH-2004\nWO-2024-004,Klinikum Bochum,HNO,Bochum,44791,NIM,2025-06-10,NM-003456,2025-12-31,2026-06-30,GCH-2004'
+    },
+    4: {
+      name: 'OffeneJobs_Template.csv',
+      content: 'Auftragsnummer,Account,Location,Ort,PLZ,Model_Code,Next_PM_Due_Date,Seriennummer,Warranty_Date,Contract_End_Date,GCH_Code,Auftragstyp,Prioritaet\nWO-2025-101,UKE Hamburg,Chirurgie B,Hamburg,20246,Hugo,2025-06-15,HG-001234,2026-12-31,2027-06-30,GCH-2004,PM,Hoch\nWO-2025-102,Charite Berlin,Neuroradiologie,Berlin,10117,StealthStation,2025-07-01,SS-005678,2025-06-30,2026-12-31,GCH-2004,STK,Normal\nWO-2025-103,UKL Ulm,Herzkatheterlabor,Ulm,89081,Affera,2025-05-20,AF-009012,2027-01-15,2027-01-15,GCH-2004,PM,Hoch\nWO-2025-104,Klinikum Bochum,HNO,Bochum,44791,NIM,2025-08-10,NM-003456,2025-12-31,2026-06-30,GCH-2004,STK,Normal\nWO-2025-105,Klinikum Freiburg,Kardiologie,Freiburg,79106,Arctic_Front,2025-06-01,ARC-011234,2026-03-31,2026-03-31,GCH-2004,PM,Hoch\nWO-2025-106,MHH Hannover,Neuro OP,Hannover,30625,Mazor,2025-09-20,MZ-007890,2027-06-30,2028-01-15,GCH-2004,PM,Normal\nWO-2025-107,Uniklinik Köln,Elektrophysiologie,Köln,50937,Affera,2025-05-10,AF-013456,2026-06-30,2027-06-30,GCH-2004,STK,Kritisch\nWO-2025-108,Klinikum Erlangen,HF-Labor,Erlangen,91054,HF_Chirurgie,2025-07-15,HF-002345,2025-12-31,2026-12-31,GCH-2004,STK,Normal'
+    },
+    5: {
+      name: 'Techniker_Template.csv',
+      content: 'Techniker_ID,Name,Wohnort,PLZ,Bundesland,Hugo_KA,Wochenkapazitaet_h,Telefon,Email\nT1,Max Müller,Obertshausen,63179,Hessen,ja,25.6,+49 6104 123456,t1@example.com\nT2,Laura Schmidt,Wehingen,78564,Baden-Württemberg,nein,32,,\nT3,Jonas Weber,Weimar,99423,Thüringen,nein,32,,\nT4,Sarah Fischer,Erlangen,91052,Bayern,nein,32,,\nT5,Tim Bauer,Oberhausen,46045,Nordrhein-Westfalen,nein,32,,\nT6,Anna Koch,Schenefeld,22869,Schleswig-Holstein,ja,25.6,,\nT7,Peter Richter,Wildenberg,93749,Bayern,nein,32,,\nT8,Lisa Klein,Hennef,53773,Nordrhein-Westfalen,nein,32,,\nT9,Mark Wolf,Hamburg,20095,Hamburg,nein,32,,\nT10,Marc Liebhardt,Balingen,72336,Baden-Württemberg,ja,25.6,,\nT11,Julia Braun,Gangelt,52538,Nordrhein-Westfalen,ja,25.6,,\nT12,Stefan Schulz,Frankfurt,60311,Hessen,nein,32,,\nT13,Nina Hoffmann,Meckenheim,53340,Nordrhein-Westfalen,nein,32,,\nT14,Klaus Schäfer,Waldachtal,72178,Baden-Württemberg,nein,32,,'
+    }
   };
 
-  if(id==='sk'){
-    // Base fields
-    const baseGrid=document.getElementById('mg-sk-base');
-    baseGrid.innerHTML='';
-    SK_BASE.forEach(f=>baseGrid.appendChild(makeRow(f)));
-    // Cluster groups
-    const clDiv=document.getElementById('mg-sk-clusters');
-    clDiv.innerHTML='';
-    CLUSTERS.forEach(cl=>{
-      const grp=document.createElement('div');grp.className='cluster-group';
-      grp.innerHTML=`<div class="cluster-group-title ${cl.cls}">📋 ${cl.label} <small style="font-weight:400;opacity:.7">(${cl.hint})</small></div>`;
-      const grid=document.createElement('div');grid.className='map-grid';
-      // Level field
-      const lf={k:`${cl.id}_level`,l:`Level (STK=PM)`,r:false};
-      grid.appendChild(makeRow(lf));
-      // Repair field (if applicable)
-      if(cl.repair){
-        const rf={k:`${cl.id}_repair`,l:`Repair-Level`,r:false};
-        grid.appendChild(makeRow(rf));
+  // ── EXPOSE GLOBAL FUNCTIONS ───────────────────────────
+  window.switchTab = function(n) {
+    document.querySelectorAll('.mtab').forEach((t,i)=>t.classList.toggle('active',i+1===n));
+    document.querySelectorAll('.mpanel').forEach((p,i)=>p.classList.toggle('active',i+1===n));
+  };
+
+  window.dzOver = function(e,id) {
+    e.preventDefault();
+    document.getElementById(id).classList.add('drag-over');
+  };
+  window.dzLeave = function(id) {
+    document.getElementById(id).classList.remove('drag-over');
+  };
+  window.dzDrop = function(e,id,n) {
+    e.preventDefault();
+    document.getElementById(id).classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f, n);
+  };
+
+  window.fileSelected = function(input, n) {
+    if (input.files[0]) handleFile(input.files[0], n);
+  };
+
+  function handleFile(file, n) {
+    document.getElementById('fn-'+n).textContent = '📎 ' + file.name;
+    document.getElementById('fn-'+n).style.display = 'block';
+    document.getElementById('import-btn-'+n).style.display = 'flex';
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      let rows;
+      if (file.name.endsWith('.csv')) {
+        const text = e.target.result;
+        rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g,'')));
+      } else {
+        const wb = XLSX.read(e.target.result, {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_array(ws);
       }
-      grp.appendChild(grid);clDiv.appendChild(grp);
+      fileData[n] = rows;
+      renderPreview(n, rows);
+    };
+    if (file.name.endsWith('.csv')) reader.readAsText(file, 'UTF-8');
+    else reader.readAsArrayBuffer(file);
+  }
+
+  function renderPreview(n, rows) {
+    const wrap = document.getElementById('preview-'+n);
+    const tbl = document.getElementById('table-'+n);
+    wrap.classList.add('visible');
+    const headers = rows[0] || [];
+    const dataRows = rows.slice(1,6);
+    let html = '<thead><tr>' + headers.map(h=>`<th>${h}</th>`).join('') + '</tr></thead><tbody>';
+    dataRows.forEach(r => {
+      html += '<tr>' + r.map(c=>`<td>${c||''}</td>`).join('') + '</tr>';
     });
-    document.getElementById('ms-sk').classList.add('vis');
-  } else {
-    const grid=document.getElementById(`mg-${id}`);
-    grid.innerHTML='';
-    (FIELDS[id]||[]).forEach(f=>grid.appendChild(makeRow(f)));
-    document.getElementById(`ms-${id}`).classList.add('vis');
-  }
-}
-
-function getMaps(id){
-  const allFields=id==='sk'
-    ?[...SK_BASE,...CLUSTERS.flatMap(cl=>{
-        const fs=[{k:`${cl.id}_level`}];
-        if(cl.repair)fs.push({k:`${cl.id}_repair`});
-        return fs;
-      })]
-    :(FIELDS[id]||[]);
-  const m={};
-  allFields.forEach(f=>{
-    const sel=document.getElementById(`sel-${id}-${f.k}`);
-    m[f.k]=sel&&!sel.value.startsWith('—')?sel.value:null;
-  });
-  return m;
-}
-
-// ─── Preview ──────────────────────────────────────────────────────────────────
-function showPreview(id,rows,hdrs){
-  document.getElementById(`pc-${id}`).textContent=rows.length;
-  const tbl=document.getElementById(`pt-${id}`);
-  let h='<thead><tr>'+hdrs.map(c=>`<th>${esc(c)}</th>`).join('')+'</tr></thead><tbody>';
-  rows.slice(0,5).forEach(r=>{h+='<tr>'+hdrs.map(c=>`<td>${esc(String(r[c]||''))}</td>`).join('')+'</tr>'});
-  tbl.innerHTML=h+'</tbody>';
-  document.getElementById(`ps-${id}`).classList.add('vis');
-  validate(id,rows);
-}
-
-// ─── Validation ───────────────────────────────────────────────────────────────
-function validate(id,rows){
-  const maps=getMaps(id);
-  const reqFields=id==='sk'?SK_BASE.filter(f=>f.r):(FIELDS[id]||[]).filter(f=>f.r);
-  const msgs=[];
-  const miss=reqFields.filter(f=>!maps[f.k]);
-  if(miss.length)msgs.push({t:'err',m:'Pflichtfelder nicht zugeordnet: '+miss.map(f=>f.l).join(', ')});
-  msgs.push({t:'ok',m:`${rows.length} Datensätze bereit`});
-
-  if(id==='sk'){
-    const ic=maps['tech_id'];
-    if(ic){
-      const valid=rows.filter(r=>/^T\d+$/i.test(r[ic]||'')).length;
-      if(valid<rows.length)msgs.push({t:'warn',m:`${rows.length-valid} IDs nicht im Format T1–T14`});
-      else msgs.push({t:'ok',m:`${valid} gültige Techniker-IDs ✓`});
-    }
-    // Check level values
-    CLUSTERS.forEach(cl=>{
-      const lc=maps[`${cl.id}_level`];
-      if(!lc)return;
-      const bad=rows.filter(r=>r[lc]&&!['L2','L3'].includes((r[lc]||'').toUpperCase())).length;
-      if(bad)msgs.push({t:'warn',m:`${bad} ungültige Level-Werte in ${cl.label} (erwartet L2/L3)`});
-    });
-    const defined=CLUSTERS.filter(cl=>maps[`${cl.id}_level`]).length;
-    msgs.push({t: defined>=3?'ok':'warn', m:`${defined}/6 Cluster mit Level-Zuordnung`});
+    if (rows.length > 6) html += `<tr><td colspan="${headers.length}" class="table-more">… ${rows.length-1} Zeilen gesamt</td></tr>`;
+    html += '</tbody>';
+    tbl.innerHTML = html;
   }
 
-  if(id==='hist'){
-    const dc=maps['dauer_min'];
-    if(dc){
-      const v=rows.filter(r=>r[dc]&&!isNaN(+r[dc])&&+r[dc]>0).length;
-      msgs.push(v>=rows.length*.7?{t:'ok',m:`${v} valide Einsatzdauern ✓`}:{t:'warn',m:`${rows.length-v} Zeilen ohne gültige Einsatzdauer`});
+  window.importSheet = function(n) {
+    if (!fileData[n]) return;
+
+    // For sheet 4: calculate stats
+    if (n === 4) {
+      const rows = fileData[n];
+      const headers = rows[0].map(h => h.toLowerCase().replace(/\s/,'_'));
+      const pmIdx = headers.findIndex(h => h.includes('pm_due') || h.includes('fällig'));
+      const snIdx = headers.findIndex(h => h.includes('serien'));
+      const gchIdx = headers.findIndex(h => h.includes('gch'));
+      const filterGCH = document.getElementById('gch-filter').checked;
+
+      const today = new Date();
+      let total = 0, overdue = 0, soon = 0, ok = 0, dupes = 0, gchFiltered = 0;
+      const seenSN = new Set();
+
+      rows.slice(1).forEach(r => {
+        // GCH filter
+        if (filterGCH && gchIdx >= 0) {
+          const gch = (r[gchIdx]||'').trim();
+          if (gch && gch !== 'GCH-2004') { gchFiltered++; return; }
+        }
+        // Duplicate SN check
+        const sn = snIdx >= 0 ? (r[snIdx]||'').trim() : '';
+        if (sn && seenSN.has(sn)) { dupes++; return; }
+        if (sn) seenSN.add(sn);
+
+        total++;
+        if (pmIdx >= 0) {
+          const d = new Date(r[pmIdx]);
+          if (!isNaN(d)) {
+            const diff = (d - today) / (1000*60*60*24);
+            if (diff < 0) overdue++;
+            else if (diff < 30) soon++;
+            else ok++;
+          }
+        }
+      });
+
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-overdue').textContent = overdue;
+      document.getElementById('stat-soon').textContent = soon;
+      document.getElementById('stat-ok').textContent = ok;
+      document.getElementById('stat-dupes').textContent = dupes;
+      document.getElementById('stat-gch').textContent = gchFiltered;
+      document.getElementById('stats-4').style.display = 'block';
     }
-    const tc=maps['auftragstyp'];
-    if(tc){
-      const types=[...new Set(rows.map(r=>(r[tc]||'').toUpperCase()))].filter(Boolean);
-      const hasAll=['STK','PM'].every(t=>types.some(x=>x.includes(t)));
-      msgs.push(hasAll?{t:'ok',m:`Auftragstypen: ${types.join(', ')} ✓`}:{t:'warn',m:`Auftragstypen: ${types.join(', ')} — STK und PM empfohlen`});
+
+    // Mark as imported
+    imported[n] = true;
+    localStorage.setItem('fsa_sheet_'+n, JSON.stringify(fileData[n]));
+    document.getElementById('dot-'+n).classList.add('ok');
+    document.getElementById('tab-'+n).classList.add('done');
+    updateStatusBar();
+    showToast('Sheet ' + n + ' importiert ✓');
+  };
+
+  window.downloadTemplate = function(n) {
+    const t = templates[n];
+    const blob = new Blob([t.content], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = t.name;
+    a.click();
+  };
+
+  window.saveAll = function() {
+    let count = 0;
+    for (let i=1;i<=5;i++) {
+      if (fileData[i] && !imported[i]) {
+        localStorage.setItem('fsa_sheet_'+i, JSON.stringify(fileData[i]));
+        imported[i] = true;
+        document.getElementById('dot-'+i).classList.add('ok');
+        document.getElementById('tab-'+i).classList.add('done');
+        count++;
+      } else if (imported[i]) count++;
     }
+    localStorage.setItem('fsa_import_ts', new Date().toISOString());
+    localStorage.setItem('fsa_data_loaded', '1');
+    updateStatusBar();
+    showToast(count + ' / 5 Sheets gespeichert ✓');
+  };
+
+  function updateStatusBar() {
+    const count = Object.values(imported).filter(Boolean).length;
+    document.getElementById('status-label').textContent = count + ' / 5 Sheets importiert';
   }
 
-  if(id==='tool'){
-    const kc=maps['kalib_bis'];
-    if(kc){
-      const today=new Date();
-      const exp=rows.filter(r=>{const d=new Date(r[kc]);return!isNaN(d)&&d<today}).length;
-      const soon=rows.filter(r=>{const d=new Date(r[kc]);const n=new Date();n.setDate(n.getDate()+90);return!isNaN(d)&&d>=today&&d<=n}).length;
-      if(exp)msgs.push({t:'err',m:`${exp} Tools mit abgelaufener Kalibrierung!`});
-      if(soon)msgs.push({t:'warn',m:`${soon} Kalibrierungen in <90 Tagen fällig`});
-      if(!exp&&!soon)msgs.push({t:'ok',m:'Alle Kalibrierungen aktuell ✓'});
-    }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = '✓ ' + msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2800);
   }
 
-  if(id==='tech'){
-    const pc=maps['plz'];
-    if(pc){
-      const ok=rows.filter(r=>/^\d{5}$/.test(r[pc]||'')).length;
-      if(ok<rows.length)msgs.push({t:'warn',m:`${rows.length-ok} ungültige PLZ (5-stellig erwartet)`});
-      else msgs.push({t:'ok',m:`${ok} gültige PLZ ✓`});
+  window.addGCH = function(el) {
+    const code = prompt('GCH-Code eingeben (z.B. GCH-1234):');
+    if (code && code.trim()) {
+      const span = document.createElement('span');
+      span.style.cssText = 'background:rgba(0,114,206,0.15);border:1px solid rgba(0,114,206,0.3);border-radius:4px;padding:2px 8px;font-size:11px;color:var(--accent)';
+      span.textContent = code.trim() + ' ✓';
+      document.getElementById('gch-tags').insertBefore(span, el);
     }
-    const hc=maps['hugo_ka'];
-    if(hc){
-      const hugo=rows.filter(r=>(r[hc]||'').toLowerCase()==='j').length;
-      msgs.push({t:'ok',m:`${hugo} Hugo-KA-Techniker identifiziert`});
-    }
-  }
+  };
 
-  if(id==='dev'){
-    const sc=maps['seriennummer'];
-    if(sc){
-      const u=new Set(rows.map(r=>r[sc])).size;
-      if(u<rows.length)msgs.push({t:'warn',m:`${rows.length-u} doppelte Seriennummern`});
-      else msgs.push({t:'ok',m:`${u} eindeutige Seriennummern ✓`});
+  // ── RESTORE STATE ─────────────────────────────────────
+  for (let i=1;i<=5;i++) {
+    if (localStorage.getItem('fsa_sheet_'+i)) {
+      imported[i] = true;
+      document.getElementById('dot-'+i).classList.add('ok');
+      document.getElementById('tab-'+i).classList.add('done');
     }
   }
+  updateStatusBar();
 
-  const vb=document.getElementById(`vb-${id}`);
-  vb.innerHTML=msgs.map(m=>`<div class="val-item">
-    <span>${m.t==='ok'?'✅':m.t==='warn'?'⚠️':'❌'}</span>
-    <span style="color:${m.t==='ok'?'var(--ok)':m.t==='warn'?'var(--warn)':'var(--err)'}">${m.m}</span>
-  </div>`).join('');
-  vb.classList.add('vis');
-}
-
-// ─── Confirm ──────────────────────────────────────────────────────────────────
-function confirmMod(id){
-  const maps=getMaps(id);
-  const rows=S[id].raw;if(!rows)return;
-  const reqF=id==='sk'?SK_BASE.filter(f=>f.r):(FIELDS[id]||[]).filter(f=>f.r);
-  const miss=reqF.filter(f=>!maps[f.k]);
-  if(miss.length){toast('Pflichtfelder fehlen: '+miss.map(f=>f.l).join(', '),'error');return}
-  S[id].mapped=rows.map(r=>{const o={};Object.keys(maps).forEach(k=>o[k]=maps[k]?r[maps[k]]:'');return o});
-  S[id].done=true;
-  document.getElementById(`mod-${id}`).classList.add('loaded');
-  document.getElementById(`mb-${id}`).textContent=`✓ ${rows.length} Einträge`;
-  document.getElementById(`mb-${id}`).classList.add('ok');
-  document.getElementById(`sc-${id}`).classList.add('loaded');
-  document.getElementById(`cb-${id}`).textContent='✓ Importiert';
-  document.getElementById(`cb-${id}`).disabled=true;
-  document.getElementById(`ah-${id}`).textContent=`${rows.length} Einträge übernommen`;
-  document.getElementById(`pd-${id}`).classList.add('done');
-  toast(`✓ Modul "${id}" importiert`,'success');
-  runAnalysis();
-  updateFinal();
-}
-
-function clearMod(id){
-  S[id]={raw:null,mapped:null,hdrs:[],done:false};
-  ['ms','ps'].forEach(p=>{const el=document.getElementById(`${p}-${id}`);if(el)el.classList.remove('vis')});
-  const vb=document.getElementById(`vb-${id}`);if(vb){vb.innerHTML='';vb.classList.remove('vis')}
-  document.getElementById(`ar-${id}`).style.display='none';
-  document.getElementById(`mod-${id}`).classList.remove('loaded');
-  document.getElementById(`mb-${id}`).textContent='Ausstehend';
-  document.getElementById(`mb-${id}`).classList.remove('ok');
-  document.getElementById(`sc-${id}`).classList.remove('loaded');
-  document.getElementById(`sv-${id}`).textContent='—';
-  document.getElementById(`pd-${id}`).classList.remove('done');
-  const cb=document.getElementById(`cb-${id}`);
-  cb.disabled=false;
-  cb.textContent={'dev':'✓ Gerätedaten übernehmen','sk':'✓ Skillmatrix übernehmen','tool':'✓ Messmittel übernehmen','hist':'✓ Wartungshistorie übernehmen','tech':'✓ Stammdaten übernehmen'}[id];
-  document.getElementById(`ah-${id}`).textContent='';
-  const mg=document.getElementById(`mg-${id}`);if(mg)mg.innerHTML='';
-  const pt=document.getElementById(`pt-${id}`);if(pt)pt.innerHTML='';
-  updateFinal();
-}
-
-// ─── Analysis ─────────────────────────────────────────────────────────────────
-function runAnalysis(){
-  document.getElementById('analysis').classList.add('vis');
-  if(S.sk.done)buildXT();
-  if(S.hist.done)buildDuration();
-  if(S.tool.done)buildTools();
-  if(S.tech.done)buildTechCards();
-  if(S.tech.done&&S.dev.done)buildTerritory();
-}
-
-// Crosstraining matrix
-function buildXT(){
-  const rows=S.sk.mapped||[];
-  if(!rows.length){document.getElementById('xt-matrix').innerHTML='<p style="color:var(--muted);font-size:12px">Skillmatrix importieren</p>';return}
-  let h='<table class="matrix-tbl"><thead><tr><th class="th-name">Techniker</th>';
-  CLUSTERS.forEach(cl=>h+=`<th>${cl.label}</th>`);
-  h+='</tr></thead><tbody>';
-  const gaps=[];
-  rows.forEach(r=>{
-    const name=r.name||r.tech_id||'?';
-    h+=`<tr><td class="td-name">${esc(name)} <small>(${r.tech_id||''})</small></td>`;
-    CLUSTERS.forEach(cl=>{
-      const lv=(r[`${cl.id}_level`]||'').toUpperCase();
-      const rp=(r[`${cl.id}_repair`]||'').toUpperCase();
-      const hasLv=lv==='L2'||lv==='L3';
-      const hasRp=rp==='L2'||rp==='L3';
-      let cls,txt;
-      if(!hasLv){cls='cell-no';txt='—';gaps.push({tech:name,tid:r.tech_id,cl:cl.label,miss:'Level fehlt'})}
-      else if(cl.repair&&!hasRp){cls='cell-partial';txt=lv+'·—';gaps.push({tech:name,tid:r.tech_id,cl:cl.label,miss:'Repair fehlt'})}
-      else{cls='cell-ok';txt=lv+(cl.repair?'·'+(rp||'—'):'·⬛')}
-      h+=`<td class="${cls}">${txt}</td>`;
-    });
-    h+='</tr>';
-  });
-  h+='</tbody></table>';
-  document.getElementById('xt-matrix').innerHTML=h;
-
-  // Gap cards by cluster
-  const byCl={};
-  gaps.forEach(g=>{if(!byCl[g.cl])byCl[g.cl]=[];byCl[g.cl].push(g)});
-  let gh='';
-  Object.entries(byCl).forEach(([cl,gs])=>{
-    const lvMiss=gs.filter(g=>g.miss==='Level fehlt');
-    const rpMiss=gs.filter(g=>g.miss==='Repair fehlt');
-    gh+=`<div class="gap-card ${lvMiss.length?'err':''}">
-      <h4>${lvMiss.length?'❌':'⚠️'} ${esc(cl)}</h4>
-      <ul>
-        ${lvMiss.slice(0,3).map(g=>`<li>${esc(g.tech)} — kein Level</li>`).join('')}
-        ${rpMiss.slice(0,3).map(g=>`<li>${esc(g.tech)} — Repair-Training empfohlen</li>`).join('')}
-        ${(lvMiss.length+rpMiss.length)>6?`<li style="color:var(--muted)">+${lvMiss.length+rpMiss.length-6} weitere …</li>`:''}
-      </ul>
-    </div>`;
-  });
-  document.getElementById('xt-gaps').innerHTML=gh||'<p style="color:var(--ok);font-size:12px">✅ Keine Crosstraining-Lücken gefunden</p>';
-}
-
-// Duration
-function buildDuration(){
-  const rows=S.hist.mapped||[];
-  if(!rows.length)return;
-  const g={};
-  rows.forEach(r=>{
-    const fam=r.produktfamilie||'?';
-    const typ=(r.auftragstyp||'').toUpperCase();
-    const dur=parseInt(r.dauer_min);
-    if(!fam||isNaN(dur)||dur<=0)return;
-    if(!g[fam])g[fam]={STK:[],PM:[],REPAIR:[]};
-    if(typ.includes('STK'))g[fam].STK.push(dur);
-    else if(typ.includes('PM'))g[fam].PM.push(dur);
-    else if(typ.includes('REP'))g[fam].REPAIR.push(dur);
-  });
-  const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):null;
-  const fmt=v=>v?`${v}′ (${(v/60).toFixed(1)}h)`:'—';
-  let html='';
-  Object.keys(g).sort().forEach(fam=>{
-    const d=g[fam];const n=d.STK.length+d.PM.length+d.REPAIR.length;
-    html+=`<div class="dur-card">
-      <div class="dur-fam">${esc(fam)}<span>${n}</span></div>
-      <div class="dur-row"><span class="dur-l">Ø STK</span><span class="dur-v stk">${fmt(avg(d.STK))}</span></div>
-      <div class="dur-row"><span class="dur-l">Ø PM</span><span class="dur-v pm">${fmt(avg(d.PM))}</span></div>
-      <div class="dur-row"><span class="dur-l">Ø Repair</span><span class="dur-v rep">${fmt(avg(d.REPAIR))}</span></div>
-    </div>`;
-  });
-  document.getElementById('dur-out').innerHTML=html||'<p style="color:var(--muted);font-size:12px">Keine gültigen Einträge</p>';
-}
-
-// Tool coverage
-function buildTools(){
-  const tools=S.tool.mapped||[];if(!tools.length)return;
-  const today=new Date();const n90=new Date();n90.setDate(n90.getDate()+90);
-  const byTech={};
-  tools.forEach(t=>{const id=t.tech_id||'?';if(!byTech[id])byTech[id]=[];byTech[id].push(t)});
-  let html='';
-  Object.entries(byTech).forEach(([tid,ts])=>{
-    html+=`<div class="tool-card"><h4>${esc(tid)} <span style="color:var(--muted);font-weight:400;font-size:11px">${ts.length} Tools</span></h4>`;
-    ts.slice(0,5).forEach(t=>{
-      const kal=t.kalib_bis?new Date(t.kalib_bis):null;
-      let sc='',st='';
-      if(kal){if(kal<today){sc='miss';st='ABGELAUFEN'}else if(kal<=n90){sc='exp';st='BALD FÄLLIG'}else{sc='ok';st='OK'}}
-      html+=`<div class="tool-row"><span>${esc(t.tool_typ||t.tool_id||'?')}</span>${sc?`<span class="tstatus ${sc}">${st}</span>`:''}</div>`;
-    });
-    if(ts.length>5)html+=`<div style="font-size:11px;color:var(--muted);margin-top:5px">+${ts.length-5} weitere</div>`;
-    html+='</div>';
-  });
-  document.getElementById('tool-out').innerHTML=html;
-}
-
-// Techniker cards
-function buildTechCards(){
-  const techs=S.tech.mapped||[];if(!techs.length)return;
-  let html='';
-  techs.forEach(t=>{
-    const isHugo=(t.hugo_ka||'').toLowerCase()==='j';
-    const kap=t.kapazitaet_h||'32';
-    html+=`<div class="tech-card">
-      <div class="tech-card-head">
-        <span class="tech-id">${esc(t.tech_id||'?')}</span>
-        ${isHugo?'<span class="tech-hugo">HUGO KA</span>':''}
-      </div>
-      <div class="tech-stat"><span class="tech-stat-l">Name</span><span class="tech-stat-v">${esc((t.vorname||'')+' '+(t.nachname||''))}</span></div>
-      <div class="tech-stat"><span class="tech-stat-l">Wohnort</span><span class="tech-stat-v">${esc(t.plz||'')} ${esc(t.ort||'')}</span></div>
-      <div class="tech-stat"><span class="tech-stat-l">Bundesland</span><span class="tech-stat-v">${esc(t.bundesland||'—')}</span></div>
-      <div class="tech-stat"><span class="tech-stat-l">Kapazität</span><span class="tech-stat-v">${kap} h/Woche</span></div>
-    </div>`;
-  });
-  document.getElementById('tech-out').innerHTML=html;
-}
-
-// Territory (derived from tech PLZ + device PLZ)
-function buildTerritory(){
-  const techs=S.tech.mapped||[];
-  const devs=S.dev.mapped||[];
-  if(!techs.length||!devs.length)return;
-
-  // Simple PLZ prefix proximity (first 2 digits)
-  let html='';
-  techs.forEach(t=>{
-    const tplz=t.plz||'00000';
-    const tpfx=tplz.substring(0,2);
-    // Find clinics near technician (same or adjacent PLZ prefix)
-    const nearby=devs.filter(d=>{
-      const dplz=d.klinik_plz||'99999';
-      const diff=Math.abs(parseInt(dplz.substring(0,2))-parseInt(tpfx));
-      return diff<=2;
-    });
-    const kliniken=[...new Set(nearby.map(d=>d.klinik_name).filter(Boolean))];
-    const geraete=nearby.length;
-    const isHugo=(t.hugo_ka||'').toLowerCase()==='j';
-
-    // Skill check from skillmatrix
-    const skill=S.sk.done?(S.sk.mapped||[]).find(s=>s.tech_id===t.tech_id):null;
-    let qualCl=0;
-    if(skill)CLUSTERS.forEach(cl=>{const lv=(skill[`${cl.id}_level`]||'').toUpperCase();if(lv==='L2'||lv==='L3')qualCl++});
-
-    html+=`<div class="terr-card">
-      <h4>${esc(t.tech_id||'?')} — ${esc(t.ort||'?')}
-        ${isHugo?'<span class="terr-badge hugo">HUGO KA</span>':''}
-        <span class="terr-badge">PLZ ${esc(tplz)}</span>
-      </h4>
-      <div class="terr-stat"><span class="terr-stat-l">Nahe Kliniken</span><span>${kliniken.length}</span></div>
-      <div class="terr-stat"><span class="terr-stat-l">Nahe Geräte</span><span>${geraete}</span></div>
-      ${skill?`<div class="terr-stat"><span class="terr-stat-l">Qualif. Cluster</span><span style="color:${qualCl>=4?'var(--ok)':qualCl>=2?'var(--warn)':'var(--err)'}">${qualCl}/6</span></div>`:''}
-      ${kliniken.length?`<div style="font-size:10px;color:var(--muted);margin-top:6px">${kliniken.slice(0,3).map(k=>esc(k)).join(' · ')}${kliniken.length>3?' …':''}</div>`:''}
-      ${geraete===0?'<div class="gap-warn">⚠ Keine Geräte in PLZ-Nähe — Gebietsüberprüfung empfohlen</div>':''}
-    </div>`;
-  });
-  document.getElementById('terr-out').innerHTML=html||'<p style="color:var(--muted);font-size:12px">Techniker und Gerätedaten für Gebietsanalyse erforderlich</p>';
-}
-
-// ─── Tabs ──────────────────────────────────────────────────────────────────────
-function switchTab(id,btn){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(`tp-${id}`).classList.add('active');
-}
-
-// ─── Final ────────────────────────────────────────────────────────────────────
-function updateFinal(){
-  const count=IDS.filter(id=>S[id].done).length;
-  document.getElementById('btn-final').disabled=count<5;
-  document.getElementById('final-hint').textContent=count===5?'✓ Alle 5 Module bereit':`${count}/5 Module geladen`;
-}
-
-function finalImport(){
-  const btn=document.getElementById('btn-final');
-  btn.disabled=true;btn.innerHTML='⏳ Speichere …';
-  setTimeout(()=>{
-    IDS.forEach(id=>{if(S[id].mapped)sessionStorage.setItem('fsa_'+id,JSON.stringify(S[id].mapped))});
-    sessionStorage.setItem('fsa_import_ts',new Date().toISOString());
-    btn.innerHTML='✓ Import abgeschlossen';
-    btn.style.background='linear-gradient(135deg,#00c896,#00a87a)';
-    toast('✓ Alle Daten in sessionStorage gespeichert','success');
-  },900);
-}
-
-// ─── Templates ────────────────────────────────────────────────────────────────
-const TPLS={
-  dev:[
-    'Seriennummer;Geraetetyp;Produktfamilie;Cluster;Klinik_Name;Klinik_PLZ;Klinik_Ort;Vertragstyp;Faelligkeit_STK;Faelligkeit_PM;Prioritaet;OP_Klinik;Uniklinik',
-    'SN-10001;Hugo Navigation;Hugo;CLUSTER1_OR;Universitätsklinikum Hamburg;20251;Hamburg;STK+PM;2025-08-15;2026-02-15;HOCH;j;j',
-    'SN-10002;StealthStation S8;StealthStation;CLUSTER1_OR;Klinikum Stuttgart;70174;Stuttgart;STK;2025-09-01;;MITTEL;j;n',
-    'SN-10003;Nitron ICD;Nitron;CLUSTER2_CARDIAC;Herzzentrum München;81377;München;STK+PM;2025-07-20;2026-01-20;MITTEL;n;n',
-    'SN-10004;EC300 HF;HF_Chirurgie;SMALL_CAPITAL_MIT_REPAIR;Kreiskrankenhaus Balingen;72336;Balingen;STK;2025-11-10;;NIEDRIG;n;n',
-    'SN-10005;Affera System;Affera;CLUSTER2_CARDIAC;Herzzentrum Berlin;10117;Berlin;STK+PM;2025-10-05;2026-04-05;HOCH;n;j',
-  ],
-  sk:[
-    'Techniker_ID;Name;PLZ;Hugo_KA;Zertifiziert_bis;C1_Level;C1_Repair;C2_Level;C2_Repair;C3_Level;C3_Repair;C4_Level;CS_Level;CH_Level;CH_Repair',
-    'T1;Müller Thomas;63179;j;2026-12-31;L3;L3;L3;L3;L2;L3;L2;L2;L2;L3',
-    'T2;Schmidt Klaus;78564;n;;L2;;L2;;L3;L3;L2;L2;L2;',
-    'T5;Koch Peter;46047;n;2025-11-30;L3;L3;L2;L3;L2;L3;L2;L2;L2;L2',
-    'T6;Weber Jan;22869;j;2026-09-30;L3;L3;L3;L3;L2;;L2;L2;L2;L3',
-    'T10;Liebhardt Marc;72336;j;2027-06-30;L3;L3;L2;;L2;;L2;L2;L2;L3',
-    'T11;Fischer Anna;52538;j;2026-03-15;L2;;L3;L3;L3;L3;L2;L2;L2;',
-  ],
-  tool:[
-    'Tool_ID;Tool_Typ;Techniker_ID;Produktfamilie;Kalibrierung_bis;Seriennummer_Tool;Lagerort',
-    'TL-001;Hugo Kalibrier-Set;T10;Hugo;2026-03-31;HK-2210;Balingen',
-    'TL-002;StealthStation Tracker-Set;T1;StealthStation;2025-12-15;ST-0456;Obertshausen',
-    'TL-003;Nitron Programmer;T1;Nitron;2026-06-30;NP-0789;Obertshausen',
-    'TL-004;HF-Chirurgie Tester;T10;HF_Chirurgie;2025-08-01;HFT-1122;Balingen',
-    'TL-005;Affera Mapping System;T6;Affera;2026-09-30;AFS-0334;Schenefeld',
-    'TL-006;Ventilations-Messkoffer;T5;Monitoring;2026-04-15;VM-0021;Oberhausen',
-  ],
-  hist:[
-    'Auftrag_Nr;Datum;Techniker_ID;Klinik;Seriennummer;Produktfamilie;Auftragstyp;Dauer_Min;Fahrzeit_Min;Ergebnis;Eskalation',
-    'WO-2024-001;2024-03-15;T10;UKH Hamburg;SN-10001;Hugo;STK;240;95;PASS;n',
-    'WO-2024-002;2024-04-02;T1;Herzzentrum München;SN-10003;Nitron;PM;180;130;PASS;n',
-    'WO-2024-003;2024-04-18;T6;Klinikum Stuttgart;SN-10002;StealthStation;Repair;90;75;PASS;j',
-    'WO-2023-045;2023-08-10;T10;KH Balingen;SN-10004;HF_Chirurgie;STK;60;20;PASS;n',
-    'WO-2023-046;2023-09-22;T5;Marienkrankenhaus Köln;SN-20001;Monitoring;PM;150;110;PASS;n',
-    'WO-2023-100;2023-11-05;T1;UKH Hamburg;SN-10001;Hugo;PM;200;95;PASS;n',
-    'WO-2022-055;2022-06-12;T6;UKE Hamburg;SN-10005;Affera;STK;300;30;PASS;n',
-  ],
-  tech:[
-    'Techniker_ID;Nachname;Vorname;Strasse;PLZ;Ort;Bundesland;Latitude;Longitude;Telefon;Email;Kapazitaet_h;Hugo_KA',
-    'T1;Müller;Thomas;Hauptstr. 12;63179;Obertshausen;Hessen;50.0856;8.9823;0151-11111101;t.mueller@medtronic.com;32;j',
-    'T2;Schmidt;Klaus;Bergweg 5;78564;Wehingen;Baden-Württemberg;48.0234;8.8012;0151-11111102;k.schmidt@medtronic.com;32;n',
-    'T5;Koch;Peter;Ruhrstr. 88;46047;Oberhausen;NRW;51.4696;6.8516;0151-11111105;p.koch@medtronic.com;32;n',
-    'T6;Weber;Jan;Dorfstr. 3;22869;Schenefeld;Schleswig-Holstein;53.5985;9.8267;0151-11111106;j.weber@medtronic.com;32;j',
-    'T10;Liebhardt;Marc;Zollernstr. 7;72336;Balingen;Baden-Württemberg;48.2752;8.8556;0151-11111110;m.liebhardt@medtronic.com;32;j',
-    'T11;Fischer;Anna;Aachener Str. 14;52538;Gangelt;NRW;51.0073;6.0025;0151-11111111;a.fischer@medtronic.com;32;j',
-  ],
-};
-
-function dlTpl(id){
-  const lines=TPLS[id];if(!lines)return;
-  const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8;'});
-  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`FSA_Template_${id}.csv`});
-  a.click();URL.revokeObjectURL(a.href);
-  toast('Template heruntergeladen','success');
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function toast(msg,type='info'){
-  const t=document.getElementById('toast');
-  const i=type==='success'?'✅':type==='error'?'❌':type==='warn'?'⚠️':'ℹ️';
-  t.innerHTML=`<span>${i}</span><span>${msg}</span>`;
-  t.className=`toast show ${type}`;
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);
-}
+}); // end DOMContentLoaded
 </script>
 </body>
 </html>
