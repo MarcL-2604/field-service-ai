@@ -625,8 +625,6 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   function handleFile(file, n) {
-    document.getElementById('fn-'+n).textContent = '📎 ' + file.name;
-    document.getElementById('fn-'+n).style.display = 'block';
     document.getElementById('import-btn-'+n).style.display = 'flex';
 
     const reader = new FileReader();
@@ -635,10 +633,22 @@ document.addEventListener('DOMContentLoaded', function() {
       if (file.name.endsWith('.csv')) {
         const text = e.target.result;
         rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g,'')));
+        document.getElementById('fn-'+n).textContent = '📎 ' + file.name;
+        document.getElementById('fn-'+n).style.display = 'block';
       } else {
         const wb = XLSX.read(e.target.result, {type:'array'});
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        rows = XLSX.utils.sheet_to_array(ws);
+        // Multi-Tab Excel: pick sheet matching module number (index n-1), fallback to 0
+        const sheetIdx = Math.min(n - 1, wb.SheetNames.length - 1);
+        const sheetName = wb.SheetNames[sheetIdx];
+        const ws = wb.Sheets[sheetName];
+        rows = XLSX.utils.sheet_to_json(ws, {header: 1});
+        // Show filename + sheet info
+        const allSheets = wb.SheetNames.join(' · ');
+        document.getElementById('fn-'+n).innerHTML =
+          '📎 ' + file.name +
+          ' &nbsp;|&nbsp; <span style="color:var(--accent)">Tab: <strong>' + sheetName + '</strong></span>' +
+          '<br><span style="font-size:10px;color:var(--muted);font-weight:400">Verfügbare Tabs: ' + allSheets + '</span>';
+        document.getElementById('fn-'+n).style.display = 'block';
       }
       fileData[n] = rows;
       renderPreview(n, rows);
