@@ -772,6 +772,17 @@
       margin-top: 2px;
     }
     .einst-marker circle { transition: r .15s; }
+    .einst-item.open { border-color: rgba(255,80,80,.45); background: rgba(255,80,80,.05); }
+    .einst-item .einst-chevron { flex-shrink:0; color:var(--text-dim); font-size:12px; margin-top:4px; transition:transform .2s; }
+    .einst-item.open .einst-chevron { transform:rotate(180deg); color:var(--critical-text); }
+    .einst-expand { display:none; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,.08); }
+    .einst-item.open .einst-expand { display:block; }
+    .einst-expand-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+    .einst-expand-kpi { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:8px 10px; }
+    .einst-expand-kpi .kpi-val { font-family:var(--font-heading); font-size:16px; font-weight:700; color:var(--critical-text); }
+    .einst-expand-kpi .kpi-lbl { font-size:10px; color:var(--text-dim); margin-top:2px; }
+    .einst-empfehlung { background:rgba(0,114,206,.07); border-left:3px solid var(--primary); border-radius:0 8px 8px 0; padding:8px 12px; font-size:12px; color:var(--text-dim); line-height:1.6; }
+    .einst-empfehlung strong { color:var(--text); }
     .einst-marker:hover circle { r: 13; }
     .gebiets-summary {
       display: flex;
@@ -2961,10 +2972,78 @@
       </div>
       <div class="einst-liste">
         <div class="einst-liste-header">&starf; Einstellungsbedarf</div>
-      <div class="einst-item"><div class="einst-dot">★</div><div class="einst-text"><div class="einst-name">Grossraum Berlin</div><div class="einst-detail">12 Kliniken &middot; T3 Weimar 180 min</div><div class="einst-detail" style="margin-top:4px;color:rgba(255,255,255,.4)">Berlin / Brandenburg / MV</div></div></div>
-      <div class="einst-item"><div class="einst-dot">★</div><div class="einst-text"><div class="einst-name">Grossraum Hannover</div><div class="einst-detail">8 Kliniken &middot; T9 Hamburg 95 min</div><div class="einst-detail" style="margin-top:4px;color:rgba(255,255,255,.4)">Niedersachsen / Bremen</div></div></div>
-      <div class="einst-item"><div class="einst-dot">★</div><div class="einst-text"><div class="einst-name">Grossraum München</div><div class="einst-detail">10 Kliniken &middot; T7 Wildenberg 110 min</div><div class="einst-detail" style="margin-top:4px;color:rgba(255,255,255,.4)">München / Oberbayern</div></div></div>
-      <div class="einst-item"><div class="einst-dot">★</div><div class="einst-text"><div class="einst-name">Grossraum Mannheim</div><div class="einst-detail">6 Kliniken &middot; T12 Frankfurt 85 min</div><div class="einst-detail" style="margin-top:4px;color:rgba(255,255,255,.4)">Saarland / Pfalz / Rhein-Neckar</div></div></div>
+      <div class="einst-item" onclick="toggleEinstDetail(this)">
+  <div class="einst-dot">★</div>
+  <div class="einst-text">
+    <div class="einst-name">Grossraum Berlin</div>
+    <div class="einst-detail">12 Kliniken &middot; T3 Weimar 180 min</div>
+    <div class="einst-detail" style="margin-top:4px;color:rgba(255,255,255,.4)">Berlin / Brandenburg / MV</div>
+    <div class="einst-expand">
+      <div class="einst-expand-grid">
+        <div class="einst-expand-kpi"><div class="kpi-val">12</div><div class="kpi-lbl">Betroffene Kliniken</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">180 min</div><div class="kpi-lbl">Fahrzeit nächster Tech. (T3)</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">~3 Tage</div><div class="kpi-lbl">Reaktionszeit Repair-SLA</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">Berlin, MV</div><div class="kpi-lbl">Unterversorgte PLZ-Gebiete</div></div>
+      </div>
+      <div class="einst-empfehlung"><strong>Empfehlung:</strong> Neueinstieg Techniker T15 Standort Berlin oder Potsdam. Alternativ: T3 Crosstraining Hugo/OR + temporäre Gebietsausweitung bis Einstellung. Priorität: Hochschulen Charité, HU Berlin, Greifswald.</div>
+    </div>
+  </div>
+  <div class="einst-chevron">▼</div>
+</div>
+      <div class="einst-item" onclick="toggleEinstDetail(this)">
+  <div class="einst-dot">★</div>
+  <div class="einst-text">
+    <div class="einst-name">Grossraum Hannover</div>
+    <div class="einst-detail">8 Kliniken &middot; T9 Hamburg 95 min</div>
+    <div class="einst-detail" style="margin-top:4px;color:rgba(255,255,255,.4)">Niedersachsen / Bremen</div>
+    <div class="einst-expand">
+      <div class="einst-expand-grid">
+        <div class="einst-expand-kpi"><div class="kpi-val">8</div><div class="kpi-lbl">Betroffene Kliniken</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">95 min</div><div class="kpi-lbl">Fahrzeit nächster Tech. (T9)</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">~2 Tage</div><div class="kpi-lbl">Reaktionszeit Repair-SLA</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">Hannover, Braunschweig</div><div class="kpi-lbl">Unterversorgte PLZ-Gebiete</div></div>
+      </div>
+      <div class="einst-empfehlung"><strong>Empfehlung:</strong> Neueinstieg Techniker T15 Standort Hannover oder Hildesheim. T9 Hamburg kann kurzfristig abdecken (95 min), jedoch Überlastungsrisiko. MHH Hannover als Hugo-KA-Kandidat prüfen.</div>
+    </div>
+  </div>
+  <div class="einst-chevron">▼</div>
+</div>
+      <div class="einst-item" onclick="toggleEinstDetail(this)">
+  <div class="einst-dot">★</div>
+  <div class="einst-text">
+    <div class="einst-name">Grossraum München</div>
+    <div class="einst-detail">10 Kliniken &middot; T7 Wildenberg 110 min</div>
+    <div class="einst-detail" style="margin-top:4px;color:rgba(255,255,255,.4)">München / Oberbayern</div>
+    <div class="einst-expand">
+      <div class="einst-expand-grid">
+        <div class="einst-expand-kpi"><div class="kpi-val">10</div><div class="kpi-lbl">Betroffene Kliniken</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">110 min</div><div class="kpi-lbl">Fahrzeit nächster Tech. (T7)</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">~2 Tage</div><div class="kpi-lbl">Reaktionszeit Repair-SLA</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">München, Augsburg</div><div class="kpi-lbl">Unterversorgte PLZ-Gebiete</div></div>
+      </div>
+      <div class="einst-empfehlung"><strong>Empfehlung:</strong> Neueinstieg Techniker T15 Standort München oder Augsburg. T7 Wildenberg überlastet bei Abdeckung Oberbayern. Klinikum Großhadern (LMU) und Rechts der Isar als Hugo-Kandidaten mit höchster Priorität.</div>
+    </div>
+  </div>
+  <div class="einst-chevron">▼</div>
+</div>
+      <div class="einst-item" onclick="toggleEinstDetail(this)">
+  <div class="einst-dot">★</div>
+  <div class="einst-text">
+    <div class="einst-name">Grossraum Mannheim</div>
+    <div class="einst-detail">6 Kliniken &middot; T12 Frankfurt 85 min</div>
+    <div class="einst-detail" style="margin-top:4px;color:rgba(255,255,255,.4)">Saarland / Pfalz / Rhein-Neckar</div>
+    <div class="einst-expand">
+      <div class="einst-expand-grid">
+        <div class="einst-expand-kpi"><div class="kpi-val">6</div><div class="kpi-lbl">Betroffene Kliniken</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">85 min</div><div class="kpi-lbl">Fahrzeit nächster Tech. (T12)</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">~2 Tage</div><div class="kpi-lbl">Reaktionszeit Repair-SLA</div></div>
+        <div class="einst-expand-kpi"><div class="kpi-val">Mannheim, Saarbrücken</div><div class="kpi-lbl">Unterversorgte PLZ-Gebiete</div></div>
+      </div>
+      <div class="einst-empfehlung"><strong>Empfehlung:</strong> Gebietsanpassung T12 Frankfurt in Richtung Rhein-Neckar prüfen. Alternativ Neueinstieg T15 Standort Mannheim / Ludwigshafen. Uniklinikum Mannheim und Homburg/Saar priorisieren.</div>
+    </div>
+  </div>
+  <div class="einst-chevron">▼</div>
+</div>
       </div>
     </div>
 
@@ -3386,6 +3465,12 @@ document.addEventListener('keydown', function(e) {
       if (items[idx]) items[idx].scrollIntoView({behavior:'smooth', block:'nearest'});
     });
   });
+  /* ── Einstellungsbedarf: Detail-Panel Toggle ── */
+  window.toggleEinstDetail = function(item) {
+    var wasOpen = item.classList.contains("open");
+    document.querySelectorAll(".einst-item.open").forEach(function(i) { i.classList.remove("open"); });
+    if (!wasOpen) item.classList.add("open");
+  };
   document.querySelectorAll('.einst-item').forEach(function(item, idx) {
     item.addEventListener('mouseenter', function() { hlStern(idx, true);  hlItem(idx, true);  });
     item.addEventListener('mouseleave', function() { hlStern(idx, false); hlItem(idx, false); });
