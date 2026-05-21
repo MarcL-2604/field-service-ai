@@ -216,8 +216,9 @@ tr:hover td{background:var(--glass2)}
       <div class="status-item"><div class="status-dot" id="dot-3"></div><span>Sheet 3: Historische Daten</span></div>
       <div class="status-item"><div class="status-dot" id="dot-4"></div><span>Sheet 4: Offene Jobs</span></div>
       <div class="status-item"><div class="status-dot" id="dot-5"></div><span>Sheet 5: Techniker</span></div>
+      <div class="status-item"><div class="status-dot" id="dot-6"></div><span>Sheet 6: Abwesenheiten</span></div>
     </div>
-    <span class="status-label" id="status-label">0 / 5 Sheets importiert</span>
+    <span class="status-label" id="status-label">0 / 6 Sheets importiert</span>
   </div>
 
   <!-- MODULE TABS -->
@@ -236,6 +237,9 @@ tr:hover td{background:var(--glass2)}
     </button>
     <button class="mtab" onclick="switchTab(5)" id="tab-5">
       <span class="tab-num">5</span><span class="tab-ok">✓</span> Techniker
+    </button>
+    <button class="mtab" onclick="switchTab(6)" id="tab-6">
+      <span class="tab-num">6</span><span class="tab-ok">✓</span> Abwesenheiten
     </button>
   </div>
 
@@ -535,6 +539,105 @@ tr:hover td{background:var(--glass2)}
     </div>
   </div>
 
+
+  <!-- ═══════════════════════════════════════════════════
+       SHEET 6 — ABWESENHEITEN (Koordinator)
+  ════════════════════════════════════════════════════ -->
+  <div class="mpanel" id="panel-6">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Abwesenheiten</div>
+          <div class="card-sub">Urlaub, Krankheit und Fortbildungen — Techniker werden im Planungszeitraum automatisch ausgeschlossen</div>
+        </div>
+        <span class="sheet-badge" style="background:rgba(229,82,82,0.12);border-color:rgba(229,82,82,0.35);color:#e05252">SHEET 6</span>
+      </div>
+
+      <!-- Info box -->
+      <div style="background:rgba(229,82,82,0.06);border:1px solid rgba(229,82,82,0.2);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#b08080;line-height:1.6">
+        <strong style="color:#e05252">ℹ Automatischer Ausschluss:</strong>
+        Techniker mit Eintrag in diesem Sheet werden für den angegebenen Zeitraum <strong>nicht in die Planung einbezogen</strong>. Score = 0, keine Zuweisung möglich. Grenztage (Von + Bis) sind eingeschlossen.
+      </div>
+
+      <!-- Typ-Legende -->
+      <div style="background:var(--glass2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--accent)">Abwesenheitstypen</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:rgba(0,114,206,0.15);border:1px solid rgba(0,114,206,0.3);color:var(--accent);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px">Urlaub</span>
+            <span style="font-size:12px;color:var(--muted)">Geplanter Urlaub</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:rgba(229,82,82,0.15);border:1px solid rgba(229,82,82,0.3);color:#e05252;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px">Krank</span>
+            <span style="font-size:12px;color:var(--muted)">Krankheit (kurzfristig)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.3);color:var(--warn);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px">Fortbildung</span>
+            <span style="font-size:12px;color:var(--muted)">Training, Schulung, IHK</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:rgba(107,138,173,0.15);border:1px solid rgba(107,138,173,0.3);color:var(--muted);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px">Sonstiges</span>
+            <span style="font-size:12px;color:var(--muted)">Freistellung, sonstige Abwesenheit</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fields-grid">
+        <div class="field-tag required"><span class="dot"></span>Techniker_ID</div>
+        <div class="field-tag required"><span class="dot"></span>Von (YYYY-MM-DD)</div>
+        <div class="field-tag required"><span class="dot"></span>Bis (YYYY-MM-DD)</div>
+        <div class="field-tag required"><span class="dot"></span>Typ (Urlaub/Krank/Fortbildung/Sonstiges)</div>
+        <div class="field-tag"><span class="dot"></span>Kommentar (opt.)</div>
+      </div>
+
+      <div class="dropzone" id="dz-6" ondragover="dzOver(event,'dz-6')" ondragleave="dzLeave('dz-6')" ondrop="dzDrop(event,'dz-6',6)">
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="fileSelected(this,6)">
+        <div class="dz-icon">🏖</div>
+        <div class="dz-title">Abwesenheiten — CSV oder Excel ablegen</div>
+        <div class="dz-sub">oder klicken zum Auswählen · .csv, .xlsx · wöchentlich aktualisieren</div>
+        <div class="dz-filename" id="fn-6"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="downloadTemplate(6)">⬇ CSV Template</button>
+        <button class="btn btn-primary" onclick="importSheet(6)" id="import-btn-6" style="display:none">Import starten</button>
+      </div>
+
+      <div class="preview-wrap" id="preview-6">
+        <div class="preview-label">Vorschau (erste 5 Zeilen)</div>
+        <table id="table-6"></table>
+      </div>
+
+      <!-- Stats after import -->
+      <div id="stats-6" style="display:none;margin-top:16px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Import Ergebnis</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+          <div style="background:var(--glass2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text)" id="stat-abs-total">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Einträge gesamt</div>
+          </div>
+          <div style="background:rgba(0,114,206,0.08);border:1px solid rgba(0,114,206,0.2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--accent)" id="stat-abs-urlaub">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Urlaub</div>
+          </div>
+          <div style="background:rgba(229,82,82,0.08);border:1px solid rgba(229,82,82,0.2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#e05252" id="stat-abs-krank">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Krank</div>
+          </div>
+          <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--warn)" id="stat-abs-fortbildung">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Fortbildung</div>
+          </div>
+          <div style="background:rgba(0,196,140,0.08);border:1px solid rgba(0,196,140,0.2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--success)" id="stat-abs-aktiv">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Aktuell abwesend</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- SAVE ALL -->
   <div class="save-all-wrap">
     <button class="btn-save-all" onclick="saveAll()">💾 Alle Daten importieren &amp; speichern</button>
@@ -573,8 +676,8 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // ── STATE ─────────────────────────────────────────────
-  const fileData = {1: null, 2: null, 3: null, 4: null, 5: null};
-  const imported = {1: false, 2: false, 3: false, 4: false, 5: false};
+  const fileData = {1: null, 2: null, 3: null, 4: null, 5: null, 6: null};
+  const imported = {1: false, 2: false, 3: false, 4: false, 5: false, 6: false};
 
   // ── TEMPLATES ─────────────────────────────────────────
   const templates = {
@@ -597,6 +700,10 @@ document.addEventListener('DOMContentLoaded', function() {
     5: {
       name: 'Techniker_Template.csv',
       content: 'Techniker_ID,Name,Wohnort,PLZ,Bundesland,Hugo_KA,Wochenkapazitaet_h,Telefon,Email\nT1,Max Müller,Obertshausen,63179,Hessen,ja,25.6,+49 6104 123456,t1@example.com\nT2,Laura Schmidt,Wehingen,78564,Baden-Württemberg,nein,32,,\nT3,Jonas Weber,Weimar,99423,Thüringen,nein,32,,\nT4,Sarah Fischer,Erlangen,91052,Bayern,nein,32,,\nT5,Tim Bauer,Oberhausen,46045,Nordrhein-Westfalen,nein,32,,\nT6,Anna Koch,Schenefeld,22869,Schleswig-Holstein,ja,25.6,,\nT7,Peter Richter,Wildenberg,93749,Bayern,nein,32,,\nT8,Lisa Klein,Hennef,53773,Nordrhein-Westfalen,nein,32,,\nT9,Mark Wolf,Hamburg,20095,Hamburg,nein,32,,\nT10,Marc Liebhardt,Balingen,72336,Baden-Württemberg,ja,25.6,,\nT11,Julia Braun,Gangelt,52538,Nordrhein-Westfalen,ja,25.6,,\nT12,Stefan Schulz,Frankfurt,60311,Hessen,nein,32,,\nT13,Nina Hoffmann,Meckenheim,53340,Nordrhein-Westfalen,nein,32,,\nT14,Klaus Schäfer,Waldachtal,72178,Baden-Württemberg,nein,32,,'
+    },
+    6: {
+      name: 'Abwesenheiten_Template.csv',
+      content: 'Techniker_ID,Von,Bis,Typ,Kommentar\nT1,2025-07-01,2025-07-14,Urlaub,Sommerurlaub\nT3,2025-06-23,2025-06-27,Krank,\nT6,2025-08-18,2025-11-26,Fortbildung,IHK KI-Manager\nT10,2025-09-08,2025-09-12,Urlaub,\nT5,2025-07-21,2025-07-21,Krank,Einzeltag\nT12,2025-10-01,2025-10-03,Fortbildung,Produktschulung CAGEN\nT11,2025-06-30,2025-06-30,Sonstiges,Betriebsversammlung'
     }
   };
 
@@ -720,6 +827,36 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('stats-4').style.display = 'block';
     }
 
+    // For sheet 6: calculate absence stats
+    if (n === 6) {
+      const rows = fileData[n];
+      const headers = rows[0].map(h => (h||'').toLowerCase());
+      const typIdx = headers.findIndex(h => h.includes('typ'));
+      const vonIdx = headers.findIndex(h => h.includes('von'));
+      const bisIdx = headers.findIndex(h => h.includes('bis'));
+      const today = new Date();
+      let total = 0, urlaub = 0, krank = 0, fortbildung = 0, aktiv = 0;
+      rows.slice(1).forEach(r => {
+        if (!r[0]) return;
+        total++;
+        const typ = (r[typIdx]||'').toLowerCase();
+        if (typ.includes('urlaub')) urlaub++;
+        else if (typ.includes('krank')) krank++;
+        else if (typ.includes('fortbildung')) fortbildung++;
+        if (vonIdx >= 0 && bisIdx >= 0) {
+          const von = new Date(r[vonIdx]);
+          const bis = new Date(r[bisIdx]);
+          if (!isNaN(von) && !isNaN(bis) && von <= today && bis >= today) aktiv++;
+        }
+      });
+      document.getElementById('stat-abs-total').textContent = total;
+      document.getElementById('stat-abs-urlaub').textContent = urlaub;
+      document.getElementById('stat-abs-krank').textContent = krank;
+      document.getElementById('stat-abs-fortbildung').textContent = fortbildung;
+      document.getElementById('stat-abs-aktiv').textContent = aktiv;
+      document.getElementById('stats-6').style.display = 'block';
+    }
+
     // Mark as imported
     imported[n] = true;
     localStorage.setItem('fsa_sheet_'+n, JSON.stringify(fileData[n]));
@@ -740,7 +877,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   window.saveAll = function() {
     let count = 0;
-    for (let i=1;i<=5;i++) {
+    for (let i=1;i<=6;i++) {
       if (fileData[i] && !imported[i]) {
         localStorage.setItem('fsa_sheet_'+i, JSON.stringify(fileData[i]));
         imported[i] = true;
@@ -752,12 +889,12 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.setItem('fsa_import_ts', new Date().toISOString());
     localStorage.setItem('fsa_data_loaded', '1');
     updateStatusBar();
-    showToast(count + ' / 5 Sheets gespeichert ✓');
+    showToast(count + ' / 6 Sheets gespeichert ✓');
   };
 
   function updateStatusBar() {
     const count = Object.values(imported).filter(Boolean).length;
-    document.getElementById('status-label').textContent = count + ' / 5 Sheets importiert';
+    document.getElementById('status-label').textContent = count + ' / 6 Sheets importiert';
   }
 
   function showToast(msg) {
@@ -778,7 +915,7 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   // ── RESTORE STATE ─────────────────────────────────────
-  for (let i=1;i<=5;i++) {
+  for (let i=1;i<=6;i++) {
     if (localStorage.getItem('fsa_sheet_'+i)) {
       imported[i] = true;
       document.getElementById('dot-'+i).classList.add('ok');
