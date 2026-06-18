@@ -1,0 +1,15 @@
+techniker_id,standort,plz,region,bundesland,status,lat,lon,techniker_typ
+T1,Obertshausen,63179,Hessen,Hessen,aktiv,50.0706,8.8614,HUGO_KEY_ACCOUNT
+T2,Wehingen,78564,BaWü-Süd,Baden-Württemberg,aktiv,48.1102,8.7856,STANDARD
+T3,Weimar,99423,Thüringen,Thüringen,aktiv,50.9793,11.3293,STANDARD
+T4,Erlangen,91052,Bayern-Nord,Bayern,aktiv,49.5953,11.0045,STANDARD
+T5,Oberhausen,46045,NRW-West,Nordrhein-Westfalen,aktiv,51.4713,6.8524,STANDARD
+T6,Schenefeld,22869,Nord,Hamburg/Schleswig-Holstein,aktiv,53.6003,9.8345,HUGO_KEY_ACCOUNT
+T7,Wildenberg,93749,Bayern-Ost,Bayern,aktiv,48.8333,11.9167,STANDARD
+T8,Hennef,53773,NRW-Süd,Nordrhein-Westfalen,aktiv,50.7756,7.2837,STANDARD
+T9,Hamburg,20095,Nord,Hamburg/Schleswig-Holstein,aktiv,53.5505,9.9937,STANDARD
+T10,Balingen,72336,BaWü-Süd,Baden-Württemberg,aktiv,48.2747,8.8522,HUGO_KEY_ACCOUNT
+T11,Gangelt,52538,NRW-West,Nordrhein-Westfalen,aktiv,51.0075,6.0028,HUGO_KEY_ACCOUNT
+T12,Frankfurt,60311,Hessen,Hessen,aktiv,50.1109,8.6821,STANDARD
+T13,Meckenheim,53340,NRW-Süd,Nordrhein-Westfalen,aktiv,50.6297,7.0214,STANDARD
+T14,Waldachtal,72178,BaWü-Süd,Baden-Württemberg,aktiv,48.4667,8.5667,STANDARD

@@ -1,0 +1,15 @@
+techniker_id,heimatregion,heimat_bundesland,heimat_plz_prefix,einsatzgebiet
+T1,Hessen,Hessen,63,Baden-Württemberg;Bayern;Hessen
+T2,BaWü-Süd,Baden-Württemberg,78,Baden-Württemberg;Bayern;Schweiz
+T3,Thüringen,Thüringen,99,Thüringen;Sachsen;Brandenburg
+T4,Bayern-Nord,Bayern,91,Bayern;Baden-Württemberg;Hessen
+T5,NRW-West,Nordrhein-Westfalen,46,Nordrhein-Westfalen;Niedersachsen;Hessen
+T6,Nord,Hamburg/Schleswig-Holstein,22,Hamburg;Schleswig-Holstein;Niedersachsen;Mecklenburg-Vorpommern
+T7,Bayern-Ost,Bayern,93,Bayern;Baden-Württemberg
+T8,NRW-Süd,Nordrhein-Westfalen,53,Nordrhein-Westfalen;Hessen;Rheinland-Pfalz
+T9,Nord,Hamburg/Schleswig-Holstein,20,Hamburg;Schleswig-Holstein;Mecklenburg-Vorpommern
+T10,BaWü-Süd,Baden-Württemberg,72,Baden-Württemberg;Bayern;Hessen;Rheinland-Pfalz
+T11,NRW-West,Nordrhein-Westfalen,52,Nordrhein-Westfalen;Rheinland-Pfalz;Hessen
+T12,Hessen,Hessen,60,Hessen;Baden-Württemberg;Bayern;Rheinland-Pfalz
+T13,NRW-Süd,Nordrhein-Westfalen,53,Nordrhein-Westfalen;Rheinland-Pfalz;Hessen
+T14,BaWü-Süd,Baden-Württemberg,72,Baden-Württemberg;Bayern;Rheinland-Pfalz

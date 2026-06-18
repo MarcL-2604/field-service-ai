@@ -1,0 +1,39 @@
+# BEISPIELDATEN PROTOTYP - KEINE ECHTEN MEDTRONIC-DATEN
+# Erstellt: 2026-03-28
+# Basis: Platzhalter-Schaetzwerte bis echte SMax-Daten verfuegbar
+# Felder: produkt_familie, geraete_typ, techniker_id, service_zeit_min, admin_zeit_min, quelle
+produkt_familie,geraete_typ,techniker_id,service_zeit_min,admin_zeit_min,quelle
+Hugo,HugoRAS,T10,240,45,SMax_historisch
+Hugo,HugoRAS,T6,220,40,SMax_historisch
+Hugo,HugoRAS,T1,230,45,SMax_historisch
+Hugo,HugoRAS,T11,235,40,SMax_historisch
+Energie,EC300_Legend,T5,90,30,SMax_historisch
+Energie,EC300_Legend,T1,95,30,SMax_historisch
+Energie,EC300_Legend,T11,100,35,SMax_historisch
+NIM,NIM4CM01,T5,60,20,SMax_historisch
+NIM,NIM4CM01,T3,70,20,SMax_historisch
+NIM,NIM4CM01,T10,55,15,SMax_historisch
+NIM,NIM_Response_3.0,T5,65,20,SMax_historisch
+NIM,NIM_Response_3.0,T10,60,20,SMax_historisch
+IPC,AEX_40-405-1,T5,75,25,SMax_historisch
+IPC,AEX_40-405-1,T4,80,25,SMax_historisch
+Schrittmacher_Prog,PROG_2090,T4,50,15,SMax_historisch
+Schrittmacher_Prog,PROG_2090,T5,55,20,SMax_historisch
+Beatmung,980X1DEDRAC,T6,85,25,SMax_historisch
+Beatmung,980X1DEDRAC,T7,80,25,SMax_historisch
+Beatmung,980X1DEDRAC,T12,90,30,SMax_historisch
+Beatmung,980X1DEDRAC,T14,75,20,SMax_historisch
+Elektrochirurgie,FT10,T3,70,20,SMax_historisch
+Elektrochirurgie,FT10,T5,65,20,SMax_historisch
+Elektrochirurgie,FT10,T10,60,20,SMax_historisch
+Neurophysiologie,106E2,T8,80,25,SMax_historisch
+Neurophysiologie,106E2,T9,75,20,SMax_historisch
+Neurophysiologie,106E2,T14,70,20,SMax_historisch
+Kardiovaskulaer_Ablation,CryoConsole,T13,120,35,SMax_historisch
+Navigation,OArm2,T2,110,30,SMax_historisch
+Wirbelsaeule,MazorX,T5,100,30,SMax_historisch
+Wirbelsaeule,MazorX,T10,95,30,SMax_historisch
+Endoskopie,ColonoscopyAI,T6,70,20,SMax_historisch
+Endoskopie,ColonoscopyAI,T8,75,25,SMax_historisch
+Gastroenterologie,MANOSCAN,T14,60,20,SMax_historisch
+Capnografie,CO2Sensor,T12,45,15,SMax_historisch

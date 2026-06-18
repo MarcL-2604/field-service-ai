@@ -1,0 +1,92 @@
+klinik_id,name,stadt,region,groesse,plz,hugo_standort,op_kritisch,vorlauf_tage,op_plan_tag
+K001,Universitätsklinikum Hamburg-Eppendorf (UKE),Hamburg,Nord,uni,20246,ja,True,5,Freitag
+K002,Universitätsklinikum Schleswig-Holstein Campus Lübeck,Lübeck,Nord,uni,23538,ja,True,5,Freitag
+K003,Universitätsklinikum Schleswig-Holstein Campus Kiel,Kiel,Nord,uni,24105,nein,True,5,Freitag
+K004,Asklepios Klinik Barmbek,Hamburg,Nord,gross,22291,nein,False,3,Freitag
+K005,Helios Klinikum Schwerin,Schwerin,Nord,gross,19049,nein,False,3,Freitag
+K006,Universitätsklinikum Rostock,Rostock,Nord,uni,18057,nein,True,5,Freitag
+K007,Universitätsmedizin Greifswald,Greifswald,Nord,uni,17475,nein,True,5,Freitag
+K008,Dietrich-Bonhoeffer-Klinikum Neubrandenburg,Neubrandenburg,Nord,gross,17036,nein,False,3,Freitag
+K009,Medizinische Hochschule Hannover,Hannover,Niedersachsen,uni,30625,nein,True,5,Freitag
+K010,Klinikum Braunschweig,Braunschweig,Niedersachsen,gross,38126,nein,False,3,Freitag
+K011,Universitätsmedizin Göttingen,Göttingen,Niedersachsen,uni,37075,nein,True,5,Freitag
+K012,Klinikum Osnabrück,Osnabrück,Niedersachsen,gross,49076,nein,False,3,Freitag
+K013,Klinikum Bremen-Mitte,Bremen,Niedersachsen,gross,28177,nein,False,3,Freitag
+K014,Universitätsklinikum Münster,Münster,NRW,uni,48149,nein,True,5,Freitag
+K015,Universitätsklinikum Düsseldorf,Düsseldorf,NRW,uni,40225,nein,True,5,Freitag
+K016,Universitätsklinikum Köln,Köln,NRW,uni,50937,nein,True,5,Freitag
+K017,Universitätsklinikum Bonn,Bonn,NRW,uni,53127,nein,True,5,Freitag
+K018,Universitätsklinikum Aachen,Aachen,NRW,uni,52074,nein,True,5,Freitag
+K019,BG Klinikum Bergmannsheil Bochum,Bochum,NRW,uni,44789,ja,True,5,Freitag
+K020,Klinikum Dortmund,Dortmund,NRW,gross,44137,nein,False,3,Freitag
+K021,Evangelisches Klinikum Bethel,Bielefeld,NRW,gross,33617,nein,False,3,Freitag
+K022,Helios Klinikum Duisburg,Duisburg,NRW,gross,47166,nein,False,3,Freitag
+K023,Kliniken Köln Merheim,Köln,NRW,gross,51109,nein,False,3,Freitag
+K024,St.-Johannes-Hospital Dortmund,Dortmund,NRW,mittel,44137,nein,False,3,Freitag
+K025,Lukaskrankenhaus Neuss,Neuss,NRW,gross,41464,nein,False,3,Freitag
+K026,Klinikum Niederberg Velbert,Velbert,NRW,mittel,42549,nein,False,3,Freitag
+K027,Klinikum Gütersloh,Gütersloh,NRW,mittel,33332,nein,False,3,Freitag
+K028,St. Marien-Hospital Hamm,Hamm,NRW,mittel,59071,nein,False,3,Freitag
+K029,Universitätsklinikum Frankfurt,Frankfurt am Main,Hessen,uni,60590,nein,True,5,Freitag
+K030,Universitätsklinikum Gießen,Gießen,Hessen,uni,35392,nein,True,5,Freitag
+K031,Klinikum Darmstadt,Darmstadt,Hessen,gross,64283,nein,False,3,Freitag
+K032,Klinikum Kassel,Kassel,Hessen,gross,34125,nein,False,3,Freitag
+K033,Helios Dr. Horst Schmidt Kliniken Wiesbaden,Wiesbaden,Hessen,gross,65199,nein,False,3,Freitag
+K034,Klinikum Fulda,Fulda,Hessen,gross,36043,nein,False,3,Freitag
+K035,St.-Josefs-Hospital Wiesbaden,Wiesbaden,Hessen,mittel,65189,nein,False,3,Freitag
+K036,Universitätsmedizin Mainz,Mainz,Rheinland-Pfalz,uni,55131,nein,True,5,Freitag
+K037,Bundeswehrzentralkrankenhaus Koblenz,Koblenz,Rheinland-Pfalz,gross,56072,nein,False,3,Freitag
+K038,Klinikum Ludwigshafen,Ludwigshafen,Rheinland-Pfalz,gross,67063,nein,False,3,Freitag
+K039,Universitätsklinikum des Saarlandes,Homburg,Saarland,uni,66421,nein,True,5,Freitag
+K040,Winterberg-Klinikum Saarbrücken,Saarbrücken,Saarland,gross,66119,nein,False,3,Freitag
+K041,Universitätsklinikum Heidelberg,Heidelberg,BaWü,uni,69120,nein,True,5,Freitag
+K042,Universitätsklinikum Freiburg,Freiburg im Breisgau,BaWü,uni,79106,nein,True,5,Freitag
+K043,Universitätsklinikum Tübingen,Tübingen,BaWü,uni,72076,nein,True,5,Freitag
+K044,Universitätsklinikum Ulm,Ulm,BaWü,uni,89081,ja,True,5,Freitag
+K045,Klinikum Stuttgart,Stuttgart,BaWü,gross,70174,nein,False,3,Freitag
+K046,Städtisches Klinikum Karlsruhe,Karlsruhe,BaWü,gross,76133,nein,False,3,Freitag
+K047,SLK-Kliniken Heilbronn,Heilbronn,BaWü,gross,74078,nein,False,3,Freitag
+K048,Schwarzwald-Baar Klinikum,Villingen-Schwenningen,BaWü,gross,78052,nein,False,3,Freitag
+K049,Klinikum Friedrichshafen,Friedrichshafen,BaWü,mittel,88048,nein,False,3,Freitag
+K050,Ortenau Klinikum Offenburg,Offenburg,BaWü,mittel,77654,nein,False,3,Freitag
+K051,LMU Klinikum München Campus Großhadern,München,Bayern,uni,81377,nein,True,5,Freitag
+K052,Klinikum rechts der Isar München (TU),München,Bayern,uni,81675,nein,True,5,Freitag
+K053,Universitätsklinikum Erlangen,Erlangen,Bayern,uni,91054,nein,True,5,Freitag
+K054,Universitätsklinikum Würzburg,Würzburg,Bayern,uni,97080,nein,True,5,Freitag
+K055,Universitätsklinikum Regensburg,Regensburg,Bayern,uni,93053,nein,True,5,Freitag
+K056,Universitätsklinikum Augsburg,Augsburg,Bayern,uni,86156,nein,True,5,Freitag
+K057,Klinikum Nürnberg,Nürnberg,Bayern,gross,90419,nein,False,3,Freitag
+K058,Klinikum Ingolstadt,Ingolstadt,Bayern,gross,85049,nein,False,3,Freitag
+K059,Klinikum Rosenheim,Rosenheim,Bayern,gross,83022,nein,False,3,Freitag
+K060,Klinikum Landshut,Landshut,Bayern,mittel,84034,nein,False,3,Freitag
+K061,Helios Amper-Klinikum Dachau,Dachau,Bayern,mittel,85221,nein,False,3,Freitag
+K062,Kreisklinik Kaufbeuren,Kaufbeuren,Bayern,mittel,87600,nein,False,3,Freitag
+K063,Charité Universitätsmedizin Berlin Campus Mitte,Berlin,Berlin,uni,10117,nein,True,5,Freitag
+K064,Charité Universitätsmedizin Berlin Campus Virchow,Berlin,Berlin,uni,13353,nein,True,5,Freitag
+K065,Vivantes Klinikum Neukölln,Berlin,Berlin,gross,12351,nein,False,3,Freitag
+K066,Helios Klinikum Berlin-Buch,Berlin,Berlin,gross,13125,nein,False,3,Freitag
+K067,Klinikum Ernst von Bergmann Potsdam,Potsdam,Brandenburg,gross,14467,nein,False,3,Freitag
+K068,Klinikum Frankfurt (Oder),Frankfurt (Oder),Brandenburg,mittel,15236,nein,False,3,Freitag
+K069,Carl-Thiem-Klinikum Cottbus,Cottbus,Brandenburg,gross,03048,nein,False,3,Freitag
+K070,Universitätsklinikum Carl Gustav Carus Dresden,Dresden,Sachsen,uni,01307,ja,True,5,Freitag
+K071,Universitätsklinikum Leipzig,Leipzig,Sachsen,uni,04103,nein,True,5,Freitag
+K072,Klinikum St. Georg Leipzig,Leipzig,Sachsen,gross,04129,nein,False,3,Freitag
+K073,Klinikum Chemnitz,Chemnitz,Sachsen,gross,09116,nein,False,3,Freitag
+K074,Städtisches Klinikum Dresden-Friedrichstadt,Dresden,Sachsen,gross,01067,nein,False,3,Freitag
+K075,Klinikum Bautzen,Bautzen,Sachsen,mittel,02625,nein,False,3,Freitag
+K076,Universitätsklinikum Halle (Saale),Halle (Saale),Sachsen-Anhalt,uni,06120,nein,True,5,Freitag
+K077,Universitätsklinikum Magdeburg,Magdeburg,Sachsen-Anhalt,uni,39120,nein,True,5,Freitag
+K078,AMEOS Klinikum Aschersleben,Aschersleben,Sachsen-Anhalt,mittel,06449,nein,False,3,Freitag
+K079,Universitätsklinikum Jena,Jena,Thüringen,uni,07747,nein,True,5,Freitag
+K080,Helios Klinikum Erfurt,Erfurt,Thüringen,gross,99089,nein,False,3,Freitag
+K081,SRH Zentralklinikum Suhl,Suhl,Thüringen,mittel,98527,nein,False,3,Freitag
+K082,St.-Georg-Klinikum Eisenach,Eisenach,Thüringen,mittel,99817,nein,False,3,Freitag
+K083,Klinikum Kempten,Kempten,Bayern,mittel,87439,nein,False,3,Freitag
+K084,Kreiskliniken Oberallgäu Immenstadt,Immenstadt,Bayern,mittel,87509,nein,False,3,Freitag
+K085,Klinikum Memmingen,Memmingen,Bayern,mittel,87700,nein,False,3,Freitag
+K086,Klinikum Lindau,Lindau,Bayern,mittel,88131,nein,False,3,Freitag
+K087,Asklepios Klinik Altona,Hamburg,Nord,gross,22763,nein,False,3,Freitag
+K088,Kath. Marienkrankenhaus Hamburg,Hamburg,Nord,mittel,22087,nein,False,3,Freitag
+K089,Klinikum Flensburg,Flensburg,Nord,gross,24939,nein,False,3,Freitag
+K090,Klinikum Itzehoe,Itzehoe,Nord,gross,25524,nein,False,3,Freitag
+K091,Regio Kliniken Pinneberg,Pinneberg,Nord,mittel,25421,nein,False,3,Freitag

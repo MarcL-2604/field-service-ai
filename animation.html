@@ -8,34 +8,29 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --ink:#000810;--deep:#000D2A;--navy:#001F5C;--blue:#0057A8;--mid:#0072CE;
-  --sky:#00A3E0;--frost:#6EC6FF;--white:#FFF;
-  --dim:rgba(255,255,255,.6);--mute:rgba(255,255,255,.3);
-  --faint:rgba(255,255,255,.05);--line:rgba(255,255,255,.09);
-  --green:#00875A;--red:#CC0000;--warn:#FF8B00;
+  --ink:#FFFFFF;--deep:#F5F5F5;--navy:#E8F0F8;--blue:#005195;--mid:#005195;
+  --sky:#0066CC;--frost:#005195;--white:#1A1A1A;
+  --dim:rgba(0,0,0,.75);--mute:#666666;
+  --faint:rgba(0,81,149,.05);--line:rgba(0,81,149,.18);
+  --green:#00857C;--red:#CC0000;--warn:#FF8B00;
   --r:10px;
 }
 html,body{height:100%}
 body{
   font-family:'Plus Jakarta Sans',sans-serif;
-  background:radial-gradient(ellipse 80% 60% at 50% 0%,#0057A8 0%,#001845 40%,#000810 100%);
+  background:#F5F5F5;
   min-height:100vh;display:flex;flex-direction:column;
   align-items:center;justify-content:center;padding:1.5rem;
   position:relative;
 }
-body::before{
-  content:'';pointer-events:none;position:fixed;inset:0;z-index:9999;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  background-size:180px 180px;opacity:.025;mix-blend-mode:overlay;
-}
 /* Back link */
 .back-link{
   position:fixed;top:1rem;left:1.5rem;z-index:100;
-  font-size:.72rem;color:var(--mute);background:none;border:none;
+  font-size:.72rem;color:#666666;background:none;border:none;
   cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
   display:flex;align-items:center;gap:.3rem;transition:color .2s;
 }
-.back-link:hover{color:var(--sky)}
+.back-link:hover{color:#005195}
 
 /* Container */
 .wrap{width:100%;max-width:540px;position:relative;z-index:1}
@@ -44,39 +39,37 @@ body::before{
 .vid-head{
   display:flex;align-items:center;justify-content:space-between;
   padding:.9rem 1.2rem;
-  background:rgba(0,31,92,.6);
+  background:rgba(0,81,149,.97);
   backdrop-filter:blur(20px);
-  border:1px solid var(--line);
+  border:1px solid rgba(0,81,149,.3);
   border-bottom:none;
   border-radius:var(--r) var(--r) 0 0;
 }
 .brand{
   font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;
-  background:linear-gradient(90deg,var(--sky),var(--frost));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  color:#fff;
 }
 .step-pill{
   padding:.25rem .75rem;border-radius:20px;
-  background:rgba(0,163,224,.15);border:1px solid rgba(0,163,224,.25);
-  font-size:.68rem;font-weight:700;color:var(--sky);letter-spacing:.06em;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  font-size:.68rem;font-weight:700;color:#fff;letter-spacing:.06em;
 }
 
 /* Dot nav */
 .dots{
   display:flex;gap:.45rem;justify-content:center;padding:.6rem 0;
-  background:rgba(0,13,40,.7);border-left:1px solid var(--line);border-right:1px solid var(--line);
+  background:#E8F0F8;border-left:1px solid var(--line);border-right:1px solid var(--line);
 }
 .dot{
   width:8px;height:8px;border-radius:50%;cursor:pointer;
-  background:rgba(255,255,255,.15);transition:all .3s;border:none;
+  background:rgba(0,81,149,.2);transition:all .3s;border:none;
 }
-.dot.done{background:rgba(255,255,255,.45)}
-.dot.active{background:var(--sky);box-shadow:0 0 8px rgba(0,163,224,.6)}
+.dot.done{background:rgba(0,81,149,.45)}
+.dot.active{background:#005195;box-shadow:0 0 8px rgba(0,81,149,.4)}
 
 /* Screen */
 .screen{
-  background:rgba(5,12,30,.85);
-  backdrop-filter:blur(24px);
+  background:#FFFFFF;
   border:1px solid var(--line);
   border-top:none;border-bottom:none;
   padding:1.4rem;min-height:380px;
@@ -88,69 +81,70 @@ body::before{
 
 /* Step title */
 .step-title{
-  font-size:.68rem;font-weight:700;color:var(--sky);
+  font-size:.68rem;font-weight:700;color:#005195;
   text-transform:uppercase;letter-spacing:.12em;
 }
 
 /* Cards */
 .card{
-  background:rgba(255,255,255,.03);border:1px solid var(--line);
+  background:#FFFFFF;border:1px solid var(--line);
   border-radius:var(--r);padding:1rem 1.1rem;
+  box-shadow:0 2px 12px rgba(0,81,149,.08);
 }
-.card-h{font-size:.78rem;font-weight:700;color:var(--white);margin-bottom:.75rem}
+.card-h{font-size:.78rem;font-weight:700;color:#1A1A1A;margin-bottom:.75rem}
 
 /* Rows */
-.row{display:flex;gap:.6rem;padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.76rem}
+.row{display:flex;gap:.6rem;padding:.35rem 0;border-bottom:1px solid rgba(0,81,149,.08);font-size:.76rem}
 .row:last-child{border:none}
-.rl{color:var(--mute);min-width:100px;flex-shrink:0;font-size:.72rem}
-.rv{font-weight:500;color:var(--dim)}
+.rl{color:#666666;min-width:100px;flex-shrink:0;font-size:.72rem}
+.rv{font-weight:500;color:#1A1A1A}
 
 /* Info boxes */
 .info{border-radius:var(--r);padding:.65rem .9rem;font-size:.76rem;line-height:1.5}
-.info-blue{background:rgba(0,114,206,.1);border:1px solid rgba(0,114,206,.22);color:var(--frost)}
-.info-green{background:rgba(0,135,90,.1);border:1px solid rgba(0,135,90,.22);color:#5EDD9F}
-.info-red{background:rgba(204,0,0,.1);border:1px solid rgba(204,0,0,.2);color:#FF8080}
+.info-blue{background:rgba(0,81,149,.08);border:1px solid rgba(0,81,149,.22);color:#005195}
+.info-green{background:rgba(0,133,124,.1);border:1px solid rgba(0,133,124,.22);color:#00857C}
+.info-red{background:rgba(204,0,0,.08);border:1px solid rgba(204,0,0,.2);color:#CC0000}
 
 /* Badges */
 .badge{display:inline-block;padding:.16rem .5rem;border-radius:5px;font-size:.65rem;font-weight:700}
-.b-red{background:rgba(204,0,0,.15);color:#FF8080;border:1px solid rgba(204,0,0,.2)}
-.b-green{background:rgba(0,135,90,.15);color:#5EDD9F;border:1px solid rgba(0,135,90,.2)}
-.b-blue{background:rgba(0,114,206,.15);color:var(--frost);border:1px solid rgba(0,114,206,.2)}
-.b-med{background:rgba(0,114,206,.3);color:var(--white);border:1px solid rgba(0,114,206,.4)}
+.b-red{background:rgba(204,0,0,.1);color:#CC0000;border:1px solid rgba(204,0,0,.2)}
+.b-green{background:rgba(0,133,124,.12);color:#00857C;border:1px solid rgba(0,133,124,.2)}
+.b-blue{background:rgba(0,81,149,.12);color:#005195;border:1px solid rgba(0,81,149,.2)}
+.b-med{background:rgba(0,81,149,.2);color:#fff;border:1px solid rgba(0,81,149,.35)}
 
 /* Tech result */
-.tech-r{display:flex;align-items:center;gap:.75rem;padding:.75rem .9rem;border-radius:var(--r);border:1px solid rgba(0,163,224,.35);background:rgba(0,87,168,.1);margin-bottom:.5rem}
-.tech-r-2{border-color:var(--line);background:var(--faint)}
-.t-av{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;background:rgba(0,114,206,.25);color:var(--frost);border:1px solid rgba(0,114,206,.3)}
-.sbar{height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-top:.3rem}
+.tech-r{display:flex;align-items:center;gap:.75rem;padding:.75rem .9rem;border-radius:var(--r);border:1px solid rgba(0,81,149,.30);background:rgba(0,81,149,.06);margin-bottom:.5rem}
+.tech-r-2{border-color:var(--line);background:rgba(0,81,149,.05)}
+.t-av{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;background:rgba(0,81,149,.15);color:#005195;border:1px solid rgba(0,81,149,.25)}
+.sbar{height:4px;background:rgba(0,81,149,.1);border-radius:2px;overflow:hidden;margin-top:.3rem}
 .sfill{height:100%;border-radius:2px}
 
 /* Phone mockup */
-.phone{background:rgba(5,5,20,.9);border-radius:16px;padding:7px;width:200px;margin:0 auto;border:1px solid rgba(255,255,255,.1)}
-.phone-s{background:rgba(255,255,255,.04);border-radius:10px;overflow:hidden;border:1px solid var(--line)}
-.phone-n{background:rgba(0,87,168,.4);padding:.6rem .75rem;font-size:.7rem;line-height:1.6;color:var(--dim);border-bottom:1px solid var(--line)}
-.phone-b{padding:.75rem;font-size:.7rem;line-height:1.75;color:var(--mute)}
+.phone{background:#E8F0F8;border-radius:16px;padding:7px;width:200px;margin:0 auto;border:1px solid rgba(0,81,149,.2)}
+.phone-s{background:#FFFFFF;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.phone-n{background:rgba(0,81,149,.12);padding:.6rem .75rem;font-size:.7rem;line-height:1.6;color:#1A1A1A;border-bottom:1px solid var(--line)}
+.phone-b{padding:.75rem;font-size:.7rem;line-height:1.75;color:#666666}
 
 /* Check rows */
 .ck{display:flex;align-items:center;gap:.65rem;padding:.35rem 0;font-size:.76rem}
-.ci-done{width:18px;height:18px;border-radius:4px;background:rgba(0,135,90,.3);color:#5EDD9F;border:1px solid rgba(0,135,90,.3);display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0}
+.ci-done{width:18px;height:18px;border-radius:4px;background:rgba(0,133,124,.15);color:#00857C;border:1px solid rgba(0,133,124,.3);display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0}
 
 /* Timeline */
-.tl{border-left:2px solid rgba(255,255,255,.08);padding-left:.85rem}
+.tl{border-left:2px solid rgba(0,81,149,.15);padding-left:.85rem}
 .tl-i{position:relative;margin-bottom:.75rem;padding-left:.5rem}
-.tl-dot{position:absolute;left:-1.05rem;top:5px;width:7px;height:7px;border-radius:50%;background:var(--mid);border:2px solid var(--ink)}
-.tl-dot.d{background:var(--green)}
+.tl-dot{position:absolute;left:-1.05rem;top:5px;width:7px;height:7px;border-radius:50%;background:#005195;border:2px solid #FFFFFF}
+.tl-dot.d{background:#00857C}
 
 /* KPI Grid */
 .kpi-g{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
-.kpi-c{border-radius:var(--r);padding:.9rem;text-align:center;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.kpi-c{border-radius:var(--r);padding:.9rem;text-align:center;background:rgba(0,81,149,.05);border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,81,149,.08)}
 .kpi-v{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;line-height:1}
-.kpi-l{font-size:.68rem;color:var(--mute);margin-top:.25rem}
+.kpi-l{font-size:.68rem;color:#666666;margin-top:.25rem}
 
 /* Mail */
-.mail{border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.mail-h{background:rgba(0,87,168,.2);padding:.7rem .9rem;font-size:.72rem;line-height:1.7;color:var(--dim);border-bottom:1px solid var(--line)}
-.mail-b{padding:.85rem .9rem;font-size:.72rem;line-height:1.75;color:var(--mute)}
+.mail{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:0 2px 12px rgba(0,81,149,.08)}
+.mail-h{background:rgba(0,81,149,.08);padding:.7rem .9rem;font-size:.72rem;line-height:1.7;color:#1A1A1A;border-bottom:1px solid var(--line)}
+.mail-b{padding:.85rem .9rem;font-size:.72rem;line-height:1.75;color:#666666}
 
 /* Pulse animation */
 @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
@@ -160,33 +154,32 @@ body::before{
 .ctrl{
   display:flex;align-items:center;justify-content:space-between;
   padding:.8rem 1.2rem;
-  background:rgba(0,13,40,.8);
-  backdrop-filter:blur(20px);
+  background:#E8F0F8;
   border:1px solid var(--line);
   border-top:none;
   border-radius:0 0 var(--r) var(--r);
 }
 .ctrl-btn{
   padding:.5rem 1.1rem;border-radius:8px;
-  background:var(--faint);border:1px solid var(--line);
-  color:var(--dim);cursor:pointer;font-size:.76rem;font-weight:600;
+  background:rgba(0,81,149,.08);border:1px solid rgba(0,81,149,.18);
+  color:#1A1A1A;cursor:pointer;font-size:.76rem;font-weight:600;
   font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;
 }
-.ctrl-btn:hover{border-color:rgba(255,255,255,.2);color:var(--white)}
-.ctrl-btn.primary{background:linear-gradient(135deg,var(--mid),var(--sky));border-color:transparent;color:var(--white)}
+.ctrl-btn:hover{border-color:rgba(0,81,149,.35);color:#005195}
+.ctrl-btn.primary{background:linear-gradient(135deg,#005195,#0066CC);border-color:transparent;color:#fff}
 .ctrl-btn.primary:hover{opacity:.88}
 .ctrl-center{display:flex;flex-direction:column;align-items:center;gap:.3rem}
-.ctrl-sub{font-size:.65rem;color:var(--mute)}
+.ctrl-sub{font-size:.65rem;color:#666666}
 
 /* Footer */
 .footer{
   text-align:center;padding:.8rem;
-  font-size:.68rem;color:rgba(255,255,255,.2);letter-spacing:.04em;margin-top:.2rem;
+  font-size:.68rem;color:rgba(0,81,149,.4);letter-spacing:.04em;margin-top:.2rem;
 }
 
 /* Progress bar */
-.prog-wrap{height:2px;background:rgba(255,255,255,.07);border-left:1px solid var(--line);border-right:1px solid var(--line)}
-.prog-bar{height:100%;background:linear-gradient(90deg,var(--mid),var(--sky));transition:width 0.1s linear}
+.prog-wrap{height:2px;background:rgba(0,81,149,.12);border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.prog-bar{height:100%;background:linear-gradient(90deg,#005195,#0066CC);transition:width 0.1s linear}
 </style>
 </head>
 <body>
@@ -198,8 +191,8 @@ body::before{
 <div class="vid-head">
   <div class="brand" style="display:flex;align-items:center;gap:.5rem"><svg width="30" height="30" viewBox="0 0 152 152" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
   <polygon points="76,2 140,38 140,114 76,150 12,114 12,38" fill="none" stroke="#0072CE" stroke-width="2" opacity="0.3"/>
-  <polygon points="76,14 130,47 130,105 76,138 22,105 22,47" fill="#000D2A" stroke="#0072CE" stroke-width="2"/>
-  <polygon points="76,30 114,52 114,100 76,122 38,100 38,52" fill="#001845" stroke="#00A3E0" stroke-width="1.5"/>
+  <polygon points="76,14 130,47 130,105 76,138 22,105 22,47" fill="#E8F0F8" stroke="#005195" stroke-width="2"/>
+  <polygon points="76,30 114,52 114,100 76,122 38,100 38,52" fill="#FFFFFF" stroke="#0066CC" stroke-width="1.5"/>
   <line x1="76" y1="34" x2="76" y2="64" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
   <line x1="110" y1="54" x2="83" y2="69" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
   <line x1="110" y1="98" x2="83" y2="83" stroke="#00A3E0" stroke-width="2" opacity="0.7"/>
@@ -215,9 +208,9 @@ body::before{
   <circle cx="76" cy="76" r="14" fill="#0057A8" stroke="#00A3E0" stroke-width="2"/>
   <circle cx="76" cy="76" r="8" fill="#00A3E0"/>
   <circle cx="76" cy="76" r="4" fill="#6EC6FF"/>
-</svg><span style="font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;background:linear-gradient(90deg,#fff,#6EC6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Field Service AI</span></div>
+</svg><span style="font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;color:#fff">Field Service AI</span></div>
   <div class="step-pill" id="stepLabel">Schritt 1 / 8</div>
-  <button id="lang-btn" onclick="toggleAnimLang()" style="font-size:.68rem;color:rgba(255,255,255,.35);cursor:pointer;letter-spacing:.1em;border:1px solid rgba(255,255,255,.1);padding:.22rem .65rem;border-radius:5px;background:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s" onmouseover="this.style.color='#00A3E0';this.style.borderColor='rgba(0,163,224,.4)'" onmouseout="this.style.color='rgba(255,255,255,.35)';this.style.borderColor='rgba(255,255,255,.1)'">EN</button>
+  <button id="lang-btn" onclick="toggleAnimLang()" style="font-size:.68rem;color:rgba(255,255,255,.75);cursor:pointer;letter-spacing:.1em;border:1px solid rgba(255,255,255,.3);padding:.22rem .65rem;border-radius:5px;background:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s" onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,.6)'" onmouseout="this.style.color='rgba(255,255,255,.75)';this.style.borderColor='rgba(255,255,255,.3)'">EN</button>
 </div>
 
 <div class="dots" id="dots"></div>
@@ -234,10 +227,10 @@ body::before{
     <div class="row"><span class="rl">Auftrags-ID</span><span class="rv">WO-2026-04718</span></div>
     <div class="row"><span class="rl">Typ</span><span class="rv">STK — EC300 Legend <span class="badge b-blue">IPC · L2 reicht</span></span></div>
     <div class="row"><span class="rl">Klinik</span><span class="rv">Universitätsklinikum Bonn</span></div>
-    <div class="row"><span class="rl">Fälligkeit</span><span class="rv" style="color:#FF8080;font-weight:700">12 Tage überfällig <span class="badge b-red">KRITISCH</span></span></div>
-    <div class="row"><span class="rl">Bündelung</span><span class="rv" style="color:#5EDD9F">NIM4CM01 ebenfalls fällig → 1 Tour</span></div>
+    <div class="row"><span class="rl">Fälligkeit</span><span class="rv" style="color:#CC0000;font-weight:700">12 Tage überfällig <span class="badge b-red">KRITISCH</span></span></div>
+    <div class="row"><span class="rl">Bündelung</span><span class="rv" style="color:#00857C">NIM4CM01 ebenfalls fällig → 1 Tour</span></div>
   </div>
-  <div style="text-align:center;font-size:.7rem;color:var(--mute)">1.985 Vertragsgeräte · täglich geprüft · kein manuelles Nachschauen</div>
+  <div style="text-align:center;font-size:.7rem;color:#666666">1.985 Vertragsgeräte · täglich geprüft · kein manuelles Nachschauen</div>
 </div>
 
 <!-- F1 -->
@@ -248,27 +241,27 @@ body::before{
     <div class="tech-r">
       <div class="t-av">T5</div>
       <div style="flex:1">
-        <div style="font-weight:700;font-size:.82rem;color:var(--white)">T5 Oberhausen · L2 · 84km</div>
-        <div class="sbar"><div class="sfill" style="width:90%;background:linear-gradient(90deg,var(--mid),var(--sky))"></div></div>
-        <div style="font-size:.7rem;color:var(--mute);margin-top:.2rem">EC300 = IPC = Small Capital → L2 vollwertig</div>
+        <div style="font-weight:700;font-size:.82rem;color:#1A1A1A">T5 Oberhausen · L2 · 84km</div>
+        <div class="sbar"><div class="sfill" style="width:90%;background:linear-gradient(90deg,#005195,#0066CC)"></div></div>
+        <div style="font-size:.7rem;color:#666666;margin-top:.2rem">EC300 = IPC = Small Capital → L2 vollwertig</div>
       </div>
-      <div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--sky)">90.3</div>
+      <div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:#005195">90.3</div>
     </div>
     <div class="tech-r tech-r-2">
       <div class="t-av" style="background:rgba(255,139,0,.1);color:#FFB347;border-color:rgba(255,139,0,.2)">T8</div>
       <div style="flex:1">
-        <div style="font-size:.78rem;color:var(--dim)">T8 Hennef · L2 · 13km</div>
+        <div style="font-size:.78rem;color:#1A1A1A">T8 Hennef · L2 · 13km</div>
         <div class="sbar"><div class="sfill" style="width:78%;background:linear-gradient(90deg,var(--warn),#FFB347)"></div></div>
       </div>
       <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#FFB347">78.5</div>
     </div>
     <div class="tech-r tech-r-2">
-      <div class="t-av" style="background:var(--faint);color:var(--mute)">T10</div>
+      <div class="t-av" style="background:rgba(0,81,149,.05);color:#666666">T10</div>
       <div style="flex:1">
-        <div style="font-size:.78rem;color:var(--mute)">T10 Balingen · Hugo KA · 301km</div>
-        <div class="sbar"><div class="sfill" style="width:68%;background:rgba(255,255,255,.15)"></div></div>
+        <div style="font-size:.78rem;color:#666666">T10 Balingen · Hugo KA · 301km</div>
+        <div class="sbar"><div class="sfill" style="width:68%;background:rgba(0,81,149,.2)"></div></div>
       </div>
-      <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--mute)">68.1</div>
+      <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#666666">68.1</div>
     </div>
   </div>
 </div>
@@ -278,14 +271,14 @@ body::before{
   <div class="step-title">Schritt 3 — Disponent bestätigt (Copilot, kein Autopilot)</div>
   <div class="info info-blue">KI empfiehlt · Mensch entscheidet · SMax Go bleibt Kernsystem</div>
   <div class="card">
-    <div style="font-size:.76rem;color:var(--mute);margin-bottom:.9rem">Tour-Empfehlung: EC300 + NIM4CM01 gebündelt · 1 Fahrt statt 2</div>
+    <div style="font-size:.76rem;color:#666666;margin-bottom:.9rem">Tour-Empfehlung: EC300 + NIM4CM01 gebündelt · 1 Fahrt statt 2</div>
     <div class="kpi-g" style="margin-bottom:1rem">
-      <div class="kpi-c"><div class="kpi-v" style="color:var(--sky)">5h 01min</div><div class="kpi-l">inkl. Puffer</div></div>
-      <div class="kpi-c" style="background:rgba(0,135,90,.08);border-color:rgba(0,135,90,.2)"><div class="kpi-v" style="color:#5EDD9F">−1 Fahrt</div><div class="kpi-l" style="color:#5EDD9F">gespart</div></div>
+      <div class="kpi-c"><div class="kpi-v" style="color:#005195">5h 01min</div><div class="kpi-l">inkl. Puffer</div></div>
+      <div class="kpi-c" style="background:rgba(0,133,124,.08);border-color:rgba(0,133,124,.2)"><div class="kpi-v" style="color:#00857C">−1 Fahrt</div><div class="kpi-l" style="color:#00857C">gespart</div></div>
     </div>
-    <div style="background:rgba(0,135,90,.1);border:1px solid rgba(0,135,90,.22);border-radius:var(--r);padding:.85rem;text-align:center">
-      <div style="font-weight:700;font-size:.85rem;color:#5EDD9F">T5 zugewiesen ✓</div>
-      <div style="font-size:.72rem;color:rgba(0,135,90,.7);margin-top:.2rem">SMax Go aktualisiert · Push-Benachrichtigung gesendet</div>
+    <div style="background:rgba(0,133,124,.1);border:1px solid rgba(0,133,124,.22);border-radius:var(--r);padding:.85rem;text-align:center">
+      <div style="font-weight:700;font-size:.85rem;color:#00857C">T5 zugewiesen ✓</div>
+      <div style="font-size:.72rem;color:rgba(0,133,124,.7);margin-top:.2rem">SMax Go aktualisiert · Push-Benachrichtigung gesendet</div>
     </div>
   </div>
 </div>
@@ -294,20 +287,20 @@ body::before{
 <div class="frame" id="f3">
   <div class="step-title">Schritt 4 — Mail automatisch an T5 gesendet</div>
   <div class="phone">
-    <div style="text-align:center;padding:.3rem 0 .5rem;color:rgba(255,255,255,.2);font-size:.65rem">T5 · Oberhausen · 07:15 Uhr</div>
+    <div style="text-align:center;padding:.3rem 0 .5rem;color:rgba(0,81,149,.4);font-size:.65rem">T5 · Oberhausen · 07:15 Uhr</div>
     <div class="phone-s">
       <div class="phone-n">
         <div style="font-weight:700">Medtronic Service · Neuer Auftrag</div>
         <div style="font-size:.65rem;opacity:.75;margin-top:.1rem">WO-2026-04718 · UKB Bonn · Di 01.04.</div>
       </div>
       <div class="phone-b">
-        <div style="font-weight:600;color:var(--frost);margin-bottom:.4rem">Ihr Einsatz heute</div>
-        <div><span style="color:var(--mute)">Klinik:</span> Uniklinikum Bonn</div>
-        <div><span style="color:var(--mute)">Code:</span> <strong style="color:var(--white)">1247#</strong> · Geb. 32</div>
-        <div><span style="color:var(--mute)">Kontakt:</span> Dr. S. Müller</div>
-        <div><span style="color:var(--mute)">Geräte:</span> EC300 + NIM</div>
-        <div><span style="color:var(--mute)">Dauer:</span> 5h 01min</div>
-        <div style="margin-top:.4rem;padding:.35rem .5rem;background:rgba(0,135,90,.15);border-radius:5px;font-size:.65rem;color:#5EDD9F;font-weight:600">Filterset 100438 + NIM Elektroden ↑</div>
+        <div style="font-weight:600;color:#005195;margin-bottom:.4rem">Ihr Einsatz heute</div>
+        <div><span style="color:#666666">Klinik:</span> Uniklinikum Bonn</div>
+        <div><span style="color:#666666">Code:</span> <strong style="color:#1A1A1A">1247#</strong> · Geb. 32</div>
+        <div><span style="color:#666666">Kontakt:</span> Dr. S. Müller</div>
+        <div><span style="color:#666666">Geräte:</span> EC300 + NIM</div>
+        <div><span style="color:#666666">Dauer:</span> 5h 01min</div>
+        <div style="margin-top:.4rem;padding:.35rem .5rem;background:rgba(0,133,124,.12);border-radius:5px;font-size:.65rem;color:#00857C;font-weight:600">Filterset 100438 + NIM Elektroden ↑</div>
       </div>
     </div>
   </div>
@@ -320,12 +313,12 @@ body::before{
   <div class="card">
     <div class="card-h">Einsatzprotokoll · 01.04.2026</div>
     <div class="tl">
-      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>07:42</strong> <span style="color:var(--mute)">Abfahrt Oberhausen</span></div></div>
-      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>08:38</strong> <span style="color:var(--mute)">Eintreffen · Einschleusung</span></div></div>
-      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>08:58</strong> <span style="color:var(--mute)">STK EC300 begonnen</span></div></div>
-      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>11:05</strong> <span style="color:var(--mute)">EC300 OK · Gespräch Dr. Müller</span></div></div>
-      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>11:25</strong> <span style="color:var(--mute)">STK NIM4CM01 begonnen</span></div></div>
-      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>12:20</strong> <span style="color:#5EDD9F">Beide Geräte freigegeben ✓</span></div></div>
+      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>07:42</strong> <span style="color:#666666">Abfahrt Oberhausen</span></div></div>
+      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>08:38</strong> <span style="color:#666666">Eintreffen · Einschleusung</span></div></div>
+      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>08:58</strong> <span style="color:#666666">STK EC300 begonnen</span></div></div>
+      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>11:05</strong> <span style="color:#666666">EC300 OK · Gespräch Dr. Müller</span></div></div>
+      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>11:25</strong> <span style="color:#666666">STK NIM4CM01 begonnen</span></div></div>
+      <div class="tl-i"><div class="tl-dot d"></div><div style="font-size:.76rem"><strong>12:20</strong> <span style="color:#00857C">Beide Geräte freigegeben ✓</span></div></div>
     </div>
   </div>
 </div>
@@ -335,14 +328,14 @@ body::before{
   <div class="step-title">Schritt 6 — Dokumente vollständig · Work Order geschlossen</div>
   <div class="card">
     <div class="card-h">Pflichtdokumente — EC300 + NIM</div>
-    <div class="ck"><div class="ci-done">✓</div><span style="color:var(--dim)">Messprotokoll EC300 <span class="badge b-red">Pflicht</span></span></div>
-    <div class="ck"><div class="ci-done">✓</div><span style="color:var(--dim)">Messprotokoll NIM <span class="badge b-red">Pflicht</span></span></div>
-    <div class="ck"><div class="ci-done">✓</div><span style="color:var(--dim)">Servicebericht · Unterschrift Dr. Müller <span class="badge b-red">Pflicht</span></span></div>
-    <div class="ck"><div class="ci-done">✓</div><span style="color:var(--dim)">TDS EC300 + TDS NIM <span class="badge b-red">Pflicht</span></span></div>
-    <div style="background:rgba(0,135,90,.1);border:1px solid rgba(0,135,90,.22);border-radius:var(--r);padding:.85rem;text-align:center;margin-top:.8rem">
+    <div class="ck"><div class="ci-done">✓</div><span style="color:#1A1A1A">Messprotokoll EC300 <span class="badge b-red">Pflicht</span></span></div>
+    <div class="ck"><div class="ci-done">✓</div><span style="color:#1A1A1A">Messprotokoll NIM <span class="badge b-red">Pflicht</span></span></div>
+    <div class="ck"><div class="ci-done">✓</div><span style="color:#1A1A1A">Servicebericht · Unterschrift Dr. Müller <span class="badge b-red">Pflicht</span></span></div>
+    <div class="ck"><div class="ci-done">✓</div><span style="color:#1A1A1A">TDS EC300 + TDS NIM <span class="badge b-red">Pflicht</span></span></div>
+    <div style="background:rgba(0,133,124,.1);border:1px solid rgba(0,133,124,.22);border-radius:var(--r);padding:.85rem;text-align:center;margin-top:.8rem">
       <div style="font-size:1.8rem;margin-bottom:.25rem">✅</div>
-      <div style="font-weight:700;font-size:.85rem;color:#5EDD9F">Work Order geschlossen</div>
-      <div style="font-size:.7rem;color:rgba(94,221,159,.6);margin-top:.2rem">01.04.2026 · Nächste STK: 01.04.2027</div>
+      <div style="font-weight:700;font-size:.85rem;color:#00857C">Work Order geschlossen</div>
+      <div style="font-size:.7rem;color:rgba(0,133,124,.6);margin-top:.2rem">01.04.2026 · Nächste STK: 01.04.2027</div>
     </div>
   </div>
 </div>
@@ -353,15 +346,15 @@ body::before{
   <div class="info info-green">Mo 07.04.2026 · 07:04 Uhr · vollständig → Mail automatisch</div>
   <div class="mail">
     <div class="mail-h">
-      <div><strong style="color:var(--frost)">Von:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2f5c4a5d59464c4a015d4a5f4e465d6f424a4b5b5d4041464c014c4042">[email&#160;protected]</a></div>
-      <div><strong style="color:var(--frost)">An:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f784d99a82929b9b9285b7829c95989999d99392">[email&#160;protected]</a></div>
-      <div><strong style="color:var(--frost)">Betreff:</strong> Serviceberichte STK — EC300 + NIM — UKB Bonn</div>
+      <div><strong style="color:#005195">Von:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2f5c4a5d59464c4a015d4a5f4e465d6f424a4b5b5d4041464c014c4042">[email&#160;protected]</a></div>
+      <div><strong style="color:#005195">An:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f784d99a82929b9b9285b7829c95989999d99392">[email&#160;protected]</a></div>
+      <div><strong style="color:#005195">Betreff:</strong> Serviceberichte STK — EC300 + NIM — UKB Bonn</div>
     </div>
     <div class="mail-b">
       Sehr geehrte Frau Dr. Müller,<br><br>
       anbei die Serviceunterlagen für die STK vom 01.04.2026.<br><br>
-      <strong style="color:var(--dim)">EC300 Legend</strong> SN 35B2004118 — Freigegeben ✓<br>
-      <strong style="color:var(--dim)">NIM4CM01</strong> SN 28A1003456 — Freigegeben ✓<br>
+      <strong style="color:#1A1A1A">EC300 Legend</strong> SN 35B2004118 — Freigegeben ✓<br>
+      <strong style="color:#1A1A1A">NIM4CM01</strong> SN 28A1003456 — Freigegeben ✓<br>
       Nächste STK: 01.04.2027<br><br>
       Mit freundlichen Grüssen · Medtronic GmbH
     </div>
@@ -373,14 +366,14 @@ body::before{
   <div class="step-title">Workflow abgeschlossen — Von Fälligkeit bis Kundenmail</div>
   <div style="text-align:center;padding:.5rem 0">
     <div style="font-size:2.8rem;margin-bottom:.4rem">✅</div>
-    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--white);margin-bottom:.25rem">Vollständig automatisiert</div>
-    <div style="font-size:.78rem;color:var(--mute)">SMax Go bleibt Kernsystem · KI ist der Copilot</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#1A1A1A;margin-bottom:.25rem">Vollständig automatisiert</div>
+    <div style="font-size:.78rem;color:#666666">SMax Go bleibt Kernsystem · KI ist der Copilot</div>
   </div>
   <div class="kpi-g">
-    <div class="kpi-c" style="background:rgba(0,135,90,.08);border-color:rgba(0,135,90,.2)"><div class="kpi-v" style="color:#5EDD9F">2 Geräte</div><div class="kpi-l" style="color:rgba(94,221,159,.6)">1 Fahrt statt 2</div></div>
-    <div class="kpi-c"><div class="kpi-v" style="color:var(--sky)">5h 01min</div><div class="kpi-l">inkl. Puffer</div></div>
-    <div class="kpi-c"><div class="kpi-v" style="color:#FFB347">0</div><div class="kpi-l">manuelle QA-Schritte</div></div>
-    <div class="kpi-c" style="background:rgba(0,135,90,.08);border-color:rgba(0,135,90,.2)"><div class="kpi-v" style="color:#5EDD9F">Auto</div><div class="kpi-l" style="color:rgba(94,221,159,.6)">Kundenmail gesendet</div></div>
+    <div class="kpi-c" style="background:rgba(0,133,124,.08);border-color:rgba(0,133,124,.2)"><div class="kpi-v" style="color:#00857C">2 Geräte</div><div class="kpi-l" style="color:rgba(0,133,124,.6)">1 Fahrt statt 2</div></div>
+    <div class="kpi-c"><div class="kpi-v" style="color:#005195">5h 01min</div><div class="kpi-l">inkl. Puffer</div></div>
+    <div class="kpi-c"><div class="kpi-v" style="color:#FF8B00">0</div><div class="kpi-l">manuelle QA-Schritte</div></div>
+    <div class="kpi-c" style="background:rgba(0,133,124,.08);border-color:rgba(0,133,124,.2)"><div class="kpi-v" style="color:#00857C">Auto</div><div class="kpi-l" style="color:rgba(0,133,124,.6)">Kundenmail gesendet</div></div>
   </div>
 </div>
 
@@ -523,14 +516,14 @@ function applyFrameTexts(l){
     }
     // frame 6 success
     if(i===5){
-      const suc = frame.querySelector('[style*="5EDD9F"]');
+      const suc = frame.querySelector('[style*="00857C"]');
       if(suc && fd.success) suc.textContent = fd.success;
     }
     // frame 7
     if(i===7){
       const h = frame.querySelector('div[style*="font-weight:800"]');
       if(h && fd.head) h.textContent = fd.head;
-      const s = frame.querySelector('div[style*="var(--mute)"]');
+      const s = frame.querySelector('div[style*="#666666"]');
       if(s && fd.sub) s.textContent = fd.sub;
     }
   });
@@ -589,15 +582,15 @@ resetTimer();
 </script>
 
 <!-- PASSWORD PROTECTION -->
-<div id="pw-overlay" style="position:fixed;inset:0;z-index:99999;background:#000810;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;font-family:'Plus Jakarta Sans',sans-serif">
-  <div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.25)">Medtronic GmbH · Field Service AI</div>
-  <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#00A3E0,#0072CE);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Zugangscode erforderlich</div>
+<div id="pw-overlay" style="position:fixed;inset:0;z-index:99999;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(0,81,149,.4)">Medtronic GmbH · Field Service AI</div>
+  <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#005195,#0066CC);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Zugangscode erforderlich</div>
   <div style="display:flex;flex-direction:column;gap:.6rem;width:280px">
-    <input id="pw-input" type="password" placeholder="Passwort eingeben..." style="padding:.75rem 1rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;outline:none;width:100%" onkeydown="if(event.key==='Enter')checkPw()" oninput="document.getElementById('pw-err').style.display='none'">
-    <button onclick="checkPw()" style="padding:.75rem;background:linear-gradient(135deg,#0072CE,#00A3E0);border:none;border-radius:8px;color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">Zugang ↗</button>
-    <div id="pw-err" style="display:none;font-size:.75rem;color:#FF8080;text-align:center">Falsches Passwort</div>
+    <input id="pw-input" type="password" placeholder="Passwort eingeben..." style="padding:.75rem 1rem;background:rgba(0,81,149,.05);border:1px solid rgba(0,81,149,.2);border-radius:8px;color:#1A1A1A;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;outline:none;width:100%" onkeydown="if(event.key==='Enter')checkPw()" oninput="document.getElementById('pw-err').style.display='none'">
+    <button onclick="checkPw()" style="padding:.75rem;background:linear-gradient(135deg,#005195,#0066CC);border:none;border-radius:8px;color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">Zugang ↗</button>
+    <div id="pw-err" style="display:none;font-size:.75rem;color:#CC0000;text-align:center">Falsches Passwort</div>
   </div>
-  <div style="font-size:.68rem;color:rgba(255,255,255,.18)">Vertraulich · Nur für autorisierte Personen</div>
+  <div style="font-size:.68rem;color:rgba(0,81,149,.3)">Vertraulich · Nur für autorisierte Personen</div>
 </div>
 <script>
 (function(){

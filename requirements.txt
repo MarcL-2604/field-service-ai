@@ -1,0 +1,5 @@
+pydantic>=2.0
+pandas>=2.0
+openpyxl>=3.1       # Excel-Import aus SMax
+pytest>=8.0
+flake8>=7.0

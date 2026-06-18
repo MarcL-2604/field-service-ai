@@ -1,0 +1,5 @@
+hugo_techniker_id,standort_region,hugo_standort,l3_familien,kapazitaets_warnung,empfohlener_kandidat,kandidat_l3_familien,kandidat_auslastung_info,begruendung
+T1,Hessen,TBD Hessen,Elektrochirurgie;Energie;Hugo,Nein,T14,Beatmung;Elektrochirurgie;Kardiovaskulaer;Neurophysiologie,Keine Echtzeit-Daten,"4 L3-Familien, 180 km Entfernung"
+T10,BaWü-Süd,Uniklinikum Ulm (1 System),Elektrochirurgie;Hugo;Kardiovaskulaer;Neuromonitoring;Wirbelsaeule,Ja,T14,Beatmung;Elektrochirurgie;Kardiovaskulaer;Neurophysiologie,Keine Echtzeit-Daten,"4 L3-Familien, 30 km Entfernung"
+T11,NRW-West,Klinikum Bochum (1 System),Elektrochirurgie;Energie;Hugo,Nein,T5,Elektrochirurgie;Kardiovaskulaer;Neuromonitoring;Wirbelsaeule,Keine Echtzeit-Daten,"4 L3-Familien, 78 km Entfernung"
+T6,Nord,UKE Hamburg (4 Systeme),Beatmung;Elektrochirurgie;Hugo,Nein,T5,Elektrochirurgie;Kardiovaskulaer;Neuromonitoring;Wirbelsaeule,Keine Echtzeit-Daten,"4 L3-Familien, 311 km Entfernung"

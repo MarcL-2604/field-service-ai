@@ -1,0 +1,87 @@
+FEHLENDE KLINIKEN IN KLINIKEN.CSV
+Stand: 2026-03-26  |  Quelle: daten/geraete.csv vs. daten/kliniken.csv
+Gefiltert: Praxen/MVZ und Ausland (Österreich, USA) ausgeschlossen
+========================================================================
+Nr.  Klinikname                                   Region           Geraete
+------------------------------------------------------------------------
+1    CharitÃ© Berlin                              unbekannt            98
+2    Klinikum LMU Muenchen                        Bayern               66
+       [~] Vgl. LMU Klinikum München Campus Großhadern in kliniken.csv
+3    Vivantes Humboldt-Klinikum Berlin            Berlin               34
+4    Klinikum der Stadt Ludwigshafen              Rheinland-Pfalz      33
+5    Westpfalz-Klinikum Kaiserslautern            Rheinland-Pfalz      29
+6    Schoen Klinik Hamburg                        Nord                 26
+7    Katharinenhospital Stuttgart                 BaWü                 24
+       [i] Kein Hugo-Vertrag (Demo) – nicht in Serviceplanung aufnehmen
+8    DONAUISAR Klinikum Deggendorf                Bayern               24
+9    Universitaetsklinikum Schleswig              Nord                 24
+10   Uniklinikum Giessen Marburg                  Hessen               22
+       [~] Vgl. Universitätsklinikum Gießen in kliniken.csv
+11   Klinikum Bayreuth                            Bayern               20
+12   Rems-Murr-Klinikum Winnenden                 BaWü                 18
+13   Universitaetsmedizin Rostock                 Nord                 17
+       [~] Vgl. Universitätsklinikum Rostock in kliniken.csv
+14   Klinikum Oldenburg                           Niedersachsen        17
+15   Klinikum Worms                               Rheinland-Pfalz      16
+16   Klinikum Schwabing Muenchen                  Bayern               14
+17   Kath Krankenhaus Hagen                       NRW                  13
+18   Klinikum Bamberg Sozialstiftung              Bayern               12
+19   KRH Klinikum Nordstadt Hannover              Niedersachsen        12
+20   KKRN Kath Klinikum Ruhrgebiet                NRW                  12
+21   Klinikum Aschaffenburg Alzenau               Bayern               12
+22   Kliniken Schmieder Heidelberg                BaWü                 12
+23   Bezirkskliniken Schwaben Augsburg            Bayern               12
+24   Klinikum Bogenhausen Muenchen                Bayern               12
+25   Krankenhaus Salem Heidelberg                 BaWü                 12
+26   Bundeswehrkrankenhaus Ulm                    BaWü                 10
+27   Neckar-Odenwald-Kliniken                     BaWü                 10
+28   Staedtisches Klinikum Solingen               NRW                  10
+29   Regio Klinikum Pinneberg                     Nord                 10
+30   Siloah St Trudpert Klinikum Pforzheim        BaWü                 10
+31   Klinikum Itzehoe                             Nord                 10
+32   Klinikum IbbenbÃ¼ren                         unbekannt            10
+33   Klinikum Neuperlach Muenchen                 Bayern               10
+34   Klinikum Barnim GmbH                         Brandenburg          10
+35   Marien-Elisabeth-Kliniken Kassel             Hessen               10
+36   Suedharz-Krankenhaus Nordhausen              Thüringen             8
+37   Evangelisches Krankenhaus Bad Duerkheim      Rheinland-Pfalz       8
+38   Klinikum Werra-Meissner                      Hessen                8
+39   GRN Klinik Weinheim                          BaWü                  8
+40   Evang Krankenhaus Duesseldorf                NRW                   8
+41   Kath Marienkrankenhaus Hamburg               Nord                  8
+42   Kinderkrankenhaus auf der Bult Hannover      Niedersachsen         6
+43   Kliniken Schmieder Konstanz                  BaWü                  4
+44   CaritasKlinikum SaarbrÃ¼cken                 unbekannt             2
+45   Krankenhaus Barmherzige Brueder Regensburg   Bayern                2
+46   Krankenhaus Reinbek                          Nord                  2
+47   Mare Klinikum Kiel                           Nord                  2
+48   Klinikum Bochum                              NRW                   1
+       [!] Hugo-Standort – in kliniken.csv als BG Klinikum Bergmannsheil Bochum
+49   Staedtisches Klinikum Dresden                Sachsen               1
+       [!] Hugo-Standort – in kliniken.csv als Städtisches Klinikum Dresden-Friedrichstadt
+50   Uniklinikum Luebeck                          Nord                  1
+       [!] Hugo-Standort – in kliniken.csv als UKSH Campus Lübeck
+========================================================================
+GESAMT 50 Kliniken                                         760
+
+ZUSAMMENFASSUNG NACH REGION:
+----------------------------------------
+  Bayern                   184 Geraete
+  unbekannt                110 Geraete
+  BaWü                     108 Geraete
+  Nord                     100 Geraete
+  Rheinland-Pfalz           86 Geraete
+  NRW                       44 Geraete
+  Hessen                    40 Geraete
+  Niedersachsen             35 Geraete
+  Berlin                    34 Geraete
+  Brandenburg               10 Geraete
+  Thüringen                  8 Geraete
+  Sachsen                    1 Geraete
+
+LEGENDE:
+  [!] Hugo-Standort: Name in geraete.csv weicht von kliniken.csv ab.
+      Manueller Abgleich und Zusammenfuehrung erforderlich.
+  [~] Moeglicher Namensduplikat – Fuzzy-Match knapp unter Schwelle.
+      Pruefen ob Datensatz zusammengefuehrt werden kann.
+  [i] Sonstiger Hinweis.
