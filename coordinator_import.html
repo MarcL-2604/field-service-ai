@@ -551,14 +551,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   const HASH = '037453db72fb8a93ebe48d4ff52b1b493cdf56ef6a28240a65c6055b76d8f360';
   const ov = document.getElementById('pw-overlay');
-  if (sessionStorage.getItem('fsa_auth') === '1') {
+  if (localStorage.getItem('fsa_auth') === '1') {
     ov.style.display = 'none';
   }
   document.getElementById('pw-btn').addEventListener('click', async function() {
     const pw = document.getElementById('pw-input').value;
     const h = await sha256(pw);
     if (h === HASH) {
-      sessionStorage.setItem('fsa_auth', '1');
+      localStorage.setItem('fsa_auth', '1');
       ov.style.display = 'none';
     } else {
       document.getElementById('pw-error').style.display = 'block';
