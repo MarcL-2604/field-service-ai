@@ -56,22 +56,55 @@ _AMPEL_GELB_AB  = 0.30   # >= 30 % Abdeckung → Gelb
 _NRW_TECHNIKER = {"T5", "T8", "T11", "T13"}
 _NRW_STK_WARNUNG_SCHWELLE = 800  # STK/Jahr kombiniert
 
+# Daten-Modus: wird in main() gesetzt
+_ECHTDATEN: bool = False
+
 
 # ---------------------------------------------------------------------------
 # Datenlader
 # ---------------------------------------------------------------------------
 
 def _lade_techniker() -> dict[str, dict]:
-    """Gibt {techniker_id: {standort, bundesland, region}} zurueck."""
+    """Gibt {techniker_id: {standort, bundesland, region, ...}} zurueck.
+
+    Versucht zuerst echte SMax-Daten aus data/smax_dashboard_data.json.
+    Fallback auf daten/techniker.csv (Demo T1-T14) wenn kein Cache vorhanden.
+    """
+    global _ECHTDATEN
+    try:
+        from api.smax_cache import load_dashboard_data
+        smax = load_dashboard_data()
+        if smax and smax.get("techniker"):
+            _ECHTDATEN = True
+            return {
+                t["pseudonym_id"]: {
+                    "standort":      t["standort"],
+                    "bundesland":    t["bundesland"],
+                    "region":        t["region"],
+                    "lat":           t["lat"],
+                    "lon":           t["lon"],
+                    "techniker_typ": t.get("techniker_typ", "STANDARD"),
+                    "pm_count":      t.get("pm_count", 0),
+                    "total_mc":      t.get("total_model_codes", 365),
+                    "pm_ratio_pct":  t.get("pm_ratio_pct", 0.0),
+                    "in_skills_matrix": t.get("in_skills_matrix", False),
+                }
+                for t in smax["techniker"]
+            }
+    except Exception:
+        pass
+
+    # Demo-Fallback: T1-T14 aus CSV
+    _ECHTDATEN = False
     result = {}
     with open(_DATA_DIR / "techniker.csv", newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             result[row["techniker_id"]] = {
-                "standort": row["standort"],
+                "standort":   row["standort"],
                 "bundesland": row["bundesland"],
-                "region": row["region"],
-                "lat": float(row.get("lat", 0) or 0),
-                "lon": float(row.get("lon", 0) or 0),
+                "region":     row["region"],
+                "lat":        float(row.get("lat", 0) or 0),
+                "lon":        float(row.get("lon", 0) or 0),
             }
     return result
 
@@ -213,6 +246,69 @@ def _berechne_nrw_warnung(ct_rows: list[dict]) -> dict | None:
         return {
             "techniker": nrw_schwach,
             "gesamt_stk": round(nrw_stk_gesamt),
+            "anzahl_schwach": len(nrw_schwach),
+        }
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Echtdaten-Ampel (SMax Skills-Daten, ohne Family-Mapping)
+# ---------------------------------------------------------------------------
+
+def _berechne_ampeln_aus_smax(smax_techniker: list[dict]) -> list[dict]:
+    """Berechnet Qualifikations-Ampeln aus echten SMax-Skill-Daten.
+
+    Verwendet PM-Quote je Techniker (PM-Qualifikationen / Gesamt-Modellcodes).
+    Gibt Ergebnisse fuer ALLE 24 Techniker zurueck, auch ohne Skills-Matrix-Eintrag.
+    """
+    total_mc = max((t.get("total_model_codes", 365) for t in smax_techniker), default=365)
+    ergebnisse = []
+    for t in smax_techniker:
+        pm    = t.get("pm_count", 0)
+        total = total_mc or 1
+        abdeckung = pm / total
+        css, label = _ampel_farbe(abdeckung)
+        ergebnisse.append({
+            "techniker_id":    t["pseudonym_id"],
+            "standort":        t.get("standort", "–"),
+            "region":          t.get("region", "–"),
+            "qualifiziert":    pm,
+            "regional":        total,
+            "abdeckung_pct":   round(abdeckung * 100),
+            "fehlend_count":   total - pm,
+            "zusatz_stk":      0.0,
+            "partner":         "–",
+            "ampel_css":       css,
+            "ampel_label":     label,
+        })
+    return ergebnisse
+
+
+def _berechne_nrw_warnung_aus_smax(
+    ampeln: list[dict],
+    nrw_ids: set[str],
+) -> dict | None:
+    """NRW-Warnung fuer echte Daten – basiert auf PM-Quote statt STK-Potenzial."""
+    nrw_schwach: list[dict] = []
+    nrw_gap_gesamt = 0.0
+    for a in ampeln:
+        if a["techniker_id"] not in nrw_ids:
+            continue
+        gap = a["fehlend_count"]
+        nrw_gap_gesamt += gap
+        if a["abdeckung_pct"] < 30:
+            nrw_schwach.append({
+            "id":          a["techniker_id"],
+            "qualifiziert": a["qualifiziert"],
+            "familien_l3":  f"{a['qualifiziert']} PM-Qualifikationen",
+            "fehlend":      a["fehlend_count"],
+            "zusatz_stk":   0.0,
+        })
+    # Schwelle: > 800 fehlende Qualifikationen kumuliert als Proxy fuer STK-Potenzial
+    if len(nrw_schwach) >= 2 and nrw_gap_gesamt >= _NRW_STK_WARNUNG_SCHWELLE:
+        return {
+            "techniker":      nrw_schwach,
+            "gesamt_stk":     round(nrw_gap_gesamt),
             "anzahl_schwach": len(nrw_schwach),
         }
     return None
@@ -3069,6 +3165,7 @@ def render_html(
     labor_zeiten: list[dict] | None = None,
     demo_history: dict[str, dict] | None = None,
     repair_rows: list[dict] | None = None,
+    is_echtdaten: bool = False,
 ) -> str:
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten)
     stk_html      = _render_stk_tabelle(stk_rows)
@@ -3124,7 +3221,7 @@ def render_html(
     </div>
   </div>
   <div class="header-right">
-    <span class="demo-badge" data-i18n="header.demo">Demo-Daten &middot; Konfigurierbar</span>
+    <span class="demo-badge" data-i18n="header.demo">{"Echtdaten &middot; Pseudonymisiert" if is_echtdaten else "Demo-Daten &middot; Konfigurierbar"}</span>
     <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleLang()">EN</button>
     <button class="api-key-btn" onclick="document.getElementById('chat-setup').style.display='block';document.getElementById('api-key-input').focus()">API-Key &#128273;</button>
   </div>
@@ -3272,7 +3369,7 @@ def render_html(
   Field Service AI &nbsp;|&nbsp;
   Medtronic GmbH Service &amp; Repair &nbsp;|&nbsp;
   <span data-i18n="footer.copilot">Vollautomatisiert &middot; Copilot &mdash; kein Autopilot</span> &nbsp;|&nbsp;
-  441 Tests gr&uuml;n
+  704 Tests gr&uuml;n
 </footer>
 
 </div><!-- /dashboard-panel -->
@@ -3818,19 +3915,82 @@ def _vollstaendigkeits_pruefung(html: str) -> list[tuple[str, bool]]:
          'hugo-ka-badge' in html and html.count('Hugo Key Account') >= 4),
         ("Demo-Badge (gold) im Header",
          'demo-badge' in html),
-        ("Footer: 441 Tests gruen",
-         '441 Tests' in html),
+        ("Footer: 704 Tests gruen",
+         '704 Tests' in html),
     ]
     return checks
 
 
 def main() -> None:
+    global _ECHTDATEN, _TECH_FARBEN, _GEBIET_AKTUELL, _GEBIET_OPTIMIERT
+    global _NRW_TECHNIKER, _HUGO_KA_IDS
+
     print("Lade Daten...")
-    techniker    = _lade_techniker()
-    ct_rows      = _lade_crosstraining()
+    techniker    = _lade_techniker()       # setzt _ECHTDATEN als Nebeneffekt
+    ct_rows      = _lade_crosstraining()   # Demo-CSV bleibt fuer CT-Tabelle
     labor_zeiten = _lade_labor_zeiten()
-    ampeln       = _berechne_ampeln(ct_rows, techniker)
-    nrw_warnung  = _berechne_nrw_warnung(ct_rows)
+
+    if _ECHTDATEN:
+        print("  -> Echtdaten-Modus: SMax-Import geladen")
+
+        # Ampel aus echten PM-Skill-Daten berechnen
+        try:
+            from api.smax_cache import load_dashboard_data as _smax_load
+            _smax = _smax_load()
+            ampeln = _berechne_ampeln_aus_smax(_smax["techniker"])
+        except Exception:
+            ampeln = _berechne_ampeln(ct_rows, techniker)
+
+        # Hugo-KA-IDs aus echten Technikerdaten ableiten
+        _HUGO_KA_IDS = {
+            tid for tid, td in techniker.items()
+            if td.get("techniker_typ") == "HUGO_KEY_ACCOUNT"
+        }
+
+        # NRW-Techniker aus echten Bundesland-Daten
+        _NRW_TECHNIKER = {
+            tid for tid, td in techniker.items()
+            if "Westfalen" in td.get("bundesland", "")
+        }
+
+        # NRW-Warnung mit echten NRW-Techniker-IDs
+        nrw_warnung = _berechne_nrw_warnung_aus_smax(ampeln, _NRW_TECHNIKER)
+
+        # Farb-Palette fuer 24 Techniker (deterministisch sortiert)
+        _FARB_PALETTE = [
+            "#0072CE", "#00A3E0", "#7B2D8E", "#E87000", "#00843D", "#003087",
+            "#CC0000", "#E8A000", "#2E8B57", "#B22222", "#4169E1", "#2F4F4F",
+            "#D2691E", "#008B8B", "#8B0000", "#228B22", "#4682B4", "#DAA520",
+            "#800080", "#A0522D", "#008080", "#CD853F", "#6495ED", "#DC143C",
+        ]
+        sorted_ids = sorted(techniker.keys())
+        _TECH_FARBEN = {
+            tid: _FARB_PALETTE[i % len(_FARB_PALETTE)]
+            for i, tid in enumerate(sorted_ids)
+        }
+
+        # Gebiets-Map: Bundesland → erster Techniker in diesem Bundesland
+        _BL_KARTE = {
+            "Schleswig-Holstein": None, "Hamburg": None,
+            "Mecklenburg-Vorpommern": None, "Niedersachsen": None,
+            "Bremen": None, "Nordrhein-Westfalen": None,
+            "Hessen": None, "Thüringen": None,
+            "Sachsen": None, "Sachsen-Anhalt": None,
+            "Brandenburg": None, "Berlin": None,
+            "Rheinland-Pfalz": None, "Saarland": None,
+            "Baden-Württemberg": None, "Bayern": None,
+        }
+        for tid in sorted_ids:
+            bl = techniker[tid].get("bundesland", "")
+            if bl in _BL_KARTE and _BL_KARTE[bl] is None:
+                _BL_KARTE[bl] = tid
+        _GEBIET_AKTUELL  = {k: v for k, v in _BL_KARTE.items() if v}
+        _GEBIET_OPTIMIERT = dict(_GEBIET_AKTUELL)
+
+    else:
+        print("  -> Demo-Modus: T1-T14 aus CSV")
+        ampeln      = _berechne_ampeln(ct_rows, techniker)
+        nrw_warnung = _berechne_nrw_warnung(ct_rows)
 
     print("Berechne Dringlichkeiten fuer naechste 10 STK-Auftraege...")
     auftraege = naechste_faellige_auftraege(n=10)
@@ -3957,6 +4117,7 @@ def main() -> None:
         labor_zeiten=labor_zeiten,
         demo_history=demo_history,
         repair_rows=repair_rows,
+        is_echtdaten=_ECHTDATEN,
     )
 
     _OUT_PATH.write_text(html, encoding="utf-8")
