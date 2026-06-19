@@ -1,10 +1,12 @@
 """
 api/smax_cache.py
 ==================
-Liest KI_gestuetzte_Planung.xlsx und erstellt pseudonymisierte Dashboard-Daten.
+Liest KI_gestuetzte_Planung.xlsx und erstellt Dashboard-Daten.
 Speichert unter data/smax_dashboard_data.json fuer offline-Nutzung durch dashboard.py.
 
-Pseudonymisierung: SHA256(name)[:4] → "T-xxxx"  (stabil, deterministisch)
+Pseudonymisierung (steuerbar via config.PSEUDONYMISIERUNG_AKTIV):
+  True  → SHA256(name)[:4] als "T-xxxx"  (stabil, deterministisch)
+  False → Echter Nachname (letztes Wort im vollstaendigen Namen)
 Hugo-KA: wird per Stadtname ermittelt (4 Standorte, manuelle Pflege)
 """
 
@@ -15,6 +17,8 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+
+from config import PSEUDONYMISIERUNG_AKTIV
 
 _ROOT  = Path(__file__).resolve().parent.parent
 _XLSX  = _ROOT / "data" / "KI_gestuetzte_Planung.xlsx"
@@ -92,6 +96,13 @@ def _pseudonym_id(name: str) -> str:
     return f"T-{h[:4]}"
 
 
+def _display_id(name: str) -> str:
+    """Gibt Pseudonym oder echten Nachnamen zurueck, je nach PSEUDONYMISIERUNG_AKTIV."""
+    if PSEUDONYMISIERUNG_AKTIV:
+        return _pseudonym_id(name)
+    return name.strip().split()[-1]
+
+
 def _norm_umlaut(s: str) -> str:
     """Normalisiert Umlaute fuer robustes Name-Matching zwischen Sheets."""
     return (s.strip()
@@ -138,7 +149,7 @@ def build_dashboard_data() -> dict:
         pm_count = len(pm_mcs)
 
         techniker_list.append({
-            "pseudonym_id":      _pseudonym_id(tech.name),
+            "pseudonym_id":      _display_id(tech.name),
             "standort":          ort,
             "plz":               tech.plz or "",
             "region":            region,
@@ -193,8 +204,9 @@ if __name__ == "__main__":
         print(f"  Model Codes:   {data['total_model_codes']}")
         print(f"  Closed Jobs:   {data['closed_jobs']}")
         print(f"  Open Jobs:     {data['open_jobs']}")
+        modus = "pseudonymisiert (SHA256)" if PSEUDONYMISIERUNG_AKTIV else "echte Namen (Nachname)"
         print()
-        print("Techniker (pseudonymisiert):")
+        print(f"Techniker ({modus}):")
         for t in data["techniker"]:
             ka = " [Hugo KA]" if t["hugo_ka"] else ""
             mx = " [Skills-Matrix]" if t["in_skills_matrix"] else " [keine Skills]"

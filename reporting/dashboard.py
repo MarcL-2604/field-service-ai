@@ -36,6 +36,7 @@ from config import (  # noqa: E402
     PUFFER_EINSCHLEUSUNG_MIN,
     PUFFER_GROSSGERAET_MIN,
     PUFFER_GESPRAECH_MIN,
+    PSEUDONYMISIERUNG_AKTIV,
 )
 from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
@@ -445,7 +446,7 @@ _REPAIR_SLA_CSS = {
 
 def _render_repair_tabelle(repair_rows: list[dict]) -> str:
     if not repair_rows:
-        return "<p style='color:rgba(255,255,255,.5);font-style:italic;'>Keine offenen Repair-Auftr&auml;ge.</p>"
+        return "<p style='color:var(--text-muted);font-style:italic;'>Keine offenen Repair-Auftr&auml;ge.</p>"
     zeilen = []
     for row in repair_rows:
         css = _REPAIR_SLA_CSS.get(row["sla_status"], "badge-normal")
@@ -1247,7 +1248,7 @@ def _render_gebietsplanung(
             f'<div class="einst-text">'
             f'<div class="einst-name">Grossraum {emp["standort"]}</div>'
             f'<div class="einst-detail">{detail}</div>'
-            f'<div class="einst-detail" style="margin-top:4px;color:rgba(255,255,255,.4)">{emp["region"]}</div>'
+            f'<div class="einst-detail" style="margin-top:4px;color:var(--text-muted)">{emp["region"]}</div>'
             f'</div></div>')
     einst_liste_html = "\n".join(einst_items)
 
@@ -1339,7 +1340,7 @@ def _render_gebietsplanung(
       </div>
     </div>
 
-    <h3 style="font-size:14px;color:rgba(255,255,255,.87);margin:20px 0 10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.09)">
+    <h3 style="font-size:14px;color:var(--text);margin:20px 0 10px;padding-bottom:8px;border-bottom:1px solid rgba(0,81,149,.12)">
       Detaillierte Begr&uuml;ndungen
     </h3>
     <table>
@@ -1448,7 +1449,7 @@ def _build_gebiets_svg(
     """Baut statische SVG-Karte (100% offline, kein CDN, kein JavaScript noetig)."""
     paths = _topo_to_svg_paths()
     if not paths:
-        return '<text x="240" y="290" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="13">Karte nicht verfuegbar</text>'
+        return '<text x="240" y="290" text-anchor="middle" fill="#666666" font-size="13">Karte nicht verfuegbar</text>'
 
     svg_parts: list[str] = []
 
@@ -1456,9 +1457,9 @@ def _build_gebiets_svg(
     for p in paths:
         name = p["name"]
         tid = _GEBIET_AKTUELL.get(name, "")
-        fill = _TECH_FARBEN.get(tid, "#1a2030")
+        fill = _TECH_FARBEN.get(tid, "#E8EFF7")
         tid_opt = _GEBIET_OPTIMIERT.get(name, "")
-        fill_opt = _TECH_FARBEN.get(tid_opt, "#1a2030")
+        fill_opt = _TECH_FARBEN.get(tid_opt, "#E8EFF7")
         tooltip = f"{name} → {tid}" if tid else f"{name} (nicht zugewiesen)"
         # Overlap/Gap Marker fuer Luecken-Ansicht
         _OVERLAP_STATES = {"Nordrhein-Westfalen": "1", "Bayern": "1"}
@@ -1468,7 +1469,7 @@ def _build_gebiets_svg(
         svg_parts.append(
             f'<path class="st" d="{p["d"]}" fill="{fill}" '
             f'data-name="{name}" data-fill-aktuell="{fill}" data-fill-optimiert="{fill_opt}"{ov_attr} '
-            f'stroke="rgba(255,255,255,.15)" stroke-width="1.2">'
+            f'stroke="rgba(0,0,0,.15)" stroke-width="1.2">'
             f'<title>{tooltip}</title></path>'
         )
 
@@ -1496,7 +1497,7 @@ def _build_gebiets_svg(
         )
         svg_parts.append(
             f'<text class="tl" x="{px + 9}" y="{py + 4}" '
-            f'font-family="Plus Jakarta Sans,sans-serif" font-size="10px" font-weight="700" fill="rgba(255,255,255,.87)">'
+            f'font-family="Plus Jakarta Sans,sans-serif" font-size="10px" font-weight="700" fill="#1A1A1A">'
             f'{tid}</text>'
         )
 
@@ -1640,14 +1641,14 @@ def _build_gebiets_script(
         "              p.setAttribute('stroke','#CC0000');p.setAttribute('stroke-width','3');\n"
         "              p.setAttribute('stroke-dasharray','6,3');\n"
         "            }else{\n"
-        "              p.setAttribute('fill',p.getAttribute('data-fill-aktuell')||'#1a2030');\n"
-        "              p.setAttribute('stroke','rgba(255,255,255,.08)');p.setAttribute('stroke-width','1');\n"
+        "              p.setAttribute('fill',p.getAttribute('data-fill-aktuell')||'#E8EFF7');\n"
+        "              p.setAttribute('stroke','rgba(0,0,0,.08)');p.setAttribute('stroke-width','1');\n"
         "              p.removeAttribute('stroke-dasharray');\n"
         "            }\n"
         "          }else{\n"
         "            var fillKey='data-fill-'+(mode==='optimiert'?'optimiert':'aktuell');\n"
-        "            p.setAttribute('fill',p.getAttribute(fillKey)||'#1a2030');\n"
-        "            p.setAttribute('stroke','rgba(255,255,255,.15)');p.setAttribute('stroke-width','1.2');\n"
+        "            p.setAttribute('fill',p.getAttribute(fillKey)||'#E8EFF7');\n"
+        "            p.setAttribute('stroke','rgba(0,0,0,.15)');p.setAttribute('stroke-width','1.2');\n"
         "            p.removeAttribute('stroke-dasharray');\n"
         "          }\n"
         "        });\n"
@@ -1699,32 +1700,32 @@ _SORT_SCRIPT = """
 
 
 # ---------------------------------------------------------------------------
-# Premium Dark Design – CSS
+# Medtronic Light Theme – CSS
 # ---------------------------------------------------------------------------
 
 _CSS = """\
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
     :root {
-      --bg:           #000810;
-      --card-bg:      rgba(255,255,255,.03);
-      --card-border:  rgba(255,255,255,.09);
-      --nav-bg:       rgba(0,8,20,.7);
-      --primary:      #0072CE;
-      --accent:       #00A3E0;
-      --success:      #00875A;
-      --success-text: #5EDD9F;
-      --warning:      #FF8B00;
-      --warning-text: #FFB347;
+      --bg:           #FFFFFF;
+      --card-bg:      rgba(0,81,149,0.05);
+      --card-border:  rgba(0,81,149,0.18);
+      --nav-bg:       rgba(0,81,149,0.97);
+      --primary:      #005195;
+      --accent:       #0066CC;
+      --success:      #00857C;
+      --success-text: #00857C;
+      --warning:      #CC7000;
+      --warning-text: #CC7000;
       --critical:     #CC0000;
-      --critical-text:#FF8080;
+      --critical-text:#CC0000;
       --demo:         #FFD060;
-      --text:         rgba(255,255,255,.87);
-      --text-dim:     rgba(255,255,255,.5);
-      --text-muted:   rgba(255,255,255,.3);
+      --text:         #1A1A1A;
+      --text-dim:     #666666;
+      --text-muted:   #999999;
       --font-body:    'Plus Jakarta Sans', sans-serif;
       --font-heading: 'Syne', sans-serif;
-      --grad-accent:  linear-gradient(135deg, #00A3E0, #6EC6FF);
-      --grad-primary: linear-gradient(135deg, #0072CE, #00A3E0);
+      --grad-accent:  linear-gradient(135deg, #005195, #0066CC);
+      --grad-primary: linear-gradient(135deg, #005195, #0066CC);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -1735,24 +1736,16 @@ _CSS = """\
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,.1) transparent;
+      scrollbar-color: rgba(0,81,149,.2) transparent;
     }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.18); }
+    ::-webkit-scrollbar-thumb { background: rgba(0,81,149,.2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,81,149,.35); }
 
-    /* ── Grain Overlay ── */
+    /* ── Grain Overlay (deaktiviert fuer Light Theme) ── */
     .grain-overlay {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 9999;
-      opacity: 0.025;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-      background-repeat: repeat;
-      background-size: 180px 180px;
-      mix-blend-mode: overlay;
+      display: none;
     }
 
     /* ── App Layout ── */
@@ -1769,7 +1762,7 @@ _CSS = """\
 
     /* ── Hero Header ── */
     header {
-      background: rgba(0,8,20,.85);
+      background: rgba(0,81,149,0.97);
       backdrop-filter: blur(28px);
       -webkit-backdrop-filter: blur(28px);
       color: #fff;
@@ -1781,7 +1774,7 @@ _CSS = """\
       position: sticky;
       top: 0;
       z-index: 100;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid rgba(255,255,255,.15);
     }
     .header-brand {
       display: flex;
@@ -1793,13 +1786,13 @@ _CSS = """\
       font-size: 22px;
       font-weight: 800;
       letter-spacing: .3px;
-      background: var(--grad-accent);
+      background: linear-gradient(135deg, #fff, rgba(255,255,255,.85));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
     .header-logo .brand-ai {
-      background: var(--grad-accent);
+      background: linear-gradient(135deg, #fff, rgba(255,255,255,.85));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -1807,7 +1800,7 @@ _CSS = """\
     }
     .header-sub {
       font-size: 11px;
-      color: var(--text-muted);
+      color: rgba(255,255,255,.65);
       font-weight: 500;
       letter-spacing: .04em;
     }
@@ -1830,9 +1823,9 @@ _CSS = """\
       letter-spacing: .04em;
     }
     .lang-toggle, .api-key-btn {
-      background: rgba(255,255,255,.05);
-      color: var(--text-dim);
-      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.1);
+      color: rgba(255,255,255,.85);
+      border: 1px solid rgba(255,255,255,.25);
       border-radius: 20px;
       padding: 6px 16px;
       font-family: var(--font-body);
@@ -1851,7 +1844,7 @@ _CSS = """\
 
     /* ── Summary Bar ── */
     .summary-bar {
-      background: rgba(255,255,255,.02);
+      background: rgba(0,81,149,.03);
       border-bottom: 1px solid var(--card-border);
       padding: 10px 32px;
       display: flex;
@@ -1872,11 +1865,12 @@ _CSS = """\
       border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 28px 32px;
+      box-shadow: 0 2px 12px rgba(0,81,149,.08);
       transition: background .2s ease, box-shadow .2s ease;
     }
     section:hover {
-      background: rgba(255,255,255,.05);
-      box-shadow: 0 4px 24px rgba(0,0,0,.3);
+      background: rgba(0,81,149,.04);
+      box-shadow: 0 4px 24px rgba(0,81,149,.12);
     }
     section h2 {
       font-family: var(--font-heading);
@@ -1885,7 +1879,7 @@ _CSS = """\
       color: var(--text);
       margin-bottom: 16px;
       padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255,255,255,.06);
+      border-bottom: 1px solid rgba(0,81,149,.12);
       letter-spacing: .02em;
     }
     .section-hint {
@@ -1915,8 +1909,8 @@ _CSS = """\
     }
     .ampel-karte:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(0,0,0,.35);
-      background: rgba(255,255,255,.05);
+      box-shadow: 0 8px 28px rgba(0,81,149,.15);
+      background: rgba(0,81,149,.04);
     }
     .ampel-gruen {
       background: rgba(0,135,90,.06);
@@ -1997,7 +1991,7 @@ _CSS = """\
       padding: 8px 14px;
       border: 1px solid var(--card-border);
       border-radius: 10px;
-      background: rgba(255,255,255,.04);
+      background: rgba(0,81,149,.04);
       color: var(--text);
       cursor: pointer;
       min-width: 320px;
@@ -2009,8 +2003,8 @@ _CSS = """\
       box-shadow: 0 0 0 2px rgba(0,163,224,.15);
     }
     .ampel-sort-controls select option {
-      background: #0a1628;
-      color: rgba(255,255,255,.87);
+      background: #FFFFFF;
+      color: #1A1A1A;
       padding: 8px 12px;
     }
     .ampel-sort-controls .demo-hint {
@@ -2022,7 +2016,7 @@ _CSS = """\
     /* ── Metric Box (stat-cell style) ── */
     .metric-box   { margin: 8px 0 2px; }
     .metric-num   { font-family: var(--font-heading); font-size: 24px; font-weight: 800; line-height: 1.1; background: var(--grad-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .metric-lbl   { font-size: 10px; color: rgba(255,255,255,.4); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .08em; }
+    .metric-lbl   { font-size: 10px; color: rgba(0,0,0,.5); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .08em; }
     .metric-sub   { font-size: 10px; color: var(--text-muted); }
     .metric-italic{ font-style: italic; }
 
@@ -2030,7 +2024,7 @@ _CSS = """\
     .auslastung-bar-wrap {
       position: relative;
       height: 5px;
-      background: rgba(255,255,255,.07);
+      background: rgba(0,81,149,.1);
       border-radius: 3px;
       margin: 5px 0 3px;
       overflow: visible;
@@ -2039,10 +2033,10 @@ _CSS = """\
       height: 100%;
       border-radius: 3px;
       min-width: 0;
-      background: linear-gradient(90deg, #0072CE, #00A3E0);
+      background: linear-gradient(90deg, #005195, #0066CC);
     }
-    .ampel-gruen .auslastung-bar-fill { background: linear-gradient(90deg, var(--success), #5EDD9F); }
-    .ampel-gelb  .auslastung-bar-fill { background: linear-gradient(90deg, #E87000, var(--warning)); }
+    .ampel-gruen .auslastung-bar-fill { background: linear-gradient(90deg, var(--success), #00A080); }
+    .ampel-gelb  .auslastung-bar-fill { background: linear-gradient(90deg, #9A5500, var(--warning)); }
     .ampel-rot   .auslastung-bar-fill { background: linear-gradient(90deg, #990000, var(--critical)); }
     .auslastung-bar-ziel {
       position: absolute;
@@ -2060,7 +2054,7 @@ _CSS = """\
       font-size: 13px;
     }
     th {
-      background: rgba(255,255,255,.03);
+      background: rgba(0,81,149,.05);
       text-align: left;
       padding: 10px 12px;
       font-size: 11px;
@@ -2072,7 +2066,7 @@ _CSS = """\
     }
     td {
       padding: 10px 12px;
-      border-bottom: 1px solid rgba(255,255,255,.04);
+      border-bottom: 1px solid rgba(0,81,149,.08);
       vertical-align: middle;
       color: var(--text);
     }
@@ -2146,12 +2140,12 @@ _CSS = """\
       transition: all .2s ease;
       background: var(--card-bg);
     }
-    .puffer-row:hover { background: rgba(255,255,255,.04); box-shadow: 0 2px 12px rgba(0,0,0,.2); }
+    .puffer-row:hover { background: rgba(0,81,149,.05); box-shadow: 0 2px 12px rgba(0,81,149,.1); }
     .puffer-summary { font-size: 13px; margin-bottom: 6px; color: var(--text); }
     .puffer-gesamt { font-weight: 700; color: var(--accent); }
     .puffer-bar-wrap { display: flex; height: 20px; border-radius: 6px; overflow: hidden; font-size: 10px; }
     .puffer-bar-netto {
-      background: linear-gradient(90deg, var(--success), #5EDD9F);
+      background: linear-gradient(90deg, var(--success), #00A080);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; min-width: 40px;
@@ -2244,13 +2238,13 @@ _CSS = """\
       margin-bottom: 16px;
     }
     .bc-card {
-      background: rgba(255,255,255,.02);
+      background: rgba(0,81,149,.04);
       border: 1px solid var(--card-border);
       border-radius: 14px;
       padding: 20px;
       transition: all .2s ease;
     }
-    .bc-card:hover { border-color: rgba(0,163,224,.25); background: rgba(255,255,255,.04); box-shadow: 0 4px 20px rgba(0,0,0,.25); }
+    .bc-card:hover { border-color: rgba(0,81,149,.3); background: rgba(0,81,149,.07); box-shadow: 0 4px 20px rgba(0,81,149,.12); }
     .bc-card-title {
       font-family: var(--font-heading);
       font-size: 13px;
@@ -2286,7 +2280,7 @@ _CSS = """\
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,8,16,.85);
+      background: rgba(0,0,0,.5);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       z-index: 1000;
@@ -2295,10 +2289,10 @@ _CSS = """\
     }
     .tech-detail-overlay.active { display: flex; }
     .tech-detail-panel {
-      background: rgba(0,8,20,.95);
+      background: #FFFFFF;
       border: 1px solid var(--card-border);
       border-radius: 20px;
-      box-shadow: 0 24px 64px rgba(0,0,0,.6);
+      box-shadow: 0 24px 64px rgba(0,0,0,.25);
       backdrop-filter: blur(28px);
       -webkit-backdrop-filter: blur(28px);
       max-width: 720px;
@@ -2335,7 +2329,7 @@ _CSS = """\
     .tech-detail-kpi {
       flex: 1;
       min-width: 140px;
-      background: rgba(255,255,255,.03);
+      background: rgba(0,81,149,.05);
       border: 1px solid var(--card-border);
       border-radius: 10px;
       padding: 12px 14px;
@@ -2389,9 +2383,9 @@ _CSS = """\
     }
     .gebiets-karte { flex-shrink: 0; }
     .gebiets-karte svg {
-      border: 1px solid rgba(255,255,255,.09);
+      border: 1px solid rgba(0,81,149,.2);
       border-radius: 14px;
-      background: #000D2A;
+      background: #F0F4FA;
     }
     .gebiets-karte svg path.st { opacity: .7; transition: opacity .2s ease; }
     .gebiets-karte svg path.st:hover { opacity: .9; }
@@ -2406,9 +2400,9 @@ _CSS = """\
     }
     .einst-karte { flex: 0 0 60%; min-width: 0; }
     .einst-karte svg {
-      border: 1px solid rgba(255,255,255,.09);
+      border: 1px solid rgba(0,81,149,.2);
       border-radius: 14px;
-      background: #000D2A;
+      background: #F0F4FA;
       width: 100%;
       height: auto;
     }
@@ -2431,7 +2425,7 @@ _CSS = """\
       background: var(--card-bg);
       transition: all .2s ease;
     }
-    .einst-item:hover { box-shadow: 0 4px 20px rgba(0,0,0,.35); border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.05); }
+    .einst-item:hover { box-shadow: 0 4px 20px rgba(0,81,149,.12); border-color: rgba(0,81,149,.3); background: rgba(0,81,149,.04); }
     .einst-dot {
       flex-shrink: 0;
       width: 28px;
@@ -2532,16 +2526,14 @@ _CSS = """\
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      border: 1px solid rgba(255,255,255,.15);
+      border: 1px solid rgba(0,0,0,.15);
     }
 
-    /* ── Chat Panel (Glassmorphism) ── */
+    /* ── Chat Panel ── */
     .chat-panel {
       width: 340px;
       min-width: 340px;
-      background: rgba(0,8,16,.85);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
+      background: #FAFCFF;
       border-left: 1px solid var(--card-border);
       display: flex;
       flex-direction: column;
@@ -2550,9 +2542,7 @@ _CSS = """\
       top: 0;
     }
     .chat-header {
-      background: rgba(0,8,20,.85);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
+      background: rgba(0,81,149,0.97);
       color: #fff;
       padding: 0 16px;
       height: 60px;
@@ -2570,7 +2560,7 @@ _CSS = """\
     }
     .chat-header-sub {
       font-size: 10px;
-      color: var(--text-dim);
+      color: rgba(255,255,255,.65);
     }
     .chat-status {
       width: 8px; height: 8px;
@@ -2596,7 +2586,7 @@ _CSS = """\
       padding: 10px 12px;
       border: 1px solid var(--card-border);
       border-radius: 8px;
-      background: rgba(255,255,255,.04);
+      background: rgba(0,81,149,.04);
       color: var(--text);
       font-family: 'JetBrains Mono', 'Consolas', monospace;
       font-size: 12px;
@@ -2646,7 +2636,7 @@ _CSS = """\
     }
     .chat-msg-user {
       align-self: flex-end;
-      background: linear-gradient(135deg, #0072CE, #00A3E0);
+      background: linear-gradient(135deg, #005195, #0066CC);
       color: #fff;
       border-bottom-right-radius: 4px;
     }
@@ -2684,9 +2674,9 @@ _CSS = """\
       flex-shrink: 0;
     }
     .chat-quick button {
-      background: rgba(255,255,255,.04);
+      background: rgba(0,81,149,.07);
       color: var(--text-dim);
-      border: 1px solid rgba(255,255,255,.09);
+      border: 1px solid rgba(0,81,149,.2);
       border-radius: 16px;
       padding: 6px 14px;
       font-family: var(--font-body);
@@ -2696,10 +2686,10 @@ _CSS = """\
       white-space: nowrap;
     }
     .chat-quick button:hover {
-      background: linear-gradient(135deg, #0072CE, #00A3E0);
+      background: linear-gradient(135deg, #005195, #0066CC);
       color: #fff;
       border-color: transparent;
-      box-shadow: 0 2px 8px rgba(0,114,206,.25);
+      box-shadow: 0 2px 8px rgba(0,81,149,.25);
     }
 
     /* ── Chat Input ── */
@@ -2714,14 +2704,14 @@ _CSS = """\
     .chat-input-wrap textarea {
       flex: 1;
       resize: none;
-      border: 1px solid rgba(255,255,255,.09);
+      border: 1px solid rgba(0,81,149,.2);
       border-radius: 12px;
       padding: 10px 12px;
       font-family: var(--font-body);
       font-size: 13px;
       line-height: 1.4;
       outline: none;
-      background: rgba(255,255,255,.04);
+      background: rgba(0,81,149,.04);
       color: var(--text);
       max-height: 120px;
       min-height: 40px;
@@ -2732,7 +2722,7 @@ _CSS = """\
       box-shadow: 0 0 0 2px rgba(0,163,224,.12);
     }
     .chat-send-btn {
-      background: linear-gradient(135deg, #0072CE, #00A3E0);
+      background: linear-gradient(135deg, #005195, #0066CC);
       color: #fff;
       border: none;
       border-radius: 12px;
@@ -2746,7 +2736,7 @@ _CSS = """\
       flex-shrink: 0;
     }
     .chat-send-btn:hover { background: #005ba3; }
-    .chat-send-btn:disabled { background: rgba(255,255,255,.1); cursor: not-allowed; }
+    .chat-send-btn:disabled { background: rgba(0,81,149,.15); cursor: not-allowed; }
     .chat-send-btn svg { width: 18px; height: 18px; fill: #fff; }
 
     .chat-disconnect {
@@ -2773,18 +2763,18 @@ _CSS = """\
     .go-empf-card {
       display: flex;
       gap: 16px;
-      background: rgba(255,255,255,.02);
+      background: rgba(0,81,149,.04);
       border: 1px solid var(--card-border);
       border-radius: 14px;
       padding: 20px 22px;
       transition: all .2s ease;
     }
-    .go-empf-card:hover { border-color: rgba(0,163,224,.25); background: rgba(255,255,255,.04); box-shadow: 0 4px 20px rgba(0,0,0,.25); }
+    .go-empf-card:hover { border-color: rgba(0,81,149,.3); background: rgba(0,81,149,.07); box-shadow: 0 4px 20px rgba(0,81,149,.12); }
     .go-empf-num {
       flex-shrink: 0;
       width: 36px; height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #0072CE, #00A3E0);
+      background: linear-gradient(135deg, #005195, #0066CC);
       color: #fff;
       font-family: var(--font-heading);
       font-size: 16px;
@@ -2831,22 +2821,22 @@ _CSS = """\
       font-weight: 600;
       padding: 9px 20px;
       border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.09);
-      background: rgba(255,255,255,.05);
-      color: rgba(255,255,255,.4);
+      border: 1px solid rgba(0,81,149,.25);
+      background: rgba(0,81,149,.06);
+      color: #005195;
       cursor: pointer;
       transition: all .2s ease;
       letter-spacing: .02em;
     }
     .go-view-btn:hover {
-      background: rgba(255,255,255,.1);
-      color: rgba(255,255,255,.6);
+      background: rgba(0,81,149,.12);
+      color: #003A6E;
     }
     .go-view-btn.active {
-      background: linear-gradient(135deg, #0072CE, #00A3E0);
+      background: linear-gradient(135deg, #005195, #0066CC);
       color: #fff;
       border-color: transparent;
-      box-shadow: 0 2px 12px rgba(0,114,206,.3);
+      box-shadow: 0 2px 12px rgba(0,81,149,.3);
     }
     .go-view-content { display: none; }
     .go-view-content.active { display: block; }
@@ -2888,18 +2878,16 @@ _CSS = """\
     .go-gap td:first-child { color: var(--critical-text); }
     .go-optimal td:first-child { color: var(--success-text); }
 
-    /* ── Nav Tabs (Glassmorphism) ── */
+    /* ── Nav Tabs (Medtronic Blue) ── */
     .nav-tabs {
-      background: rgba(0,8,20,.7);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(0,81,149,0.97);
       display: flex;
       gap: 0;
       padding: 0 32px;
       position: sticky;
       top: 60px;
       z-index: 99;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid rgba(255,255,255,.15);
       overflow-x: auto;
       -ms-overflow-style: none;
       scrollbar-width: none;
@@ -2910,7 +2898,7 @@ _CSS = """\
       font-family: var(--font-body);
       font-size: 12px;
       font-weight: 600;
-      color: rgba(255,255,255,.35);
+      color: rgba(255,255,255,.55);
       cursor: pointer;
       border: none;
       background: none;
@@ -2919,10 +2907,10 @@ _CSS = """\
       letter-spacing: .02em;
       white-space: nowrap;
     }
-    .nav-tab:hover { color: rgba(255,255,255,.6); }
+    .nav-tab:hover { color: rgba(255,255,255,.85); }
     .nav-tab.active {
-      color: #00A3E0;
-      border-bottom-color: #00A3E0;
+      color: rgba(255,255,255,.97);
+      border-bottom-color: rgba(255,255,255,.9);
     }
     .tab-content { display: none; opacity: 0; transition: opacity .3s ease; }
     .tab-content.active { display: block; opacity: 1; }
@@ -3221,7 +3209,7 @@ def render_html(
     </div>
   </div>
   <div class="header-right">
-    <span class="demo-badge" data-i18n="header.demo">{"Echtdaten &middot; Pseudonymisiert" if is_echtdaten else "Demo-Daten &middot; Konfigurierbar"}</span>
+    <span class="demo-badge" data-i18n="header.demo">{"Echtdaten &middot; Pseudonymisiert" if (is_echtdaten and PSEUDONYMISIERUNG_AKTIV) else ("Echtdaten" if is_echtdaten else "Demo-Daten &middot; Konfigurierbar")}</span>
     <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleLang()">EN</button>
     <button class="api-key-btn" onclick="document.getElementById('chat-setup').style.display='block';document.getElementById('api-key-input').focus()">API-Key &#128273;</button>
   </div>
@@ -3905,8 +3893,8 @@ def _vollstaendigkeits_pruefung(html: str) -> list[tuple[str, bool]]:
          'tech-detail-overlay' in html and 'TECH_DETAIL_DATA' in html),
         ("KI-Chat: rechtes Panel 340px",
          'chat-panel' in html and 'chat-messages' in html),
-        ("Premium Dark Design: #000810 Background",
-         '#000810' in html),
+        ("Medtronic Light Theme: rgba(0,81,149 Header",
+         'rgba(0,81,149' in html),
         ("Google Fonts: Plus Jakarta Sans + Syne",
          'Plus Jakarta Sans' in html and 'Syne' in html),
         ("Grain-Overlay SVG",

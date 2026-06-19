@@ -1,7 +1,7 @@
 {
   "techniker": [
     {
-      "pseudonym_id": "T-ec35",
+      "pseudonym_id": "Awadallah",
       "standort": "Obertshausen",
       "plz": "63179",
       "region": "Hessen",
@@ -17,7 +17,7 @@
       "pm_ratio_pct": 9.6
     },
     {
-      "pseudonym_id": "T-8ef2",
+      "pseudonym_id": "Fedorenko",
       "standort": "Neubiberg",
       "plz": "85579",
       "region": "Bayern-Süd",
@@ -33,7 +33,7 @@
       "pm_ratio_pct": 0.0
     },
     {
-      "pseudonym_id": "T-4914",
+      "pseudonym_id": "Dieter",
       "standort": "Wehingen",
       "plz": "78564",
       "region": "BaWü-Süd",
@@ -49,7 +49,7 @@
       "pm_ratio_pct": 32.9
     },
     {
-      "pseudonym_id": "T-744a",
+      "pseudonym_id": "Taudte",
       "standort": "Weimar",
       "plz": "99423",
       "region": "Thüringen",
@@ -65,7 +65,7 @@
       "pm_ratio_pct": 34.0
     },
     {
-      "pseudonym_id": "T-14f6",
+      "pseudonym_id": "Kutschenreiter",
       "standort": "Erlangen",
       "plz": "91052",
       "region": "Bayern-Nord",
@@ -81,7 +81,7 @@
       "pm_ratio_pct": 8.8
     },
     {
-      "pseudonym_id": "T-a010",
+      "pseudonym_id": "Goralski",
       "standort": "Oberhausen",
       "plz": "46045",
       "region": "NRW-West",
@@ -97,7 +97,7 @@
       "pm_ratio_pct": 49.9
     },
     {
-      "pseudonym_id": "T-6522",
+      "pseudonym_id": "Häbel",
       "standort": "Schenefeld",
       "plz": "22869",
       "region": "Nord",
@@ -113,7 +113,7 @@
       "pm_ratio_pct": 13.4
     },
     {
-      "pseudonym_id": "T-55bc",
+      "pseudonym_id": "Schlosser",
       "standort": "Wildenberg",
       "plz": "93359",
       "region": "Bayern-Ost",
@@ -129,7 +129,7 @@
       "pm_ratio_pct": 7.4
     },
     {
-      "pseudonym_id": "T-c1a0",
+      "pseudonym_id": "Zucht",
       "standort": "Hennef",
       "plz": "53773",
       "region": "NRW-Süd",
@@ -145,7 +145,7 @@
       "pm_ratio_pct": 13.4
     },
     {
-      "pseudonym_id": "T-9c5a",
+      "pseudonym_id": "Carrillo",
       "standort": "Hamburg",
       "plz": "20095",
       "region": "Nord",
@@ -161,7 +161,7 @@
       "pm_ratio_pct": 3.3
     },
     {
-      "pseudonym_id": "T-2d6f",
+      "pseudonym_id": "Bretschneider",
       "standort": "MALSCHWITZ",
       "plz": "02694",
       "region": "Sachsen",
@@ -177,7 +177,7 @@
       "pm_ratio_pct": 0.0
     },
     {
-      "pseudonym_id": "T-5c78",
+      "pseudonym_id": "Kalenberg",
       "standort": "Essen",
       "plz": "45127",
       "region": "NRW-West",
@@ -193,7 +193,7 @@
       "pm_ratio_pct": 0.0
     },
     {
-      "pseudonym_id": "T-da50",
+      "pseudonym_id": "Liebhardt",
       "standort": "Balingen",
       "plz": "72336",
       "region": "BaWü-Süd",
@@ -209,7 +209,7 @@
       "pm_ratio_pct": 52.6
     },
     {
-      "pseudonym_id": "T-207c",
+      "pseudonym_id": "Cloos",
       "standort": "Linden",
       "plz": "30449",
       "region": "Niedersachsen",
@@ -225,7 +225,7 @@
       "pm_ratio_pct": 0.0
     },
     {
-      "pseudonym_id": "T-6ba1",
+      "pseudonym_id": "Niski",
       "standort": "Linden",
       "plz": "30449",
       "region": "Niedersachsen",
@@ -241,7 +241,7 @@
       "pm_ratio_pct": 0.0
     },
     {
-      "pseudonym_id": "T-2af0",
+      "pseudonym_id": "Berg",
       "standort": "Siegburg",
       "plz": "53721",
       "region": "NRW-Süd",
@@ -257,7 +257,7 @@
       "pm_ratio_pct": 0.0
     },
     {
-      "pseudonym_id": "T-caf1",
+      "pseudonym_id": "Werner",
       "standort": "Linden",
       "plz": "30449",
       "region": "Niedersachsen",
@@ -273,7 +273,7 @@
       "pm_ratio_pct": 0.0
     },
     {
-      "pseudonym_id": "T-0c76",
+      "pseudonym_id": "Gehlen",
       "standort": "Gangelt",
       "plz": "52538",
       "region": "NRW-West",
@@ -289,7 +289,7 @@
       "pm_ratio_pct": 6.8
     },
     {
-      "pseudonym_id": "T-cf72",
+      "pseudonym_id": "Lang",
       "standort": "Saarbrücken",
       "plz": "66111",
       "region": "Saarland",
@@ -305,7 +305,7 @@
       "pm_ratio_pct": 0.0
     },
     {
-      "pseudonym_id": "T-7b24",
+      "pseudonym_id": "Hamdan",
       "standort": "Frankfurt am Main",
       "plz": "60311",
       "region": "Hessen",
@@ -321,7 +321,7 @@
       "pm_ratio_pct": 18.6
     },
     {
-      "pseudonym_id": "T-62b8",
+      "pseudonym_id": "Aqra",
       "standort": "Meckenheim",
       "plz": "53340",
       "region": "NRW-Süd",
@@ -337,7 +337,7 @@
       "pm_ratio_pct": 1.4
     },
     {
-      "pseudonym_id": "T-d9c6",
+      "pseudonym_id": "Schnellbacher",
       "standort": "Darmstadt",
       "plz": "64283",
       "region": "Hessen",
@@ -353,7 +353,7 @@
       "pm_ratio_pct": 1.1
     },
     {
-      "pseudonym_id": "T-caa7",
+      "pseudonym_id": "Kugler",
       "standort": "Waldachtal",
       "plz": "72178",
       "region": "BaWü-Süd",
@@ -369,7 +369,7 @@
       "pm_ratio_pct": 11.2
     },
     {
-      "pseudonym_id": "T-5f38",
+      "pseudonym_id": "Wenzel",
       "standort": "Brakel",
       "plz": "33034",
       "region": "NRW-Ost",
@@ -390,5 +390,5 @@
   "pm_skills_eintraege": 1471,
   "closed_jobs": 9264,
   "open_jobs": 786,
-  "generated_at": "2026-06-19T08:20:53"
+  "generated_at": "2026-06-19T08:55:04"
 }

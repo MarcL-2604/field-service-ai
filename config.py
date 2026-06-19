@@ -106,6 +106,9 @@ HANDON_PM_STUNDEN = 0                 # nur waehrend Schulung
 BUENDELUNG_RADIUS_KM = 50        # Kliniken in Naehe
 BUENDELUNG_GLEICHE_KLINIK = True  # gleiche Klinik = immer
 
+# ─── Datenschutz ───────────────────────────────────
+PSEUDONYMISIERUNG_AKTIV = False   # False = echte Namen, True = SHA256-Pseudonym
+
 # ─── Kalender (Produktivbetrieb) ───────────────────
 SMAX_API_URL = None               # wird konfiguriert
 OUTLOOK_GRAPH_API_URL = None      # wird konfiguriert
