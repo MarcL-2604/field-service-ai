@@ -388,3 +388,56 @@ async def import_status():
 def get_imported(modul: str) -> list[dict]:
     """Interne Funktion: importierte Daten für andere Module abrufen."""
     return _store.get(modul, [])
+
+
+# ── SMax Export Import (echte Daten) ─────────────────────────────────────────
+# Zweiter Import-Pfad fuer KI_gestuetzte_Planung.xlsx (SMax-Format).
+# Bestehendes Demo-Import bleibt unveraendert unter /api/import/*.
+
+from api.import_real_data import parse_smax_xlsx, SMaxImportErgebnis  # noqa: E402
+
+
+class SMaxImportResult(BaseModel):
+    techniker_aktiv: int
+    skills_eintraege: int
+    einsatzdauern: int
+    closed_jobs: int
+    open_jobs: int
+    manager_ausgeschlossen: list[str]
+    log: list[str]
+    sheet_warnungen: dict[str, list[str]]
+    timestamp: str
+
+
+@router.post("/smax", response_model=SMaxImportResult)
+async def import_smax(file: UploadFile = File(...)):
+    """Importiert echte SMax-Daten aus KI_gestuetzte_Planung.xlsx.
+
+    Verarbeitet alle 5 Sheets (Skills, Einsatzdauer, Closed Jobs, Open Jobs,
+    Wohnorte) mit dem SMax-Spalten-Mapping. Standardmaessig nur die ersten
+    20 Datenzeilen je Sheet (Sample-Modus). Echtimport nach Freigabe durch
+    Ersetzen von sample_limit=20 durch sample_limit=None.
+
+    Manager werden ausgeschlossen: Stefan Theuerkorn, Rolf Gieling,
+    Juergen Lehmann. Ihre historischen Auftragsdaten bleiben erhalten.
+    """
+    content = await file.read()
+    ergebnis: SMaxImportErgebnis = parse_smax_xlsx(content, sample_limit=20)
+
+    sheet_warnungen = {
+        sr.sheet_name: sr.warnungen
+        for sr in ergebnis.sheet_ergebnisse
+        if sr.warnungen
+    }
+
+    return SMaxImportResult(
+        techniker_aktiv=ergebnis.aktive_techniker_anzahl,
+        skills_eintraege=len(ergebnis.skills),
+        einsatzdauern=len(ergebnis.einsatzdauern),
+        closed_jobs=len(ergebnis.geschlossene_auftraege),
+        open_jobs=len(ergebnis.offene_auftraege),
+        manager_ausgeschlossen=["Stefan Theuerkorn", "Rolf Gieling", "Jürgen Lehmann"],
+        log=ergebnis.log,
+        sheet_warnungen=sheet_warnungen,
+        timestamp=_now_iso(),
+    )
