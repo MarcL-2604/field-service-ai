@@ -30,6 +30,7 @@ from config import (
     HUGO_KA_RESERVE_PROZENT,
     HUGO_EINSATZ_STUNDEN,
     HUGO_KA_IDS,
+    HUGO_EINSATZDAUER_TAGE,
     PLANUNGSHORIZONT_TAGE,
     PLANUNGSHORIZONT_MIN,
     VORLAUF_STANDARD_TAGE,
@@ -111,6 +112,15 @@ class TestConfigWerte:
 
     def test_hugo_einsatz(self):
         assert HUGO_EINSATZ_STUNDEN == 8.0
+
+    def test_hugo_einsatzdauer_tage(self):
+        assert HUGO_EINSATZDAUER_TAGE == 2.5
+
+    def test_hugo_uebernachtungen_decken_einsatzdauer(self):
+        import math
+        # 2.5 Tage → 2 Naechte → MAX_UEBERNACHTUNGEN_HUGO muss >= ceil(2.5) - 1 sein
+        min_naechte = math.ceil(HUGO_EINSATZDAUER_TAGE) - 1
+        assert MAX_UEBERNACHTUNGEN_HUGO >= min_naechte
 
     def test_hugo_ka_ids(self):
         assert set(HUGO_KA_IDS) == {"T1", "T6", "T10", "T11"}

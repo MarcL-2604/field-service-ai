@@ -23,6 +23,7 @@ HUGO_KA_ZIEL_STUNDEN = 25.6
 HUGO_KA_RESERVE_PROZENT = 0.20  # 20% fuer Hugo-Calls
 HUGO_EINSATZ_STUNDEN = 8.0      # Ganztag
 HUGO_KA_IDS = ["T1", "T6", "T10", "T11"]
+HUGO_EINSATZDAUER_TAGE = 2.5        # typischer Hugo-Mehrtages-Einsatz (2 Naechte)
 
 # ─── Planung STK/PM ────────────────────────────────
 PLANUNGSHORIZONT_TAGE = 7
