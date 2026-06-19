@@ -43,25 +43,24 @@ class TestPlzLookup:
         assert plz == "20095"
         assert unsicher is False
 
-    def test_wildenberg_unsicher(self):
+    def test_wildenberg_bestaetigt(self):
         plz, unsicher = plz_fuer_stadt("Wildenberg")
-        assert plz == "85290"
-        assert unsicher is True, "Wildenberg ist als unsicher markiert"
+        assert plz == "93359"   # Ortsteil von Neustadt a.d. Donau, Bayern
+        assert unsicher is False
 
-    def test_linden_unsicher(self):
+    def test_linden_bestaetigt(self):
         plz, unsicher = plz_fuer_stadt("Linden")
-        assert plz == "35440"
-        assert unsicher is True, "Linden ist als unsicher markiert — 3 Techniker betroffen"
+        assert plz == "30449"   # Linden bei Hannover (Marco Cloos, Markus Niski, Matthias Werner)
+        assert unsicher is False
 
     def test_unbekannte_stadt(self):
         plz, unsicher = plz_fuer_stadt("Atlantis")
         assert plz is None
         assert unsicher is False
 
-    def test_alle_unsicheren_im_lookup(self):
-        """Jede als unsicher markierte Stadt muss im STADT_ZU_PLZ stehen."""
-        for stadt in PLZ_UNSICHER:
-            assert stadt in STADT_ZU_PLZ, f"{stadt} in PLZ_UNSICHER aber nicht in STADT_ZU_PLZ"
+    def test_keine_unsicheren_staedte_mehr(self):
+        """Alle PLZ sind bestaetigt — PLZ_UNSICHER muss leer sein."""
+        assert len(PLZ_UNSICHER) == 0
 
     def test_mindestens_20_staedte_vorhanden(self):
         assert len(STADT_ZU_PLZ) >= 20
@@ -328,10 +327,11 @@ class TestWohnortMapping:
         assert tech is not None
         assert tech.plz is None
 
-    def test_wildenberg_als_unsicher_markiert(self):
+    def test_wildenberg_plz_bestaetigt(self):
         tech = map_wohnort_row(self._row(Stadt="Wildenberg"))
         assert tech is not None
-        assert tech.plz_unsicher is True
+        assert tech.plz == "93359"
+        assert tech.plz_unsicher is False
 
     def test_hugo_ka_default_false(self):
         """hugo_ka bleibt False — manuell zu pflegen."""

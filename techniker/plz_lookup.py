@@ -2,10 +2,6 @@
 
 Das Sheet enthaelt nur Stadt, kein PLZ-Feld — dieser Lookup ergaenzt
 die fehlenden PLZ-Werte fuer die Gebietsplanung.
-
-Zwei Eintraege sind als unsicher markiert (TODO: vom User bestaetigen):
-  - Wildenberg: evtl. Ortsteil von Neustadt a.d. Donau
-  - Linden: Hessen bei Giessen, betrifft 3 Techniker
 """
 
 from __future__ import annotations
@@ -35,23 +31,27 @@ STADT_ZU_PLZ: dict[str, str] = {
     "Magdeburg":         "39104",
     "Brakel":            "33034",
     "Bad Aibling":       "83043",
-    # TODO: PLZ verifizieren – evtl. Ortsteil von Neustadt a.d. Donau
-    "Wildenberg":        "85290",
-    # TODO: PLZ verifizieren – Linden/Hessen bei Giessen; betrifft 3 Techniker; vom User bestaetigen
-    "Linden":            "35440",
+    "Wildenberg":        "93359",   # Ortsteil von Neustadt a.d. Donau, Bayern
+    "Linden":            "30449",   # Linden bei Hannover (Marco Cloos, Markus Niski, Matthias Werner)
 }
 
-# Staedte deren PLZ noch vom User bestaetigt werden muss
-PLZ_UNSICHER: frozenset[str] = frozenset({"Wildenberg", "Linden"})
+# Keine unsicheren Eintraege mehr — alle PLZ bestaetigt
+PLZ_UNSICHER: frozenset[str] = frozenset()
+
+# Case-insensitiver Index (lowercase-Key → original-Key)
+_LOOKUP_CI: dict[str, str] = {k.lower(): k for k in STADT_ZU_PLZ}
 
 
 def plz_fuer_stadt(stadt: str) -> tuple[str | None, bool]:
     """Gibt (plz, ist_unsicher) zurueck.
 
+    Gross-/Kleinschreibung wird ignoriert (MALSCHWITZ == Malschwitz).
     ist_unsicher=True wenn PLZ manuell zu bestaetigen ist.
     Gibt (None, False) wenn Stadt unbekannt.
     """
-    plz = STADT_ZU_PLZ.get(stadt)
-    if plz is None:
+    # Exakter Treffer zuerst, dann case-insensitiv
+    original_key = _LOOKUP_CI.get(stadt.lower())
+    if original_key is None:
         return None, False
-    return plz, stadt in PLZ_UNSICHER
+    plz = STADT_ZU_PLZ[original_key]
+    return plz, original_key in PLZ_UNSICHER

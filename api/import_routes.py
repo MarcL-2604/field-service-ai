@@ -422,7 +422,7 @@ async def import_smax(file: UploadFile = File(...)):
     Juergen Lehmann. Ihre historischen Auftragsdaten bleiben erhalten.
     """
     content = await file.read()
-    ergebnis: SMaxImportErgebnis = parse_smax_xlsx(content, sample_limit=20)
+    ergebnis: SMaxImportErgebnis = parse_smax_xlsx(content, sample_limit=None)
 
     sheet_warnungen = {
         sr.sheet_name: sr.warnungen
