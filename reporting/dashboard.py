@@ -661,7 +661,7 @@ def _render_business_case() -> str:
     <div class="bc-grid">
       <div class="bc-card">
         <div class="bc-card-title">Zeitersparnis pro Techniker</div>
-        <div class="bc-formula">14 Techniker &times; [&Oslash; Einsparung h/Woche] &times; 52</div>
+        <div class="bc-formula">24 Techniker &times; [&Oslash; Einsparung h/Woche] &times; 52</div>
         <div class="bc-hint">= Jahres-Stunden gespart</div>
       </div>
       <div class="bc-card">
@@ -818,7 +818,7 @@ def _build_system_prompt(
         "Du bist der KI-Assistent fuer das Medtronic Field Service Dashboard. "
         "Antworte auf Deutsch, praezise und im Kontext der Medtronic-Servicetechniker-Planung. "
         "Beziehe dich auf die konkreten Daten unten.\n\n"
-        "## Techniker-Uebersicht (14 Techniker)\n"
+        "## Techniker-Uebersicht (24 Techniker)\n"
         f"{tech_block}\n\n"
         "## Scoring-Formel\n"
         "Score = Kompetenz x 0.40 + Fahrzeit x 0.35 + Auslastung x 0.25\n"
@@ -3239,7 +3239,7 @@ def render_html(
   <section>
     <h2 data-i18n="h.overview">&Uuml;bersicht &mdash; Qualifikations-Ampel</h2>
     <p class="section-hint" data-i18n="hint.overview">
-      L3-Abdeckung in der Region &middot; 14 Techniker &middot;
+      L3-Abdeckung in der Region &middot; 24 Techniker &middot;
       Gr&uuml;n &ge;60% &middot; Gelb 30-59% &middot; Rot &lt;30%
     </p>
     <div class="ampel-sort-controls">
@@ -3438,7 +3438,7 @@ var _I18N = {{
     'summary.asOf': 'Stand',
     'summary.monThu': 'Mo\u2013Do',
     'h.overview': '\u00dcbersicht \u2014 Qualifikations-Ampel',
-    'hint.overview': 'L3-Abdeckung in der Region \u00b7 14 Techniker \u00b7 Gr\u00fcn \u226560% \u00b7 Gelb 30-59% \u00b7 Rot <30%',
+    'hint.overview': 'L3-Abdeckung in der Region \u00b7 24 Techniker \u00b7 Gr\u00fcn \u226560% \u00b7 Gelb 30-59% \u00b7 Rot <30%',
     'sort.label': 'Sortierung:',
     'sort.standard': 'Standard (Gr\u00fcn / Gelb / Rot)',
     'sort.ct': 'Crosstraining-Bedarf (meiste L\u00fccken zuerst)',
@@ -3515,7 +3515,7 @@ var _I18N = {{
     'summary.asOf': 'As of',
     'summary.monThu': 'Mon\u2013Thu',
     'h.overview': 'Overview \u2014 Qualification Traffic Light',
-    'hint.overview': 'L3 coverage by region \u00b7 14 technicians \u00b7 Green \u226560% \u00b7 Yellow 30-59% \u00b7 Red <30%',
+    'hint.overview': 'L3 coverage by region \u00b7 24 technicians \u00b7 Green \u226560% \u00b7 Yellow 30-59% \u00b7 Red <30%',
     'sort.label': 'Sort by:',
     'sort.standard': 'Default (Green / Yellow / Red)',
     'sort.ct': 'Cross-training need (most gaps first)',

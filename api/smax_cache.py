@@ -96,11 +96,19 @@ def _pseudonym_id(name: str) -> str:
     return f"T-{h[:4]}"
 
 
+def _display_name_kurz(name: str) -> str:
+    """Vorname + erster Buchstabe Nachname + Punkt. Fallback: vollstaendiger Name."""
+    parts = name.strip().split()
+    if len(parts) >= 2:
+        return f"{parts[0]} {parts[-1][0]}."
+    return name.strip()
+
+
 def _display_id(name: str) -> str:
-    """Gibt Pseudonym oder echten Nachnamen zurueck, je nach PSEUDONYMISIERUNG_AKTIV."""
+    """Gibt Pseudonym oder Anzeigenamen (Vorname Initial) zurueck, je nach PSEUDONYMISIERUNG_AKTIV."""
     if PSEUDONYMISIERUNG_AKTIV:
         return _pseudonym_id(name)
-    return name.strip().split()[-1]
+    return _display_name_kurz(name)
 
 
 def _norm_umlaut(s: str) -> str:
