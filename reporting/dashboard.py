@@ -43,6 +43,7 @@ from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # n
 
 _DATA_DIR = _ROOT / "daten"
 _OUT_PATH = Path(__file__).parent / "dashboard.html"
+_OUT_PATH_ROOT = _ROOT / "dashboard.html"   # GitHub Pages copy
 _HEUTE = date.today()
 
 # ---------------------------------------------------------------------------
@@ -4109,7 +4110,9 @@ def main() -> None:
     )
 
     _OUT_PATH.write_text(html, encoding="utf-8")
+    _OUT_PATH_ROOT.write_text(html, encoding="utf-8")
     print(f"Gespeichert: {_OUT_PATH}")
+    print(f"Gespeichert: {_OUT_PATH_ROOT} (GitHub Pages)")
 
     # Ampel-Zusammenfassung auf der Konsole
     print("\nAmpel-Uebersicht:")
