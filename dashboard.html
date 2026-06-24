@@ -194,14 +194,14 @@
 
     /* ── Techniker-Karten (Glassmorphism) ── */
     .ampel-grid {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 14px;
     }
     .ampel-karte {
       border-radius: 16px;
       padding: 16px 18px;
-      width: 170px;
+      min-width: 0;
       position: relative;
       border: 1px solid var(--card-border);
       border-top: 4px solid var(--text-muted);
@@ -244,7 +244,7 @@
       align-items: flex-start;
       margin-bottom: 4px;
     }
-    .ampel-id      { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 800; line-height: 1; background: var(--grad-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .ampel-id      { font-family: var(--font-heading); font-size: 1.4rem; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--grad-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .ampel-standort{ font-size: 12px; color: var(--text-dim); }
     .ampel-region  { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
     .ampel-badge {
@@ -1265,7 +1265,7 @@
   <span><span class="dot dot-gruen"></span> <span data-i18n="summary.green">Gr&uuml;n</span>: <strong>0</strong> (&ge;60&thinsp;% L3)</span>
   <span><span class="dot dot-gelb"></span> <span data-i18n="summary.yellow">Gelb</span>: <strong>4</strong> (30&ndash;59&thinsp;%)</span>
   <span><span class="dot dot-rot"></span> <span data-i18n="summary.red">Rot</span>: <strong>20</strong> (&lt;30&thinsp;%)</span>
-  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 24.06.2026 08:11 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
+  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 24.06.2026 08:20 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
 </div>
 
 <main>
@@ -1287,7 +1287,7 @@
         <option value="portfolio" data-i18n="sort.portfolio">Ger&auml;te-Portfolio (meiste L3-Familien zuerst)</option>
         <option value="potential" data-i18n="sort.area">Gebietsgr&ouml;&szlig;e</option>
       </select>
-      <span class="demo-hint" data-i18n="hint.demo">Demo-Daten &middot; Techniker erweiterbar</span>
+      <span class="demo-hint" data-i18n="hint.demo">Echtdaten &middot; 24 Techniker &middot; Stand: 24.06.2026</span>
     </div>
     <div class="ampel-grid" id="ampel-grid">
 
@@ -2710,11 +2710,11 @@
         </tr>
       </thead>
       <tbody>
-      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>24.06. 01:11</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>23.06. 01:11</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>22.06. 06:11</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>23.06. 12:11</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
-      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>22.06. 20:11</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
+      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>24.06. 01:20</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>23.06. 01:20</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>22.06. 06:20</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>23.06. 12:20</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
+      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>22.06. 20:20</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
       </tbody>
     </table>
   </section>
@@ -3742,7 +3742,7 @@ var _I18N = {
     'sort.util': 'Auslastung (Stunden)',
     'sort.portfolio': 'Geräte-Portfolio (meiste L3-Familien zuerst)',
     'sort.area': 'Gebietsgröße',
-    'hint.demo': 'Demo-Daten · Techniker erweiterbar',
+    'hint.demo': 'Echtdaten · 24 Techniker',
     'h.stk': 'STK-Aufträge (Top 10)',
     'hint.stk': 'Quelle: daten/geraete.csv · Aufsteigend nach Fälligkeitsdatum',
     'th.orderId': 'Auftrag-ID',
@@ -3819,7 +3819,7 @@ var _I18N = {
     'sort.util': 'Utilization (hours)',
     'sort.portfolio': 'Device portfolio (most L3 families first)',
     'sort.area': 'Territory size',
-    'hint.demo': 'Demo data · Technicians configurable',
+    'hint.demo': 'Real data · 24 technicians',
     'h.stk': 'Safety Checks (Top 10)',
     'hint.stk': 'Source: daten/geraete.csv · Ascending by due date',
     'th.orderId': 'Order ID',

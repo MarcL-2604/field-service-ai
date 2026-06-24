@@ -1894,14 +1894,14 @@ _CSS = """\
 
     /* ── Techniker-Karten (Glassmorphism) ── */
     .ampel-grid {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 14px;
     }
     .ampel-karte {
       border-radius: 16px;
       padding: 16px 18px;
-      width: 170px;
+      min-width: 0;
       position: relative;
       border: 1px solid var(--card-border);
       border-top: 4px solid var(--text-muted);
@@ -1944,7 +1944,7 @@ _CSS = """\
       align-items: flex-start;
       margin-bottom: 4px;
     }
-    .ampel-id      { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 800; line-height: 1; background: var(--grad-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .ampel-id      { font-family: var(--font-heading); font-size: 1.4rem; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--grad-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .ampel-standort{ font-size: 12px; color: var(--text-dim); }
     .ampel-region  { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
     .ampel-badge {
@@ -3252,7 +3252,7 @@ def render_html(
         <option value="portfolio" data-i18n="sort.portfolio">Ger&auml;te-Portfolio (meiste L3-Familien zuerst)</option>
         <option value="potential" data-i18n="sort.area">Gebietsgr&ouml;&szlig;e</option>
       </select>
-      <span class="demo-hint" data-i18n="hint.demo">Demo-Daten &middot; Techniker erweiterbar</span>
+      <span class="demo-hint" data-i18n="hint.demo">Echtdaten &middot; 24 Techniker &middot; Stand: {erstellt_am.strftime('%d.%m.%Y')}</span>
     </div>
     <div class="ampel-grid" id="ampel-grid">
 {ampel_html}
@@ -3446,7 +3446,7 @@ var _I18N = {{
     'sort.util': 'Auslastung (Stunden)',
     'sort.portfolio': 'Ger\u00e4te-Portfolio (meiste L3-Familien zuerst)',
     'sort.area': 'Gebietsgr\u00f6\u00dfe',
-    'hint.demo': 'Demo-Daten \u00b7 Techniker erweiterbar',
+    'hint.demo': 'Echtdaten \u00b7 24 Techniker',
     'h.stk': 'STK-Auftr\u00e4ge (Top 10)',
     'hint.stk': 'Quelle: daten/geraete.csv \u00b7 Aufsteigend nach F\u00e4lligkeitsdatum',
     'th.orderId': 'Auftrag-ID',
@@ -3523,7 +3523,7 @@ var _I18N = {{
     'sort.util': 'Utilization (hours)',
     'sort.portfolio': 'Device portfolio (most L3 families first)',
     'sort.area': 'Territory size',
-    'hint.demo': 'Demo data \u00b7 Technicians configurable',
+    'hint.demo': 'Real data \u00b7 24 technicians',
     'h.stk': 'Safety Checks (Top 10)',
     'hint.stk': 'Source: daten/geraete.csv \u00b7 Ascending by due date',
     'th.orderId': 'Order ID',
