@@ -65,6 +65,30 @@ def finde_cluster(model_code: str) -> Optional[ClusterInfo]:
     return None
 
 
+def finde_repair_familie(model_code: str) -> Optional[str]:
+    """Gibt den kanonischen Familie-Schlüssel für repair=True Geräte zurück.
+
+    Familie = längster passender Präfix, oder exakter Code bei reinem Exact-Match.
+    Gibt None zurück wenn das Gerät repair=False ist oder unbekannt ist.
+
+    Beispiele:
+        MC-HUGO-3DDOF  → "MC-HUGO"
+        MC-840-A       → "MC-840"
+        MC-NITRON      → "MC-NITRON"  (Exact-Match)
+        MC-FT10        → "MC-FT10"   (Exact-Match)
+        MC-VISTA       → None        (repair=False)
+        MC-UNBEKANNT   → None
+    """
+    code = model_code.strip().upper().replace(" ", "")
+    exact, prefixes = _lade_mapping()
+    if code in exact:
+        return code if exact[code].repair else None
+    for prefix, info in prefixes:
+        if code.startswith(prefix):
+            return prefix if info.repair else None
+    return None
+
+
 def mapping_neu_laden() -> None:
     """Leert den LRU-Cache — nötig nach Änderungen an der JSON-Datei."""
     _lade_mapping.cache_clear()

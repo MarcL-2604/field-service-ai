@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -24,6 +25,11 @@ _ROOT         = Path(__file__).resolve().parent.parent
 _XLSX         = _ROOT / "data" / "KI_gestuetzte_Planung.xlsx"
 _CACHE        = _ROOT / "data" / "smax_dashboard_data.json"
 _KORREKTUREN  = _ROOT / "data" / "skill_korrekturen.json"
+
+# Crosstraining: Umkreis-Berechnung
+_CT_RADIUS_KM     = 150.0   # Straßenkilometer-Radius
+_CT_ROAD_FAKTOR   = 1.35    # Luftlinie → Fahrtstrecke (aus config.HAVERSINE_UMWEG_FAKTOR)
+_CT_LUFTLINIE_KM  = _CT_RADIUS_KM / _CT_ROAD_FAKTOR  # ≈ 111.1 km Luftlinie
 
 # ── Hugo-KA-Städte ────────────────────────────────────────────────────────────
 _HUGO_KA_STAEDTE: frozenset[str] = frozenset({
@@ -121,6 +127,16 @@ def _norm_umlaut(s: str) -> str:
             .replace("ß", "ss"))
 
 
+def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Luftlinien-Distanz in km (Haversine-Formel)."""
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2)
+    return R * 2 * math.asin(math.sqrt(a))
+
+
 def _lade_korrekturen() -> dict[str, dict]:
     """Lädt skill_korrekturen.json; {} wenn Datei fehlt (keine Pflicht-Datei)."""
     if not _KORREKTUREN.exists():
@@ -157,6 +173,8 @@ def _wende_korrektur_an(repair_mcs: set[str], korrektur: dict) -> set[str]:
 def build_dashboard_data() -> dict:
     """Parst XLSX und erstellt dashboard-kompatible Daten mit pseudonymisierten IDs."""
     from api.import_real_data import parse_smax_xlsx
+    from api.cluster_mapping import finde_repair_familie
+    from techniker.scoring import _KLINIK_COORDS
 
     if not _XLSX.exists():
         raise FileNotFoundError(f"XLSX nicht gefunden: {_XLSX}")
@@ -186,6 +204,20 @@ def build_dashboard_data() -> dict:
     total_mc = len(all_mc)
     total_repair_mc = len(all_repair_mc)
 
+    # Crosstraining: Repair-Jobs mit bekannten PLZ-Koordinaten vorverarbeiten
+    job_repair_orte: list[tuple[str, float, float]] = []  # (familie, lat, lon)
+    for auftrag in ergebnis.geschlossene_auftraege + ergebnis.offene_auftraege:
+        familie = finde_repair_familie(auftrag.model_code)
+        if familie is None:
+            continue
+        plz = (auftrag.plz or "").strip()
+        if not plz:
+            continue
+        coords = _KLINIK_COORDS.get(plz.zfill(5))
+        if coords is None:
+            continue
+        job_repair_orte.append((familie, coords[0], coords[1]))
+
     techniker_list: list[dict] = []
     for tech in ergebnis.techniker:
         ort      = tech.ort.strip()
@@ -205,6 +237,27 @@ def build_dashboard_data() -> dict:
             repair_mcs = repair_mcs_raw
         pm_repair_count = len(repair_mcs)
 
+        # Crosstraining-Potenzial: Repair-Familien im 150-km-Umkreis
+        tech_repair_familien: set[str] = set()
+        for mc in repair_mcs:
+            fam = finde_repair_familie(mc)
+            if fam:
+                tech_repair_familien.add(fam)
+
+        geraete_im_gebiet: dict[str, int] = {}
+        stk_potenzial = 0
+        if lat != 0.0 or lon != 0.0:
+            for familie, jlat, jlon in job_repair_orte:
+                dist = _haversine_km(lat, lon, jlat, jlon)
+                if dist <= _CT_LUFTLINIE_KM:
+                    geraete_im_gebiet[familie] = geraete_im_gebiet.get(familie, 0) + 1
+                    if familie not in tech_repair_familien:
+                        stk_potenzial += 1
+
+        crosstraining_luecken = sorted(
+            f for f in geraete_im_gebiet if f not in tech_repair_familien
+        )
+
         techniker_list.append({
             "pseudonym_id":      _display_id(tech.name),
             "standort":          ort,
@@ -223,6 +276,9 @@ def build_dashboard_data() -> dict:
             "total_repair_codes": total_repair_mc,
             "pm_ratio_pct":      round(pm_count / total_mc * 100, 1) if total_mc else 0.0,
             "repair_abdeckung_pct": round(pm_repair_count / total_repair_mc * 100, 1) if total_repair_mc else 0.0,
+            "crosstraining_luecken": crosstraining_luecken,
+            "stk_potenzial":         stk_potenzial,
+            "geraete_im_gebiet":     geraete_im_gebiet,
         })
 
     return {
@@ -274,8 +330,9 @@ if __name__ == "__main__":
         for t in data["techniker"]:
             ka = " [Hugo KA]" if t["hugo_ka"] else ""
             mx = " [Skills-Matrix]" if t["in_skills_matrix"] else " [keine Skills]"
+            ct = f"  STK-Pot: {t['stk_potenzial']:3d}" if t["stk_potenzial"] > 0 else ""
             print(f"  {t['pseudonym_id']:14s}  {t['standort']:20s}  "
                   f"PM: {t['pm_count']:3d}  RepairPM: {t['pm_repair_count']:3d}"
-                  f"  Abdeckung: {t['repair_abdeckung_pct']:5.1f}%{ka}{mx}")
+                  f"  Abdeckung: {t['repair_abdeckung_pct']:5.1f}%{ct}{ka}{mx}")
     except FileNotFoundError as e:
         print(f"FEHLER: {e}")

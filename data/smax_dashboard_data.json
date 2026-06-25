@@ -17,7 +17,23 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 9.6,
-      "repair_abdeckung_pct": 23.4
+      "repair_abdeckung_pct": 23.4,
+      "crosstraining_luecken": [
+        "MC-9735",
+        "MC-BI70",
+        "MC-NITRON"
+      ],
+      "stk_potenzial": 27,
+      "geraete_im_gebiet": {
+        "MC-FT10": 70,
+        "MC-LS10": 8,
+        "MC-8253": 20,
+        "MC-PB": 70,
+        "MC-840": 33,
+        "MC-BI70": 8,
+        "MC-9735": 11,
+        "MC-NITRON": 8
+      }
     },
     {
       "pseudonym_id": "Andrej F.",
@@ -36,7 +52,22 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 0.0,
-      "repair_abdeckung_pct": 0.0
+      "repair_abdeckung_pct": 0.0,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-9735",
+        "MC-BI70",
+        "MC-FT10",
+        "MC-NITRON"
+      ],
+      "stk_potenzial": 61,
+      "geraete_im_gebiet": {
+        "MC-8253": 12,
+        "MC-FT10": 23,
+        "MC-BI70": 5,
+        "MC-9735": 15,
+        "MC-NITRON": 6
+      }
     },
     {
       "pseudonym_id": "Artur D.",
@@ -55,7 +86,29 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 32.9,
-      "repair_abdeckung_pct": 24.5
+      "repair_abdeckung_pct": 24.5,
+      "crosstraining_luecken": [
+        "MC-9735",
+        "MC-ARGON4",
+        "MC-BI70",
+        "MC-FT10",
+        "MC-HUGO",
+        "MC-LS10",
+        "MC-NITRON",
+        "MC-PB"
+      ],
+      "stk_potenzial": 129,
+      "geraete_im_gebiet": {
+        "MC-LS10": 12,
+        "MC-FT10": 25,
+        "MC-8253": 14,
+        "MC-HUGO": 6,
+        "MC-ARGON4": 3,
+        "MC-BI70": 2,
+        "MC-9735": 12,
+        "MC-PB": 65,
+        "MC-NITRON": 4
+      }
     },
     {
       "pseudonym_id": "Christoph T.",
@@ -74,7 +127,22 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 34.0,
-      "repair_abdeckung_pct": 77.7
+      "repair_abdeckung_pct": 77.7,
+      "crosstraining_luecken": [
+        "MC-9735",
+        "MC-BI70",
+        "MC-NITRON"
+      ],
+      "stk_potenzial": 17,
+      "geraete_im_gebiet": {
+        "MC-BI70": 4,
+        "MC-FT10": 13,
+        "MC-PB": 31,
+        "MC-LS10": 2,
+        "MC-8253": 4,
+        "MC-NITRON": 7,
+        "MC-9735": 6
+      }
     },
     {
       "pseudonym_id": "Christopher K.",
@@ -93,7 +161,23 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 8.8,
-      "repair_abdeckung_pct": 14.9
+      "repair_abdeckung_pct": 14.9,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-NITRON",
+        "MC-PB"
+      ],
+      "stk_potenzial": 22,
+      "geraete_im_gebiet": {
+        "MC-FT10": 50,
+        "MC-VLFX8": 3,
+        "MC-LS10": 3,
+        "MC-BI70": 6,
+        "MC-8253": 8,
+        "MC-PB": 13,
+        "MC-9735": 10,
+        "MC-NITRON": 1
+      }
     },
     {
       "pseudonym_id": "Dirk G.",
@@ -112,7 +196,30 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 49.9,
-      "repair_abdeckung_pct": 0.0
+      "repair_abdeckung_pct": 0.0,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-840",
+        "MC-9735",
+        "MC-BI70",
+        "MC-FT10",
+        "MC-HUGO",
+        "MC-LS10",
+        "MC-NITRON",
+        "MC-PB"
+      ],
+      "stk_potenzial": 89,
+      "geraete_im_gebiet": {
+        "MC-8253": 8,
+        "MC-HUGO": 8,
+        "MC-LS10": 13,
+        "MC-PB": 36,
+        "MC-FT10": 8,
+        "MC-BI70": 4,
+        "MC-9735": 7,
+        "MC-840": 2,
+        "MC-NITRON": 3
+      }
     },
     {
       "pseudonym_id": "Dirk H.",
@@ -131,7 +238,21 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 13.4,
-      "repair_abdeckung_pct": 24.5
+      "repair_abdeckung_pct": 24.5,
+      "crosstraining_luecken": [
+        "MC-9735",
+        "MC-NITRON"
+      ],
+      "stk_potenzial": 5,
+      "geraete_im_gebiet": {
+        "MC-HUGO": 15,
+        "MC-FT10": 47,
+        "MC-NITRON": 4,
+        "MC-9735": 1,
+        "MC-VLFX8": 14,
+        "MC-LS10": 12,
+        "MC-8253": 3
+      }
     },
     {
       "pseudonym_id": "Eduard S.",
@@ -150,7 +271,24 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 7.4,
-      "repair_abdeckung_pct": 5.3
+      "repair_abdeckung_pct": 5.3,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-9735",
+        "MC-BI70",
+        "MC-PB"
+      ],
+      "stk_potenzial": 37,
+      "geraete_im_gebiet": {
+        "MC-8253": 12,
+        "MC-FT10": 61,
+        "MC-VLFX8": 3,
+        "MC-LS10": 2,
+        "MC-BI70": 5,
+        "MC-PB": 13,
+        "MC-9735": 7,
+        "MC-NITRON": 3
+      }
     },
     {
       "pseudonym_id": "Florian Z.",
@@ -169,7 +307,29 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 13.4,
-      "repair_abdeckung_pct": 1.1
+      "repair_abdeckung_pct": 1.1,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-840",
+        "MC-9735",
+        "MC-BI70",
+        "MC-FT10",
+        "MC-HUGO",
+        "MC-LS10",
+        "MC-PB"
+      ],
+      "stk_potenzial": 128,
+      "geraete_im_gebiet": {
+        "MC-LS10": 10,
+        "MC-8253": 11,
+        "MC-HUGO": 8,
+        "MC-PB": 56,
+        "MC-FT10": 20,
+        "MC-BI70": 9,
+        "MC-NITRON": 7,
+        "MC-9735": 12,
+        "MC-840": 2
+      }
     },
     {
       "pseudonym_id": "Hector C.",
@@ -188,7 +348,24 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 3.3,
-      "repair_abdeckung_pct": 9.6
+      "repair_abdeckung_pct": 9.6,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-9735",
+        "MC-FT10",
+        "MC-LS10",
+        "MC-VLFX8"
+      ],
+      "stk_potenzial": 77,
+      "geraete_im_gebiet": {
+        "MC-HUGO": 15,
+        "MC-FT10": 47,
+        "MC-NITRON": 4,
+        "MC-9735": 1,
+        "MC-VLFX8": 14,
+        "MC-LS10": 12,
+        "MC-8253": 3
+      }
     },
     {
       "pseudonym_id": "Heiko B.",
@@ -207,7 +384,24 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 0.0,
-      "repair_abdeckung_pct": 0.0
+      "repair_abdeckung_pct": 0.0,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-9735",
+        "MC-FT10",
+        "MC-HUGO",
+        "MC-LS10",
+        "MC-NITRON"
+      ],
+      "stk_potenzial": 55,
+      "geraete_im_gebiet": {
+        "MC-HUGO": 13,
+        "MC-FT10": 9,
+        "MC-8253": 22,
+        "MC-LS10": 6,
+        "MC-9735": 4,
+        "MC-NITRON": 1
+      }
     },
     {
       "pseudonym_id": "Lisa K.",
@@ -226,7 +420,30 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 0.0,
-      "repair_abdeckung_pct": 0.0
+      "repair_abdeckung_pct": 0.0,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-840",
+        "MC-9735",
+        "MC-BI70",
+        "MC-FT10",
+        "MC-HUGO",
+        "MC-LS10",
+        "MC-NITRON",
+        "MC-PB"
+      ],
+      "stk_potenzial": 91,
+      "geraete_im_gebiet": {
+        "MC-8253": 8,
+        "MC-HUGO": 8,
+        "MC-LS10": 13,
+        "MC-PB": 36,
+        "MC-FT10": 10,
+        "MC-BI70": 4,
+        "MC-9735": 7,
+        "MC-840": 2,
+        "MC-NITRON": 3
+      }
     },
     {
       "pseudonym_id": "Marc L.",
@@ -245,7 +462,26 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 52.6,
-      "repair_abdeckung_pct": 83.0
+      "repair_abdeckung_pct": 83.0,
+      "crosstraining_luecken": [
+        "MC-9735",
+        "MC-ARGON4",
+        "MC-BI70",
+        "MC-NITRON",
+        "MC-PB"
+      ],
+      "stk_potenzial": 88,
+      "geraete_im_gebiet": {
+        "MC-LS10": 12,
+        "MC-FT10": 25,
+        "MC-8253": 17,
+        "MC-HUGO": 6,
+        "MC-ARGON4": 3,
+        "MC-BI70": 2,
+        "MC-NITRON": 6,
+        "MC-9735": 12,
+        "MC-PB": 65
+      }
     },
     {
       "pseudonym_id": "Marco C.",
@@ -264,7 +500,22 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 0.0,
-      "repair_abdeckung_pct": 0.0
+      "repair_abdeckung_pct": 0.0,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-840",
+        "MC-FT10",
+        "MC-LS10",
+        "MC-NITRON"
+      ],
+      "stk_potenzial": 35,
+      "geraete_im_gebiet": {
+        "MC-8253": 16,
+        "MC-FT10": 8,
+        "MC-NITRON": 3,
+        "MC-840": 2,
+        "MC-LS10": 6
+      }
     },
     {
       "pseudonym_id": "Markus N.",
@@ -283,7 +534,22 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 0.0,
-      "repair_abdeckung_pct": 0.0
+      "repair_abdeckung_pct": 0.0,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-840",
+        "MC-FT10",
+        "MC-LS10",
+        "MC-NITRON"
+      ],
+      "stk_potenzial": 35,
+      "geraete_im_gebiet": {
+        "MC-8253": 16,
+        "MC-FT10": 8,
+        "MC-NITRON": 3,
+        "MC-840": 2,
+        "MC-LS10": 6
+      }
     },
     {
       "pseudonym_id": "Matthias B.",
@@ -302,7 +568,30 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 0.0,
-      "repair_abdeckung_pct": 0.0
+      "repair_abdeckung_pct": 0.0,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-840",
+        "MC-9735",
+        "MC-BI70",
+        "MC-FT10",
+        "MC-HUGO",
+        "MC-LS10",
+        "MC-NITRON",
+        "MC-PB"
+      ],
+      "stk_potenzial": 103,
+      "geraete_im_gebiet": {
+        "MC-8253": 8,
+        "MC-HUGO": 8,
+        "MC-PB": 36,
+        "MC-FT10": 14,
+        "MC-LS10": 8,
+        "MC-BI70": 9,
+        "MC-NITRON": 7,
+        "MC-9735": 11,
+        "MC-840": 2
+      }
     },
     {
       "pseudonym_id": "Matthias W.",
@@ -321,7 +610,22 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 0.0,
-      "repair_abdeckung_pct": 0.0
+      "repair_abdeckung_pct": 0.0,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-840",
+        "MC-FT10",
+        "MC-LS10",
+        "MC-NITRON"
+      ],
+      "stk_potenzial": 35,
+      "geraete_im_gebiet": {
+        "MC-8253": 16,
+        "MC-FT10": 8,
+        "MC-NITRON": 3,
+        "MC-840": 2,
+        "MC-LS10": 6
+      }
     },
     {
       "pseudonym_id": "Michael G.",
@@ -340,7 +644,27 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 6.8,
-      "repair_abdeckung_pct": 10.6
+      "repair_abdeckung_pct": 10.6,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-840",
+        "MC-9735",
+        "MC-BI70",
+        "MC-NITRON",
+        "MC-PB"
+      ],
+      "stk_potenzial": 57,
+      "geraete_im_gebiet": {
+        "MC-8253": 6,
+        "MC-HUGO": 8,
+        "MC-PB": 36,
+        "MC-FT10": 6,
+        "MC-LS10": 8,
+        "MC-BI70": 4,
+        "MC-9735": 7,
+        "MC-840": 2,
+        "MC-NITRON": 2
+      }
     },
     {
       "pseudonym_id": "Michael L.",
@@ -359,7 +683,28 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 0.0,
-      "repair_abdeckung_pct": 0.0
+      "repair_abdeckung_pct": 0.0,
+      "crosstraining_luecken": [
+        "MC-840",
+        "MC-9735",
+        "MC-BI70",
+        "MC-FT10",
+        "MC-LS10",
+        "MC-NITRON",
+        "MC-PB",
+        "MC-VLFX8"
+      ],
+      "stk_potenzial": 80,
+      "geraete_im_gebiet": {
+        "MC-LS10": 4,
+        "MC-PB": 24,
+        "MC-840": 24,
+        "MC-BI70": 5,
+        "MC-NITRON": 2,
+        "MC-FT10": 10,
+        "MC-VLFX8": 2,
+        "MC-9735": 9
+      }
     },
     {
       "pseudonym_id": "Mohammad H.",
@@ -378,7 +723,24 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 18.6,
-      "repair_abdeckung_pct": 6.4
+      "repair_abdeckung_pct": 6.4,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-9735",
+        "MC-BI70",
+        "MC-NITRON"
+      ],
+      "stk_potenzial": 42,
+      "geraete_im_gebiet": {
+        "MC-FT10": 70,
+        "MC-LS10": 8,
+        "MC-8253": 17,
+        "MC-PB": 70,
+        "MC-840": 33,
+        "MC-BI70": 8,
+        "MC-9735": 11,
+        "MC-NITRON": 6
+      }
     },
     {
       "pseudonym_id": "Mousa A.",
@@ -397,7 +759,28 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 1.4,
-      "repair_abdeckung_pct": 3.2
+      "repair_abdeckung_pct": 3.2,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-840",
+        "MC-FT10",
+        "MC-HUGO",
+        "MC-LS10",
+        "MC-NITRON",
+        "MC-PB"
+      ],
+      "stk_potenzial": 79,
+      "geraete_im_gebiet": {
+        "MC-8253": 8,
+        "MC-HUGO": 8,
+        "MC-PB": 36,
+        "MC-FT10": 10,
+        "MC-LS10": 8,
+        "MC-BI70": 4,
+        "MC-NITRON": 7,
+        "MC-9735": 9,
+        "MC-840": 2
+      }
     },
     {
       "pseudonym_id": "Peter S.",
@@ -416,7 +799,26 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 1.1,
-      "repair_abdeckung_pct": 2.1
+      "repair_abdeckung_pct": 2.1,
+      "crosstraining_luecken": [
+        "MC-8253",
+        "MC-840",
+        "MC-9735",
+        "MC-BI70",
+        "MC-FT10",
+        "MC-LS10"
+      ],
+      "stk_potenzial": 156,
+      "geraete_im_gebiet": {
+        "MC-LS10": 10,
+        "MC-FT10": 74,
+        "MC-8253": 20,
+        "MC-PB": 70,
+        "MC-840": 33,
+        "MC-BI70": 8,
+        "MC-9735": 11,
+        "MC-NITRON": 8
+      }
     },
     {
       "pseudonym_id": "Roland K.",
@@ -435,7 +837,25 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 11.2,
-      "repair_abdeckung_pct": 17.0
+      "repair_abdeckung_pct": 17.0,
+      "crosstraining_luecken": [
+        "MC-9735",
+        "MC-ARGON4",
+        "MC-BI70",
+        "MC-HUGO"
+      ],
+      "stk_potenzial": 13,
+      "geraete_im_gebiet": {
+        "MC-LS10": 10,
+        "MC-FT10": 77,
+        "MC-8253": 23,
+        "MC-HUGO": 6,
+        "MC-ARGON4": 3,
+        "MC-BI70": 1,
+        "MC-9735": 3,
+        "MC-NITRON": 6,
+        "MC-PB": 65
+      }
     },
     {
       "pseudonym_id": "Ulrich W.",
@@ -454,7 +874,22 @@
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 11.0,
-      "repair_abdeckung_pct": 16.0
+      "repair_abdeckung_pct": 16.0,
+      "crosstraining_luecken": [
+        "MC-9735",
+        "MC-BI70",
+        "MC-NITRON"
+      ],
+      "stk_potenzial": 11,
+      "geraete_im_gebiet": {
+        "MC-8253": 18,
+        "MC-LS10": 13,
+        "MC-BI70": 2,
+        "MC-NITRON": 5,
+        "MC-FT10": 11,
+        "MC-9735": 4,
+        "MC-840": 2
+      }
     }
   ],
   "total_model_codes": 365,
@@ -464,5 +899,5 @@
   "pm_repair_skills_eintraege": 524,
   "closed_jobs": 9264,
   "open_jobs": 786,
-  "generated_at": "2026-06-25T14:11:38"
+  "generated_at": "2026-06-25T14:26:26"
 }
