@@ -141,10 +141,10 @@ class SMaxImportErgebnis:
 def map_skill_row(model_code: str, tech_name: str, wert: str) -> SMaxSkillEintrag:
     """Mappt eine einzelne Skill-Matrix-Zelle mit Cluster-Mapping.
 
-    JA + cluster + repair=True  → qualifikation="PM+Repair"
-    JA + cluster + repair=False → qualifikation="PM"
-    JA + kein cluster           → qualifikation="PM", cluster=None
-    NEIN                        → qualifikation=None
+    JA  → qualifikation="PM" (immer — JA bedeutet PM/STK-Fähigkeit)
+          repair spiegelt die Geräteeigenschaft aus dem Mapping wider,
+          NICHT die Qualifikation des Technikers.
+    NEIN → qualifikation=None
     """
     mc = str(model_code).strip()
     ist_ja = str(wert).strip().upper() == "JA"
@@ -153,22 +153,12 @@ def map_skill_row(model_code: str, tech_name: str, wert: str) -> SMaxSkillEintra
         return SMaxSkillEintrag(model_code=mc, tech_name=str(tech_name).strip())
 
     info = finde_cluster(mc)
-    if info is None:
-        return SMaxSkillEintrag(
-            model_code=mc,
-            tech_name=str(tech_name).strip(),
-            qualifikation="PM",
-            cluster=None,
-            repair=None,
-        )
-
-    qualifikation = "PM+Repair" if info.repair else "PM"
     return SMaxSkillEintrag(
         model_code=mc,
         tech_name=str(tech_name).strip(),
-        qualifikation=qualifikation,
-        cluster=info.cluster,
-        repair=info.repair,
+        qualifikation="PM",
+        cluster=info.cluster if info else None,
+        repair=info.repair if info else None,
     )
 
 

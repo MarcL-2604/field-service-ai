@@ -135,17 +135,21 @@ def build_dashboard_data() -> dict:
     skill_repair: dict[str, set[str]] = {}
     skill_alle:   dict[str, set[str]] = {}
     all_mc:       set[str] = set()
+    all_repair_mc: set[str] = set()  # alle Codes mit repair=True im Mapping
 
     for entry in ergebnis.skills:
         tn_norm = _norm_umlaut(entry.tech_name)
         all_mc.add(entry.model_code)
         skill_alle.setdefault(tn_norm, set()).add(entry.model_code)
-        if entry.qualifikation in ("PM", "PM+Repair"):
+        if entry.qualifikation == "PM":
             skill_pm.setdefault(tn_norm, set()).add(entry.model_code)
-        if entry.qualifikation == "PM+Repair":
-            skill_repair.setdefault(tn_norm, set()).add(entry.model_code)
+            if entry.repair is True:
+                # Gerät ist Repair-fähig → zählt für PM-Abdeckung (Repair-Geräte)
+                all_repair_mc.add(entry.model_code)
+                skill_repair.setdefault(tn_norm, set()).add(entry.model_code)
 
     total_mc = len(all_mc)
+    total_repair_mc = len(all_repair_mc)
 
     techniker_list: list[dict] = []
     for tech in ergebnis.techniker:
@@ -176,15 +180,18 @@ def build_dashboard_data() -> dict:
             "pm_count":          pm_count,
             "pm_repair_count":   pm_repair_count,
             "total_model_codes": total_mc,
+            "total_repair_codes": total_repair_mc,
             "pm_ratio_pct":      round(pm_count / total_mc * 100, 1) if total_mc else 0.0,
+            "repair_abdeckung_pct": round(pm_repair_count / total_repair_mc * 100, 1) if total_repair_mc else 0.0,
         })
 
     return {
         "techniker":                  techniker_list,
         "total_model_codes":          total_mc,
+        "total_repair_codes":         total_repair_mc,
         "total_skills_eintraege":     len(ergebnis.skills),
-        "pm_skills_eintraege":        sum(1 for e in ergebnis.skills if e.qualifikation in ("PM", "PM+Repair")),
-        "pm_repair_skills_eintraege": sum(1 for e in ergebnis.skills if e.qualifikation == "PM+Repair"),
+        "pm_skills_eintraege":        sum(1 for e in ergebnis.skills if e.qualifikation == "PM"),
+        "pm_repair_skills_eintraege": sum(1 for e in ergebnis.skills if e.qualifikation == "PM" and e.repair is True),
         "closed_jobs":                len(ergebnis.geschlossene_auftraege),
         "open_jobs":                  len(ergebnis.offene_auftraege),
         "generated_at":               datetime.now().isoformat(timespec="seconds"),
@@ -213,21 +220,22 @@ if __name__ == "__main__":
     try:
         data = save_dashboard_data()
         print(f"Gespeichert: {_CACHE}")
-        print(f"  Techniker:          {len(data['techniker'])}")
-        print(f"  Skills gesamt:      {data['total_skills_eintraege']}")
-        print(f"  davon PM:           {data['pm_skills_eintraege']}")
-        print(f"  davon PM+Repair:    {data['pm_repair_skills_eintraege']}")
-        print(f"  Model Codes:        {data['total_model_codes']}")
-        print(f"  Closed Jobs:        {data['closed_jobs']}")
-        print(f"  Open Jobs:          {data['open_jobs']}")
+        print(f"  Techniker:               {len(data['techniker'])}")
+        print(f"  Skills gesamt:           {data['total_skills_eintraege']}")
+        print(f"  davon PM:                {data['pm_skills_eintraege']}")
+        print(f"  PM auf Repair-Geraete:   {data['pm_repair_skills_eintraege']}")
+        print(f"  Model Codes gesamt:      {data['total_model_codes']}")
+        print(f"  davon Repair-relevant:   {data['total_repair_codes']}")
+        print(f"  Closed Jobs:             {data['closed_jobs']}")
+        print(f"  Open Jobs:               {data['open_jobs']}")
         modus = "pseudonymisiert (SHA256)" if PSEUDONYMISIERUNG_AKTIV else "echte Namen (Nachname)"
         print()
-        print(f"Techniker ({modus})  [PM / PM+Repair = L3-relevant]:")
+        print(f"Techniker ({modus})  [PM-Codes / PM auf Repair-Geraeten / Abdeckung%]:")
         for t in data["techniker"]:
             ka = " [Hugo KA]" if t["hugo_ka"] else ""
             mx = " [Skills-Matrix]" if t["in_skills_matrix"] else " [keine Skills]"
             print(f"  {t['pseudonym_id']:14s}  {t['standort']:20s}  "
-                  f"PM: {t['pm_count']:3d}  L3: {t['pm_repair_count']:3d}"
-                  f"  ({t['pm_ratio_pct']:5.1f}%){ka}{mx}")
+                  f"PM: {t['pm_count']:3d}  RepairPM: {t['pm_repair_count']:3d}"
+                  f"  Abdeckung: {t['repair_abdeckung_pct']:5.1f}%{ka}{mx}")
     except FileNotFoundError as e:
         print(f"FEHLER: {e}")

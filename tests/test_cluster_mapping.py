@@ -179,9 +179,10 @@ class TestKeinMatch:
 
 class TestMapSkillRowMitCluster:
 
-    def test_ja_cluster_repair_true_ergibt_pm_repair(self):
+    def test_ja_cluster_repair_true_ergibt_pm(self):
+        """JA ergibt immer PM — repair=True ist Geräteeigenschaft, nicht Technikerqualifikation."""
         eintrag = map_skill_row("MC-HUGO-123", "Hans Müller", "JA")
-        assert eintrag.qualifikation == "PM+Repair"
+        assert eintrag.qualifikation == "PM"
         assert eintrag.cluster == "CLUSTER1_OR"
         assert eintrag.repair is True
 
@@ -219,10 +220,12 @@ class TestMapSkillRowMitCluster:
         assert eintrag.cluster == "CLUSTER3_MONITORING"
         assert eintrag.repair is False
 
-    def test_hf_chirurgie_repair_true(self):
+    def test_hf_chirurgie_repair_true_geraet(self):
+        """FT10 ist Repair-Gerät (repair=True), Techniker-Qualifikation bleibt PM."""
         eintrag = map_skill_row("MC-FT10", "Hans Müller", "JA")
-        assert eintrag.qualifikation == "PM+Repair"
+        assert eintrag.qualifikation == "PM"
         assert eintrag.cluster == "HF_CHIRURGIE"
+        assert eintrag.repair is True
 
     def test_hf_chirurgie_repair_false(self):
         eintrag = map_skill_row("MC-RAPIDVAC", "Hans Müller", "JA")
