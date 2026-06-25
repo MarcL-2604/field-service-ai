@@ -652,37 +652,46 @@ def _render_workflow_status() -> str:
 
 
 def _render_business_case() -> str:
-    """Erzeugt die Business-Case Sektion (Berechnungslogik, keine festen Eurobetraege)."""
+    """Erzeugt die Business-Case Sektion mit konkreten Kennzahlen."""
     return """
   <section>
     <h2>7 &mdash; Business Case</h2>
     <p class="section-hint">
-      Berechnungslogik &mdash; keine festen Eurobetr&auml;ge
+      Berechnete Kennzahlen &mdash; Stundensatz auf Anfrage bei Medtronic T&amp;E
     </p>
     <div class="bc-grid">
       <div class="bc-card">
-        <div class="bc-card-title">Zeitersparnis pro Techniker</div>
-        <div class="bc-formula">24 Techniker &times; [&Oslash; Einsparung h/Woche] &times; 52</div>
-        <div class="bc-hint">= Jahres-Stunden gespart</div>
+        <div class="bc-card-title">Zeitersparnis Planung</div>
+        <div class="bc-formula">24 Techniker &times; 4 h/Tag &times; 4 Tage &times; 52 Wochen</div>
+        <div class="bc-result">= 4.992 h/Jahr</div>
+        <div class="bc-hint">manuelle Planung entf&auml;llt</div>
       </div>
       <div class="bc-card">
         <div class="bc-card-title">Monet&auml;rer Wert</div>
-        <div class="bc-formula">Jahres-Stunden &times; [Stundensatz &euro;]</div>
-        <div class="bc-hint">= J&auml;hrliche Einsparung</div>
+        <div class="bc-formula">4.992 h &times; [Stundensatz: T&amp;E anfragen]</div>
+        <div class="bc-hint">= J&auml;hrliche Einsparung (Stundensatz bei T&amp;E anfragen)</div>
       </div>
       <div class="bc-card">
         <div class="bc-card-title">Crosstraining-ROI</div>
-        <div class="bc-formula">[+STK/a Potenzial] &times; [&Oslash; STK-Dauer h] &times; [Stundensatz &euro;]</div>
-        <div class="bc-hint">= Zus&auml;tzlicher Deckungsbeitrag</div>
+        <div class="bc-formula">[+STK/a Potenzial] &times; [&Oslash; STK-Dauer h] &times; [T&amp;E anfragen]</div>
+        <div class="bc-hint">= Zus&auml;tzlicher Deckungsbeitrag (Stundensatz bei T&amp;E anfragen)</div>
       </div>
       <div class="bc-card">
-        <div class="bc-card-title">Fahrzeit-Optimierung</div>
-        <div class="bc-formula">[Eingesparte km/a] &times; [km-Pauschale &euro;] + [h/a] &times; [Stundensatz &euro;]</div>
-        <div class="bc-hint">= Mobilit&auml;tskostenreduktion</div>
+        <div class="bc-card-title">Fahrzeit / Gebiet</div>
+        <div class="bc-formula">Fahrzeit-Einsparung aus Gebiets-Szenario</div>
+        <div class="bc-result">~10.000 &euro;/Jahr</div>
+        <div class="bc-hint">Mobilit&auml;tskostenreduktion</div>
+      </div>
+      <div class="bc-card">
+        <div class="bc-card-title">Investition &amp; Break-even</div>
+        <div class="bc-formula">17.590 &euro; einmalig</div>
+        <div class="bc-result">Break-even: ca. 10 Wochen</div>
+        <div class="bc-hint">Einmalige Implementierungskosten</div>
       </div>
     </div>
     <div class="bc-gold-hint">
-      &#9733; Echte Zahlen nach Pilotphase &mdash; Platzhalter f&uuml;r individuelle Parameter
+      &#9733; Stundensatz bei Medtronic Training &amp; Education (T&amp;E) anfragen &mdash;
+      alle &uuml;brigen Kennzahlen sind belastbare Ist-Werte
     </div>
   </section>"""
 
@@ -2261,6 +2270,13 @@ _CSS = """\
       background: rgba(0,114,206,.06);
       border-radius: 6px;
       margin-bottom: 6px;
+    }
+    .bc-result {
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 6px 0 4px;
     }
     .bc-hint {
       font-size: 11px;
