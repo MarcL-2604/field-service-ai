@@ -27,6 +27,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from api.cluster_mapping import finde_cluster
 from techniker.plz_lookup import plz_fuer_stadt
 
 
@@ -50,7 +51,9 @@ class SMaxSkillEintrag(BaseModel):
     """Ein Skill-Eintrag aus Sheet 1_Skills Matrix (eine Zelle = ein Eintrag)."""
     model_code: str              # z.B. MC-12345
     tech_name: str               # Vollstaendiger Technikername aus Spaltenheader
-    qualifikation: Optional[str] = None  # "PM" wenn JA, None wenn NEIN
+    qualifikation: Optional[str] = None  # "PM+Repair", "PM", oder None
+    cluster: Optional[str] = None        # z.B. "CLUSTER1_OR", None wenn unbekannt
+    repair: Optional[bool] = None        # True wenn Repair-Qualifikation vorhanden
 
 
 class SMaxEinsatzDauer(BaseModel):
@@ -136,16 +139,36 @@ class SMaxImportErgebnis:
 # ── Zeilen-Mapper (reine Funktionen, testbar ohne XLSX) ───────────────────────
 
 def map_skill_row(model_code: str, tech_name: str, wert: str) -> SMaxSkillEintrag:
-    """Mappt eine einzelne Skill-Matix-Zelle.
+    """Mappt eine einzelne Skill-Matrix-Zelle mit Cluster-Mapping.
 
-    Wert "JA" → qualifikation="PM", alles andere → None.
-    Repair wird NICHT abgeleitet (separat zu pflegen).
+    JA + cluster + repair=True  → qualifikation="PM+Repair"
+    JA + cluster + repair=False → qualifikation="PM"
+    JA + kein cluster           → qualifikation="PM", cluster=None
+    NEIN                        → qualifikation=None
     """
-    qualifikation = "PM" if str(wert).strip().upper() == "JA" else None
+    mc = str(model_code).strip()
+    ist_ja = str(wert).strip().upper() == "JA"
+
+    if not ist_ja:
+        return SMaxSkillEintrag(model_code=mc, tech_name=str(tech_name).strip())
+
+    info = finde_cluster(mc)
+    if info is None:
+        return SMaxSkillEintrag(
+            model_code=mc,
+            tech_name=str(tech_name).strip(),
+            qualifikation="PM",
+            cluster=None,
+            repair=None,
+        )
+
+    qualifikation = "PM+Repair" if info.repair else "PM"
     return SMaxSkillEintrag(
-        model_code=str(model_code).strip(),
+        model_code=mc,
         tech_name=str(tech_name).strip(),
         qualifikation=qualifikation,
+        cluster=info.cluster,
+        repair=info.repair,
     )
 
 

@@ -13,6 +13,7 @@
       "techniker_typ": "HUGO_KEY_ACCOUNT",
       "in_skills_matrix": true,
       "pm_count": 35,
+      "pm_repair_count": 26,
       "total_model_codes": 365,
       "pm_ratio_pct": 9.6
     },
@@ -29,6 +30,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": false,
       "pm_count": 0,
+      "pm_repair_count": 0,
       "total_model_codes": 365,
       "pm_ratio_pct": 0.0
     },
@@ -45,6 +47,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 120,
+      "pm_repair_count": 36,
       "total_model_codes": 365,
       "pm_ratio_pct": 32.9
     },
@@ -61,6 +64,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 124,
+      "pm_repair_count": 88,
       "total_model_codes": 365,
       "pm_ratio_pct": 34.0
     },
@@ -77,6 +81,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 32,
+      "pm_repair_count": 25,
       "total_model_codes": 365,
       "pm_ratio_pct": 8.8
     },
@@ -93,6 +98,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 182,
+      "pm_repair_count": 80,
       "total_model_codes": 365,
       "pm_ratio_pct": 49.9
     },
@@ -109,6 +115,7 @@
       "techniker_typ": "HUGO_KEY_ACCOUNT",
       "in_skills_matrix": true,
       "pm_count": 49,
+      "pm_repair_count": 29,
       "total_model_codes": 365,
       "pm_ratio_pct": 13.4
     },
@@ -125,6 +132,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 27,
+      "pm_repair_count": 11,
       "total_model_codes": 365,
       "pm_ratio_pct": 7.4
     },
@@ -141,6 +149,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 49,
+      "pm_repair_count": 1,
       "total_model_codes": 365,
       "pm_ratio_pct": 13.4
     },
@@ -157,6 +166,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 12,
+      "pm_repair_count": 9,
       "total_model_codes": 365,
       "pm_ratio_pct": 3.3
     },
@@ -173,6 +183,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": false,
       "pm_count": 0,
+      "pm_repair_count": 0,
       "total_model_codes": 365,
       "pm_ratio_pct": 0.0
     },
@@ -189,6 +200,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": false,
       "pm_count": 0,
+      "pm_repair_count": 0,
       "total_model_codes": 365,
       "pm_ratio_pct": 0.0
     },
@@ -205,6 +217,7 @@
       "techniker_typ": "HUGO_KEY_ACCOUNT",
       "in_skills_matrix": true,
       "pm_count": 192,
+      "pm_repair_count": 89,
       "total_model_codes": 365,
       "pm_ratio_pct": 52.6
     },
@@ -221,6 +234,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": false,
       "pm_count": 0,
+      "pm_repair_count": 0,
       "total_model_codes": 365,
       "pm_ratio_pct": 0.0
     },
@@ -237,6 +251,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": false,
       "pm_count": 0,
+      "pm_repair_count": 0,
       "total_model_codes": 365,
       "pm_ratio_pct": 0.0
     },
@@ -253,6 +268,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": false,
       "pm_count": 0,
+      "pm_repair_count": 0,
       "total_model_codes": 365,
       "pm_ratio_pct": 0.0
     },
@@ -269,6 +285,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": false,
       "pm_count": 0,
+      "pm_repair_count": 0,
       "total_model_codes": 365,
       "pm_ratio_pct": 0.0
     },
@@ -285,6 +302,7 @@
       "techniker_typ": "HUGO_KEY_ACCOUNT",
       "in_skills_matrix": true,
       "pm_count": 25,
+      "pm_repair_count": 13,
       "total_model_codes": 365,
       "pm_ratio_pct": 6.8
     },
@@ -301,6 +319,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": false,
       "pm_count": 0,
+      "pm_repair_count": 0,
       "total_model_codes": 365,
       "pm_ratio_pct": 0.0
     },
@@ -317,6 +336,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 68,
+      "pm_repair_count": 13,
       "total_model_codes": 365,
       "pm_ratio_pct": 18.6
     },
@@ -333,6 +353,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 5,
+      "pm_repair_count": 5,
       "total_model_codes": 365,
       "pm_ratio_pct": 1.4
     },
@@ -349,6 +370,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 4,
+      "pm_repair_count": 2,
       "total_model_codes": 365,
       "pm_ratio_pct": 1.1
     },
@@ -365,6 +387,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 41,
+      "pm_repair_count": 23,
       "total_model_codes": 365,
       "pm_ratio_pct": 11.2
     },
@@ -381,6 +404,7 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 40,
+      "pm_repair_count": 22,
       "total_model_codes": 365,
       "pm_ratio_pct": 11.0
     }
@@ -388,7 +412,8 @@
   "total_model_codes": 365,
   "total_skills_eintraege": 7707,
   "pm_skills_eintraege": 1471,
+  "pm_repair_skills_eintraege": 677,
   "closed_jobs": 9264,
   "open_jobs": 786,
-  "generated_at": "2026-06-24T07:42:59"
+  "generated_at": "2026-06-25T13:13:35"
 }

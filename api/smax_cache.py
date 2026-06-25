@@ -131,16 +131,19 @@ def build_dashboard_data() -> dict:
 
     # Skill-Map: normalisierter Name → {PM-Codes, Alle-Codes}
     # Normalisierung notwendig: Skills-Sheet hat "Dirk Haebel", Wohnorte "Dirk Hübel"
-    skill_pm:   dict[str, set[str]] = {}
-    skill_alle: dict[str, set[str]] = {}
-    all_mc:     set[str] = set()
+    skill_pm:     dict[str, set[str]] = {}
+    skill_repair: dict[str, set[str]] = {}
+    skill_alle:   dict[str, set[str]] = {}
+    all_mc:       set[str] = set()
 
     for entry in ergebnis.skills:
         tn_norm = _norm_umlaut(entry.tech_name)
         all_mc.add(entry.model_code)
         skill_alle.setdefault(tn_norm, set()).add(entry.model_code)
-        if entry.qualifikation == "PM":
+        if entry.qualifikation in ("PM", "PM+Repair"):
             skill_pm.setdefault(tn_norm, set()).add(entry.model_code)
+        if entry.qualifikation == "PM+Repair":
+            skill_repair.setdefault(tn_norm, set()).add(entry.model_code)
 
     total_mc = len(all_mc)
 
@@ -151,10 +154,12 @@ def build_dashboard_data() -> dict:
         lat, lon = _STADT_COORDS.get(ort_key, (0.0, 0.0))
         region, bundesland = _STADT_REGION.get(ort_key, ("Unbekannt", "Unbekannt"))
 
-        tn_norm  = _norm_umlaut(tech.name)
-        pm_mcs   = skill_pm.get(tn_norm, set())
-        alle_mcs = skill_alle.get(tn_norm, set())
-        pm_count = len(pm_mcs)
+        tn_norm       = _norm_umlaut(tech.name)
+        pm_mcs        = skill_pm.get(tn_norm, set())
+        repair_mcs    = skill_repair.get(tn_norm, set())
+        alle_mcs      = skill_alle.get(tn_norm, set())
+        pm_count      = len(pm_mcs)
+        pm_repair_count = len(repair_mcs)
 
         techniker_list.append({
             "pseudonym_id":      _display_id(tech.name),
@@ -169,18 +174,20 @@ def build_dashboard_data() -> dict:
             "techniker_typ":     "HUGO_KEY_ACCOUNT" if ort_key in _HUGO_KA_STAEDTE else "STANDARD",
             "in_skills_matrix":  bool(alle_mcs),
             "pm_count":          pm_count,
+            "pm_repair_count":   pm_repair_count,
             "total_model_codes": total_mc,
             "pm_ratio_pct":      round(pm_count / total_mc * 100, 1) if total_mc else 0.0,
         })
 
     return {
-        "techniker":              techniker_list,
-        "total_model_codes":      total_mc,
-        "total_skills_eintraege": len(ergebnis.skills),
-        "pm_skills_eintraege":    sum(1 for e in ergebnis.skills if e.qualifikation == "PM"),
-        "closed_jobs":            len(ergebnis.geschlossene_auftraege),
-        "open_jobs":              len(ergebnis.offene_auftraege),
-        "generated_at":           datetime.now().isoformat(timespec="seconds"),
+        "techniker":                  techniker_list,
+        "total_model_codes":          total_mc,
+        "total_skills_eintraege":     len(ergebnis.skills),
+        "pm_skills_eintraege":        sum(1 for e in ergebnis.skills if e.qualifikation in ("PM", "PM+Repair")),
+        "pm_repair_skills_eintraege": sum(1 for e in ergebnis.skills if e.qualifikation == "PM+Repair"),
+        "closed_jobs":                len(ergebnis.geschlossene_auftraege),
+        "open_jobs":                  len(ergebnis.offene_auftraege),
+        "generated_at":               datetime.now().isoformat(timespec="seconds"),
     }
 
 
@@ -206,20 +213,21 @@ if __name__ == "__main__":
     try:
         data = save_dashboard_data()
         print(f"Gespeichert: {_CACHE}")
-        print(f"  Techniker:     {len(data['techniker'])}")
-        print(f"  Skills gesamt: {data['total_skills_eintraege']}")
-        print(f"  davon PM:      {data['pm_skills_eintraege']}")
-        print(f"  Model Codes:   {data['total_model_codes']}")
-        print(f"  Closed Jobs:   {data['closed_jobs']}")
-        print(f"  Open Jobs:     {data['open_jobs']}")
+        print(f"  Techniker:          {len(data['techniker'])}")
+        print(f"  Skills gesamt:      {data['total_skills_eintraege']}")
+        print(f"  davon PM:           {data['pm_skills_eintraege']}")
+        print(f"  davon PM+Repair:    {data['pm_repair_skills_eintraege']}")
+        print(f"  Model Codes:        {data['total_model_codes']}")
+        print(f"  Closed Jobs:        {data['closed_jobs']}")
+        print(f"  Open Jobs:          {data['open_jobs']}")
         modus = "pseudonymisiert (SHA256)" if PSEUDONYMISIERUNG_AKTIV else "echte Namen (Nachname)"
         print()
-        print(f"Techniker ({modus}):")
+        print(f"Techniker ({modus})  [PM / PM+Repair = L3-relevant]:")
         for t in data["techniker"]:
             ka = " [Hugo KA]" if t["hugo_ka"] else ""
             mx = " [Skills-Matrix]" if t["in_skills_matrix"] else " [keine Skills]"
-            print(f"  {t['pseudonym_id']:8s}  {t['standort']:20s}  "
-                  f"PM: {t['pm_count']:3d}/{t['total_model_codes']}"
+            print(f"  {t['pseudonym_id']:14s}  {t['standort']:20s}  "
+                  f"PM: {t['pm_count']:3d}  L3: {t['pm_repair_count']:3d}"
                   f"  ({t['pm_ratio_pct']:5.1f}%){ka}{mx}")
     except FileNotFoundError as e:
         print(f"FEHLER: {e}")
