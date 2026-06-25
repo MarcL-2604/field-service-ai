@@ -651,9 +651,21 @@ def _render_workflow_status() -> str:
   </section>"""
 
 
-def _render_business_case() -> str:
+def _render_business_case(stk_potenzial_gesamt: int = 0, median_min: int = 0) -> str:
     """Erzeugt die Business-Case Sektion mit konkreten Kennzahlen."""
-    return """
+    if stk_potenzial_gesamt > 0:
+        stk_fmt = f"{stk_potenzial_gesamt:,}".replace(",", ".")
+        med_fmt = str(median_min)
+        ct_roi_html = f"""
+        <div class="bc-result">{stk_fmt} zus&auml;tzliche STKs/Jahr m&ouml;glich</div>
+        <div class="bc-formula">&times; &Oslash; {med_fmt}&thinsp;Min. Einsatzdauer &times; [Stundensatz: T&amp;E anfragen]</div>
+        <div class="bc-hint">= Zus&auml;tzlicher Deckungsbeitrag (Stundensatz: T&amp;E anfragen)</div>"""
+    else:
+        ct_roi_html = """
+        <div class="bc-formula">[+STK/a Potenzial] &times; [&Oslash; STK-Dauer h] &times; [T&amp;E anfragen]</div>
+        <div class="bc-hint">= Zus&auml;tzlicher Deckungsbeitrag (Stundensatz: T&amp;E anfragen)</div>"""
+
+    return f"""
   <section>
     <h2>7 &mdash; Business Case</h2>
     <p class="section-hint">
@@ -672,9 +684,7 @@ def _render_business_case() -> str:
         <div class="bc-hint">= J&auml;hrliche Einsparung (Stundensatz bei T&amp;E anfragen)</div>
       </div>
       <div class="bc-card">
-        <div class="bc-card-title">Crosstraining-ROI</div>
-        <div class="bc-formula">[+STK/a Potenzial] &times; [&Oslash; STK-Dauer h] &times; [T&amp;E anfragen]</div>
-        <div class="bc-hint">= Zus&auml;tzlicher Deckungsbeitrag (Stundensatz bei T&amp;E anfragen)</div>
+        <div class="bc-card-title">Crosstraining-ROI</div>{ct_roi_html}
       </div>
       <div class="bc-card">
         <div class="bc-card-title">Fahrzeit / Gebiet</div>
@@ -3171,6 +3181,7 @@ def render_html(
     demo_history: dict[str, dict] | None = None,
     repair_rows: list[dict] | None = None,
     is_echtdaten: bool = False,
+    ct_kennzahlen: dict | None = None,
 ) -> str:
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten)
     stk_html      = _render_stk_tabelle(stk_rows)
@@ -3179,7 +3190,11 @@ def render_html(
     warnung_html  = _render_nrw_warnung(nrw_warnung)
     puffer_html   = _render_puffer_section(labor_zeiten or [])
     workflow_html = _render_workflow_status()
-    bc_html       = _render_business_case()
+    _ct = ct_kennzahlen or {}
+    bc_html       = _render_business_case(
+        stk_potenzial_gesamt=_ct.get("stk_potenzial_gesamt", 0),
+        median_min=_ct.get("einsatz_median_min", 0),
+    )
     m_akt, m_opt  = gebiets_metriken or ([], [])
     plz_abd       = _berechne_plz_abdeckung(techniker)
     gebiets_html  = _render_gebietsplanung(m_akt, m_opt, plz_abd)
@@ -3939,10 +3954,15 @@ def main() -> None:
         print("  -> Echtdaten-Modus: SMax-Import geladen")
 
         # Ampel aus echten PM-Skill-Daten berechnen
+        ct_kennzahlen: dict | None = None
         try:
             from api.smax_cache import load_dashboard_data as _smax_load
             _smax = _smax_load()
             ampeln = _berechne_ampeln_aus_smax(_smax["techniker"])
+            ct_kennzahlen = {
+                "stk_potenzial_gesamt": _smax.get("stk_potenzial_gesamt", 0),
+                "einsatz_median_min":   _smax.get("einsatz_median_min", 0),
+            }
         except Exception:
             ampeln = _berechne_ampeln(ct_rows, techniker)
 
@@ -4123,6 +4143,7 @@ def main() -> None:
         demo_history=demo_history,
         repair_rows=repair_rows,
         is_echtdaten=_ECHTDATEN,
+        ct_kennzahlen=ct_kennzahlen if _ECHTDATEN else None,
     )
 
     _OUT_PATH.write_text(html, encoding="utf-8")

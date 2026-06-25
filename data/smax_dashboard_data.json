@@ -899,5 +899,7 @@
   "pm_repair_skills_eintraege": 524,
   "closed_jobs": 9264,
   "open_jobs": 786,
-  "generated_at": "2026-06-25T14:26:26"
+  "stk_potenzial_gesamt": 1472,
+  "einsatz_median_min": 157,
+  "generated_at": "2026-06-25T17:06:40"
 }

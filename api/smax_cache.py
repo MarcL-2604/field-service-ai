@@ -281,6 +281,9 @@ def build_dashboard_data() -> dict:
             "geraete_im_gebiet":     geraete_im_gebiet,
         })
 
+    dauern = [d for d in ergebnis.einsatzdauern if d.median_min > 0]
+    einsatz_median_min = round(sum(d.median_min for d in dauern) / len(dauern)) if dauern else 0
+
     return {
         "techniker":                  techniker_list,
         "total_model_codes":          total_mc,
@@ -290,6 +293,8 @@ def build_dashboard_data() -> dict:
         "pm_repair_skills_eintraege": sum(1 for e in ergebnis.skills if e.qualifikation == "PM" and e.repair is True),
         "closed_jobs":                len(ergebnis.geschlossene_auftraege),
         "open_jobs":                  len(ergebnis.offene_auftraege),
+        "stk_potenzial_gesamt":       sum(t["stk_potenzial"] for t in techniker_list),
+        "einsatz_median_min":         einsatz_median_min,
         "generated_at":               datetime.now().isoformat(timespec="seconds"),
     }
 
