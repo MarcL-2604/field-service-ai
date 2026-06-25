@@ -29,7 +29,6 @@ class TestExacterMatch:
         assert info == ClusterInfo(cluster="CLUSTER3_MONITORING", repair=False)
 
     def test_pm7100pa_monitoring_repair_false(self):
-        """MC-PM7100PA ist Einzelcode mit repair=False, Präfix MC-PM7100 hat repair=True."""
         info = finde_cluster("MC-PM7100PA")
         assert info == ClusterInfo(cluster="CLUSTER3_MONITORING", repair=False)
 
@@ -41,10 +40,20 @@ class TestExacterMatch:
         info = finde_cluster("MC-RAPIDVAC")
         assert info == ClusterInfo(cluster="HF_CHIRURGIE", repair=False)
 
-    def test_840_exact_ist_small_capital(self):
-        """MC-840 exakt → SMALL_CAPITAL (repair=False), nicht CLUSTER3 Präfix."""
+    def test_840_via_prefix_cluster3_repair_true(self):
+        """MC-840 nicht mehr in exact → Präfix MC-840 greift → CLUSTER3, repair=True."""
         info = finde_cluster("MC-840")
-        assert info == ClusterInfo(cluster="SMALL_CAPITAL", repair=False)
+        assert info == ClusterInfo(cluster="CLUSTER3_MONITORING", repair=True)
+
+    def test_haloflex_repair_false(self):
+        """HALOFLEX/HALOFLEXR: HF_CHIRURGIE aber kein Feld-Repair."""
+        assert finde_cluster("MC-HALOFLEX")  == ClusterInfo(cluster="HF_CHIRURGIE", repair=False)
+        assert finde_cluster("MC-HALOFLEXR") == ClusterInfo(cluster="HF_CHIRURGIE", repair=False)
+
+    def test_9734_9733_repair_false(self):
+        """StealthStation-Varianten 9733/9734 → PM-only, kein Repair."""
+        assert finde_cluster("MC-9734-A") == ClusterInfo(cluster="CLUSTER1_OR", repair=False)
+        assert finde_cluster("MC-9733-B") == ClusterInfo(cluster="CLUSTER1_OR", repair=False)
 
     def test_cagenhp_exact_ist_small_capital(self):
         """MC-CAGENHP exakt → SMALL_CAPITAL; Präfix MC-CAGENHP → CLUSTER2."""
@@ -83,17 +92,17 @@ class TestPraefixMatch:
         assert info == ClusterInfo(cluster="CLUSTER2_CARDIAC", repair=True)
 
     def test_cagenhp_prefix_mit_suffix_cluster2(self):
-        """MC-CAGENHP mit Suffix → Präfix → CLUSTER2 (exakter Match MC-CAGENHP → SMALL_CAPITAL)."""
+        """MC-CAGENHP mit Suffix → Präfix CLUSTER2, repair=False (nur Affera-Familie hat repair)."""
         info = finde_cluster("MC-CAGENHP-X")
-        assert info == ClusterInfo(cluster="CLUSTER2_CARDIAC", repair=True)
+        assert info == ClusterInfo(cluster="CLUSTER2_CARDIAC", repair=False)
 
-    def test_pm7100_prefix_monitoring_repair_true(self):
-        """MC-PM7100 als Präfix → repair=True; MC-PM7100PA (exakt) → repair=False."""
+    def test_pm7100_prefix_monitoring_repair_false(self):
+        """MC-PM7100 Familie → PM-only, kein Feld-Repair."""
         info = finde_cluster("MC-PM7100-BL")
-        assert info == ClusterInfo(cluster="CLUSTER3_MONITORING", repair=True)
+        assert info == ClusterInfo(cluster="CLUSTER3_MONITORING", repair=False)
 
-    def test_840_prefix_cluster3(self):
-        """MC-840xyz → Präfix MC-840 → CLUSTER3 (exakt MC-840 → SMALL_CAPITAL)."""
+    def test_840_prefix_cluster3_repair_true(self):
+        """MC-840-A → Präfix MC-840 → CLUSTER3, repair=True."""
         info = finde_cluster("MC-840-A")
         assert info == ClusterInfo(cluster="CLUSTER3_MONITORING", repair=True)
 
@@ -104,7 +113,7 @@ class TestPraefixMatch:
 
     def test_scope_ohne_zahl_cluster2(self):
         info = finde_cluster("MC-SCOPE-ABC")
-        assert info == ClusterInfo(cluster="CLUSTER2_CARDIAC", repair=True)
+        assert info == ClusterInfo(cluster="CLUSTER2_CARDIAC", repair=False)
 
     def test_catheter_aa_repair_false(self):
         info = finde_cluster("MC-AA500")
@@ -197,18 +206,18 @@ class TestMapSkillRowMitCluster:
         eintrag = map_skill_row("MC-NITRON", "Hans Müller", "")
         assert eintrag.qualifikation is None
 
-    def test_pm7100pa_ja_ergibt_pm_nicht_pm_repair(self):
-        """PM7100PA ist Einzelcode mit repair=False → PM, obwohl Präfix repair=True."""
+    def test_pm7100pa_ja_ergibt_pm(self):
         eintrag = map_skill_row("MC-PM7100PA", "Hans Müller", "JA")
         assert eintrag.qualifikation == "PM"
         assert eintrag.cluster == "CLUSTER3_MONITORING"
         assert eintrag.repair is False
 
-    def test_pm7100_mit_suffix_ja_ergibt_pm_repair(self):
+    def test_pm7100_mit_suffix_ja_ergibt_pm(self):
+        """PM7100-Familie → PM-only, kein Feld-Repair."""
         eintrag = map_skill_row("MC-PM7100-BL", "Hans Müller", "JA")
-        assert eintrag.qualifikation == "PM+Repair"
+        assert eintrag.qualifikation == "PM"
         assert eintrag.cluster == "CLUSTER3_MONITORING"
-        assert eintrag.repair is True
+        assert eintrag.repair is False
 
     def test_hf_chirurgie_repair_true(self):
         eintrag = map_skill_row("MC-FT10", "Hans Müller", "JA")
