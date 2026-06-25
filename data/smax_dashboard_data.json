@@ -108,11 +108,11 @@
       "techniker_typ": "STANDARD",
       "in_skills_matrix": true,
       "pm_count": 182,
-      "pm_repair_count": 68,
+      "pm_repair_count": 0,
       "total_model_codes": 365,
       "total_repair_codes": 94,
       "pm_ratio_pct": 49.9,
-      "repair_abdeckung_pct": 72.3
+      "repair_abdeckung_pct": 0.0
     },
     {
       "pseudonym_id": "Dirk H.",
@@ -464,5 +464,5 @@
   "pm_repair_skills_eintraege": 524,
   "closed_jobs": 9264,
   "open_jobs": 786,
-  "generated_at": "2026-06-25T14:01:36"
+  "generated_at": "2026-06-25T14:11:38"
 }

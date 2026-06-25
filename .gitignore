@@ -39,3 +39,6 @@ _tmp_*.py
 # Echtdaten (SMax Export) — nicht committen
 data/*.xlsx
 data/*.xls
+
+# Interne Korrekturliste — nicht oeffentlich
+data/skill_korrekturen.json

@@ -20,9 +20,10 @@ from typing import Optional
 
 from config import PSEUDONYMISIERUNG_AKTIV
 
-_ROOT  = Path(__file__).resolve().parent.parent
-_XLSX  = _ROOT / "data" / "KI_gestuetzte_Planung.xlsx"
-_CACHE = _ROOT / "data" / "smax_dashboard_data.json"
+_ROOT         = Path(__file__).resolve().parent.parent
+_XLSX         = _ROOT / "data" / "KI_gestuetzte_Planung.xlsx"
+_CACHE        = _ROOT / "data" / "smax_dashboard_data.json"
+_KORREKTUREN  = _ROOT / "data" / "skill_korrekturen.json"
 
 # ── Hugo-KA-Städte ────────────────────────────────────────────────────────────
 _HUGO_KA_STAEDTE: frozenset[str] = frozenset({
@@ -120,6 +121,39 @@ def _norm_umlaut(s: str) -> str:
             .replace("ß", "ss"))
 
 
+def _lade_korrekturen() -> dict[str, dict]:
+    """Lädt skill_korrekturen.json; {} wenn Datei fehlt (keine Pflicht-Datei)."""
+    if not _KORREKTUREN.exists():
+        return {}
+    try:
+        raw = json.loads(_KORREKTUREN.read_text(encoding="utf-8"))
+        result: dict[str, dict] = {}
+        for k in raw.get("korrekturen", []):
+            nn = _norm_umlaut(k["techniker"])
+            result[nn] = {
+                "praefixe": [p.strip().upper() for p in k.get("repair_codes_ignorieren_praefixe", [])],
+                "korrekt":  {c.strip().upper() for c in k.get("repair_codes_korrekt", [])},
+                "grund":    k.get("grund", ""),
+            }
+        return result
+    except Exception:
+        return {}
+
+
+def _wende_korrektur_an(repair_mcs: set[str], korrektur: dict) -> set[str]:
+    """Filtert repair_mcs gemaess Korrektur-Eintrag.
+
+    1. Entfernt Codes deren Prefix in korrektur['praefixe'] steht.
+    2. Schneidet das Ergebnis mit korrektur['korrekt'] (Whitelist), falls nicht leer.
+    """
+    praefixe = korrektur.get("praefixe", [])
+    korrekt  = korrektur.get("korrekt", set())
+    nach_filter = {c for c in repair_mcs if not any(c.upper().startswith(p) for p in praefixe)}
+    if korrekt:
+        return {c for c in nach_filter if c.upper() in korrekt}
+    return nach_filter
+
+
 def build_dashboard_data() -> dict:
     """Parst XLSX und erstellt dashboard-kompatible Daten mit pseudonymisierten IDs."""
     from api.import_real_data import parse_smax_xlsx
@@ -128,6 +162,7 @@ def build_dashboard_data() -> dict:
         raise FileNotFoundError(f"XLSX nicht gefunden: {_XLSX}")
 
     ergebnis = parse_smax_xlsx(_XLSX.read_bytes(), sample_limit=None)
+    korrekturen = _lade_korrekturen()
 
     # Skill-Map: normalisierter Name → {PM-Codes, Alle-Codes}
     # Normalisierung notwendig: Skills-Sheet hat "Dirk Haebel", Wohnorte "Dirk Hübel"
@@ -158,11 +193,16 @@ def build_dashboard_data() -> dict:
         lat, lon = _STADT_COORDS.get(ort_key, (0.0, 0.0))
         region, bundesland = _STADT_REGION.get(ort_key, ("Unbekannt", "Unbekannt"))
 
-        tn_norm       = _norm_umlaut(tech.name)
-        pm_mcs        = skill_pm.get(tn_norm, set())
-        repair_mcs    = skill_repair.get(tn_norm, set())
-        alle_mcs      = skill_alle.get(tn_norm, set())
-        pm_count      = len(pm_mcs)
+        tn_norm    = _norm_umlaut(tech.name)
+        pm_mcs     = skill_pm.get(tn_norm, set())
+        alle_mcs   = skill_alle.get(tn_norm, set())
+        pm_count   = len(pm_mcs)
+
+        repair_mcs_raw = skill_repair.get(tn_norm, set())
+        if tn_norm in korrekturen:
+            repair_mcs = _wende_korrektur_an(repair_mcs_raw, korrekturen[tn_norm])
+        else:
+            repair_mcs = repair_mcs_raw
         pm_repair_count = len(repair_mcs)
 
         techniker_list.append({
