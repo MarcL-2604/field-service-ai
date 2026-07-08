@@ -459,10 +459,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus J
 
     <div class="mail-card">
       <div class="mail-head">
-        <div class="mail-head-row"><span class="k">Von:</span><span class="v">koordination.fieldservice@medtronic.com</span></div>
+        <div class="mail-head-row"><span class="k">Von:</span><span class="v" id="m6-von">marc.liebhardt@medtronic.com</span></div>
         <div class="mail-head-row"><span class="k">An:</span><span class="v" id="m6-an">dr.weber@klinikum-musterstadt.de</span></div>
+        <div class="mail-head-row"><span class="k">CC:</span><span class="v" id="m6-cc">koordinator.service@medtronic.com</span></div>
         <div class="mail-head-row"><span class="k">Betreff:</span><span class="v" id="m6-betreff"></span></div>
       </div>
+      <div class="card-sub" style="padding:0 16px 10px;margin-top:-2px">Techniker ist Absender, da bei Rückfragen, Terminabsagen oder Umplanung durch den Kunden die Antwort direkt beim zuständigen Techniker landet. Koordinator bleibt via CC informiert und kann bei Bedarf eingreifen.</div>
       <div class="mail-body" id="m6-text"></div>
     </div>
 
@@ -683,24 +685,33 @@ Koordination Field Service`;
     };
   }
 
+  /* Techniker ist Absender (nicht Koordinator): bei Rückfragen, Terminabsagen oder
+     Umplanung durch den Kunden landet die Antwort direkt beim zuständigen Techniker.
+     Koordinator bleibt via CC informiert und kann bei Bedarf eingreifen. */
+  const KOORDINATOR_CC = 'koordinator.service@medtronic.com';
+
   function generiereKundenMail(auftrag, techniker, gewaehlt, gesamtMin) {
+    const technikerName = techniker.vorname === 'Marc' ? 'Marc Liebhardt' : techniker.name;
     const text =
 `Sehr geehrte ${auftrag.ansprechpartner},
 
 vielen Dank für Ihren Auftrag ${auftrag.id}. Wir bestätigen den Termin für die ${auftrag.typ === 'STK' ? 'sicherheitstechnische Kontrolle (STK)' : auftrag.typ}-Prüfung Ihrer ${auftrag.anzahl}× ${auftrag.geraet}-Geräte:
 
 Termin:      ${fmtTerminZeit(gewaehlt, gesamtMin)}
-Techniker:   ${techniker.vorname === 'Marc' ? 'Marc Liebhardt' : techniker.name} (Medtronic Field Service${techniker.hugoKA ? ', Hugo Key Account' : ''})
+Techniker:   ${technikerName} (Medtronic Field Service${techniker.hugoKA ? ', Hugo Key Account' : ''})
 Dauer:       ca. ${Math.floor(gesamtMin / 60)}h ${String(gesamtMin % 60).padStart(2, '0')}min vor Ort (${auftrag.anzahl} Geräte)
 
 Bitte stellen Sie sicher, dass alle ${auftrag.anzahl} ${auftrag.geraet}-Geräte am Termin verfügbar und nicht im OP-Einsatz eingeplant sind.
 
-Bei Rückfragen erreichen Sie uns unter koordination.fieldservice@medtronic.com.
+Bei Rückfragen erreichen Sie mich direkt unter dieser Adresse.
 
 Mit freundlichen Grüßen
+${technikerName}
 Medtronic GmbH · Field Service`;
     return {
+      von: techniker.email,
       empfaenger: auftrag.kundenEmail,
+      cc: KOORDINATOR_CC,
       betreff: `Terminbestätigung ${auftrag.typ} ${auftrag.anzahl}x ${auftrag.geraet} — Medtronic Field Service`,
       text
     };
@@ -716,7 +727,9 @@ Medtronic GmbH · Field Service`;
     document.getElementById('btn-outlook-tech').href = buildMailto(techMail);
 
     const kundenMail = generiereKundenMail(AUFTRAG, marc, gewaehlterTermin, EINSATZ_GESAMT_MIN);
+    document.getElementById('m6-von').textContent = kundenMail.von;
     document.getElementById('m6-an').textContent = kundenMail.empfaenger;
+    document.getElementById('m6-cc').textContent = kundenMail.cc;
     document.getElementById('m6-betreff').textContent = kundenMail.betreff;
     document.getElementById('m6-text').textContent = kundenMail.text;
     document.getElementById('btn-outlook-kunde').href = buildMailto(kundenMail);
@@ -724,14 +737,22 @@ Medtronic GmbH · Field Service`;
     window._mails = { tech: techMail, kunde: kundenMail };
   }
 
-  /* mailto:-Link — EIN Consumer von generiereTechnikerMail()/generiereKundenMail() */
+  /* mailto:-Link — EIN Consumer von generiereTechnikerMail()/generiereKundenMail().
+     Das "cc"-Feld ist optional im Rückgabeobjekt (nur bei der Kundenmail gesetzt) und
+     wandert nach der Pilotphase 1:1 in den SMTP/Graph-API-Consumer. */
   function buildMailto(mail) {
-    return `mailto:${encodeURIComponent(mail.empfaenger)}?subject=${encodeURIComponent(mail.betreff)}&body=${encodeURIComponent(mail.text)}`;
+    const params = [];
+    if (mail.cc) params.push(`cc=${encodeURIComponent(mail.cc)}`);
+    params.push(`subject=${encodeURIComponent(mail.betreff)}`);
+    params.push(`body=${encodeURIComponent(mail.text)}`);
+    return `mailto:${encodeURIComponent(mail.empfaenger)}?${params.join('&')}`;
   }
 
   window.copyMail = function (which) {
     const mail = window._mails[which];
-    const full = `Betreff: ${mail.betreff}\n\n${mail.text}`;
+    let header = `Betreff: ${mail.betreff}\n`;
+    if (mail.cc) header += `CC: ${mail.cc}\n`;
+    const full = `${header}\n${mail.text}`;
     navigator.clipboard.writeText(full).then(() => showToast('✓ Text kopiert'));
   };
 
