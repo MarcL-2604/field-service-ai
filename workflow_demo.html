@@ -186,13 +186,38 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus J
 .badge-bestaetigt{display:none;align-items:center;gap:6px;background:rgba(0,133,124,0.14);color:var(--success);font-weight:800;font-size:11.5px;padding:6px 12px;border-radius:8px;margin-top:12px;justify-content:center}
 .badge-bestaetigt.show{display:flex}
 
-/* CHECKLIST STEP 7 */
-.checklist{margin-top:6px}
-.check-item{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
-.check-item:last-child{border-bottom:none}
-.check-item input{width:17px;height:17px;accent-color:var(--success);cursor:pointer}
-.check-item label{cursor:pointer;flex:1}
-.check-item.checked label{color:var(--muted);text-decoration:line-through}
+/* ABSCHLUSS-FORMULAR (TEIL A, Schritt 7) */
+.device-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.device-row:last-child{border-bottom:none}
+.device-row input[type=checkbox]{width:17px;height:17px;accent-color:var(--success);cursor:pointer;flex-shrink:0}
+.device-row .device-lbl{width:76px;flex-shrink:0;font-weight:600}
+.device-row input[type=text]{flex:1;min-width:0;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:7px 10px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);outline:none}
+.device-row input[type=text]:focus{border-color:var(--primary)}
+.device-row input[type=text]::placeholder{color:#98a7b3}
+.dauer-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.dauer-row input[type=number]{width:64px;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:8px 10px;font-size:13px;text-align:center;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);outline:none}
+.dauer-row input[type=number]:focus{border-color:var(--primary)}
+.dauer-row .sep{font-weight:700;color:var(--muted)}
+.doc-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.doc-item:last-child{border-bottom:none}
+.doc-item input{width:17px;height:17px;accent-color:var(--success);cursor:pointer;flex-shrink:0}
+.doc-item label{cursor:pointer;flex:1}
+.pflicht-tag{display:none;font-size:9.5px;font-weight:800;letter-spacing:.03em;color:#a6690a;background:rgba(245,166,35,0.16);padding:2px 7px;border-radius:6px}
+.pflicht-tag.show{display:inline}
+
+/* KI-KONTROLLE ERGEBNIS (TEIL B, Schritt 7) */
+.ki-result{display:none;margin-top:16px}
+.ki-result.show{display:block}
+.ki-overall{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ki-overall .ki-overall-lbl{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.ki-row{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.ki-row:last-child{border-bottom:none}
+.ki-row .ampel{flex-shrink:0;height:fit-content;white-space:nowrap}
+.ki-row-faktor{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
+.ki-row-text{font-size:13px;line-height:1.5}
+.ki-begruendung{width:100%;margin-top:8px;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:8px 10px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);resize:vertical;min-height:44px;outline:none}
+.ki-begruendung:focus{border-color:var(--primary)}
+
 .progress-mini{font-size:12px;color:var(--muted);margin-top:10px}
 .summary-box{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-top:16px}
 .summary-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px dashed var(--border)}
@@ -479,14 +504,70 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus J
   <!-- ═══════════ SCHRITT 7 ═══════════ -->
   <div class="wf-panel" id="panel-7">
     <div class="step-eyebrow">Schritt 7 von 7</div>
-    <h2 class="step-h2">Einsatz &amp; Abschluss</h2>
-    <p class="step-desc">Letzter Schritt vor der Rückkehr ins Bestandssystem — bewusste Systemgrenze der Pilotphase.</p>
+    <h2 class="step-h2">Einsatz &amp; Abschluss <span class="pill pill-mensch">Techniker-Meldung + KI-Kontrolle</span></h2>
+    <p class="step-desc">Der Techniker meldet den Einsatz aktiv ab (mobiles Formular) — die KI prüft anschließend automatisch Vollständigkeit und Plausibilität, bevor der Vorgang als abgeschlossen gilt.</p>
 
+    <div class="step-eyebrow" style="margin-top:4px">Teil A — Techniker-Meldung</div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-status"><span>16:42</span><span>SMax Go</span></div>
+          <div class="phone-body">
+            <div class="phone-app-bar"><span>Einsatz abschließen</span><span class="ampel ampel-gelb" style="font-size:9px">WO-2026-M001</span></div>
+
+            <div class="phone-card">
+              <div class="k" style="margin-bottom:8px">Geräte (7× FT10)</div>
+              <div id="device-rows"></div>
+            </div>
+
+            <div class="phone-card">
+              <div class="k" style="margin-bottom:6px">Tatsächliche Gesamtdauer</div>
+              <div class="dauer-row">
+                <input type="number" id="dauer-h" min="0" max="23" value="7"><span>h</span>
+                <span class="sep">:</span>
+                <input type="number" id="dauer-m" min="0" max="59" value="41"><span>min</span>
+                <span style="font-size:11px;color:var(--muted);margin-left:6px">(geplant: 7h 41min)</span>
+              </div>
+            </div>
+
+            <div class="phone-card">
+              <div class="k" style="margin-bottom:6px">Dokumente</div>
+              <div class="doc-item">
+                <input type="checkbox" id="doc-protokoll" checked>
+                <label for="doc-protokoll">Prüfprotokoll/STK-Bericht erstellt</label>
+              </div>
+              <div class="doc-item">
+                <input type="checkbox" id="doc-messprotokoll" checked>
+                <label for="doc-messprotokoll">Messprotokoll vorhanden</label>
+              </div>
+              <div class="doc-item">
+                <input type="checkbox" id="doc-unterschrift" checked>
+                <label for="doc-unterschrift">Kundenunterschrift/Abnahme eingeholt</label>
+              </div>
+              <div class="doc-item">
+                <input type="checkbox" id="doc-foto">
+                <label for="doc-foto">Foto-Dokumentation</label>
+                <span class="pflicht-tag" id="doc-foto-pflicht-tag">PFLICHT — Auffälligkeit gemeldet</span>
+              </div>
+            </div>
+
+            <div class="phone-btn-row">
+              <button class="phone-btn ok" onclick="fuehreAbschlussPruefungDurch()" style="flex:1">Einsatz abschließen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-eyebrow" style="margin-top:20px">Teil B — KI-Kontrolle</div>
     <div class="card">
-      <div class="card-title" style="margin-bottom:4px">Einsatz-Checkliste</div>
-      <div class="card-sub" style="margin-bottom:6px">7× FT10 geprüft + Abschlussschritte</div>
-      <div class="checklist" id="checklist"></div>
-      <div class="progress-mini" id="checklist-progress">0/9 erledigt</div>
+      <div class="card-title" style="margin-bottom:4px">prüfeAbschluss()</div>
+      <div class="card-sub" style="margin-bottom:6px">Reine Funktion (kein UI-Code vermischt) — prüft 4 Faktoren, der schlechteste Einzelwert bestimmt die Gesamt-Ampel. Später 1:1 gegen SMax-Rückmeldedaten austauschbar.</div>
+      <div class="ki-result" id="ki-result">
+        <div class="ki-overall" id="ki-overall"></div>
+        <div id="ki-rows"></div>
+      </div>
+      <div class="progress-mini" id="ki-empty-hint">Noch keine Prüfung durchgeführt — auf "Einsatz abschließen" klicken.</div>
     </div>
 
     <div class="sysgrenze">
@@ -829,28 +910,169 @@ Medtronic GmbH · Field Service`;
   };
   refreshBestaetigtBadge();
 
-  /* ───────────────────────── SCHRITT 7: CHECKLISTE ───────────────────────── */
-  (function renderChecklist() {
-    const items = [];
-    for (let i = 1; i <= 7; i++) items.push({ id: `geraet-${i}`, label: `FT10 Gerät ${i}/7 geprüft` });
-    items.push({ id: 'berichte', label: 'Serviceberichte erstellt (SMax Go)' });
-    items.push({ id: 'kunde', label: 'Kunde informiert (Terminbestätigung versendet)' });
+  /* ───────────────────────── SCHRITT 7 / TEIL A: TECHNIKER-MELDUNG (Formular) ───────────────────────── */
+  const ANZAHL_GERAETE = AUFTRAG.anzahl; // 7
 
-    const wrap = document.getElementById('checklist');
-    wrap.innerHTML = items.map(it => `
-      <div class="check-item" id="ci-${it.id}">
-        <input type="checkbox" id="cb-${it.id}" onchange="toggleCheck('${it.id}')">
-        <label for="cb-${it.id}">${it.label}</label>
+  (function renderDeviceRows() {
+    const wrap = document.getElementById('device-rows');
+    let rows = '';
+    for (let i = 1; i <= ANZAHL_GERAETE; i++) {
+      rows += `
+        <div class="device-row">
+          <input type="checkbox" id="dev-done-${i}" checked>
+          <span class="device-lbl">Gerät ${i}/${ANZAHL_GERAETE}</span>
+          <input type="text" id="dev-note-${i}" placeholder="Auffälligkeit (optional)" oninput="updateFotoPflicht()">
+        </div>`;
+    }
+    wrap.innerHTML = rows;
+  })();
+
+  function sammleErledigt() {
+    let n = 0;
+    for (let i = 1; i <= ANZAHL_GERAETE; i++) {
+      if (document.getElementById(`dev-done-${i}`).checked) n++;
+    }
+    return n;
+  }
+
+  function sammleAuffaelligkeiten() {
+    const liste = [];
+    for (let i = 1; i <= ANZAHL_GERAETE; i++) {
+      const val = document.getElementById(`dev-note-${i}`).value.trim();
+      if (val) liste.push(`Gerät ${i}: ${val}`);
+    }
+    return liste;
+  }
+
+  window.updateFotoPflicht = function () {
+    const pflicht = sammleAuffaelligkeiten().length > 0;
+    document.getElementById('doc-foto-pflicht-tag').classList.toggle('show', pflicht);
+  };
+
+  /* ───────────────────────── SCHRITT 7 / TEIL B: KI-KONTROLLE ─────────────────────────
+     Reine Funktion, kein UI-Code vermischt — Rueckgabe {status, gruende} laesst sich
+     nach der Pilotphase 1:1 gegen SMax-Rueckmeldedaten austauschen. Prueft 4 Faktoren,
+     der schlechteste Einzelwert (rot > gelb > gruen) bestimmt die Gesamt-Ampel. */
+  function prüfeAbschluss(geplanteDauerMin, gemeldeteDauerMin, anzahlErledigt, anzahlGesamt, auffaelligkeiten, dokumente) {
+    const RANG = { gruen: 0, gelb: 1, rot: 2 };
+    const gruende = [];
+    let gesamt = 'gruen';
+    const hebeGesamt = (status) => { if (RANG[status] > RANG[gesamt]) gesamt = status; };
+
+    // 1. Vollstaendigkeit Geraete
+    if (anzahlErledigt < anzahlGesamt) {
+      gruende.push({
+        faktor: 'Vollständigkeit Geräte', status: 'rot',
+        text: `Unvollständig — ${anzahlErledigt}/${anzahlGesamt} Geräte erledigt. Bitte Grund angeben oder Folgetermin anlegen.`
+      });
+      hebeGesamt('rot');
+    } else {
+      gruende.push({
+        faktor: 'Vollständigkeit Geräte', status: 'gruen',
+        text: `Alle ${anzahlGesamt}/${anzahlGesamt} Geräte erledigt.`
+      });
+    }
+
+    // 2. Plausibilitaet Dauer (+/-20% Toleranz)
+    const abweichungPct = geplanteDauerMin > 0
+      ? Math.abs(gemeldeteDauerMin - geplanteDauerMin) / geplanteDauerMin * 100
+      : 0;
+    const abwGerundet = Math.round(abweichungPct);
+    if (abweichungPct <= 20) {
+      gruende.push({
+        faktor: 'Plausibilität Dauer', status: 'gruen',
+        text: `Dauer plausibel (${abwGerundet}% Abweichung).`
+      });
+    } else if (abweichungPct <= 40) {
+      gruende.push({
+        faktor: 'Plausibilität Dauer', status: 'gelb',
+        text: `Abweichung auffällig (${abwGerundet}%) — bitte kurz begründen.`, begruendungNoetig: true
+      });
+      hebeGesamt('gelb');
+    } else {
+      gruende.push({
+        faktor: 'Plausibilität Dauer', status: 'rot',
+        text: `Deutliche Abweichung (${abwGerundet}%) — Rückfrage an Techniker erforderlich.`
+      });
+      hebeGesamt('rot');
+    }
+
+    // 3. Auffaelligkeiten
+    if (auffaelligkeiten.length > 0) {
+      gruende.push({
+        faktor: 'Auffälligkeiten', status: 'gelb',
+        text: `${auffaelligkeiten.length} Auffälligkeit(en) gemeldet: ${auffaelligkeiten.join('; ')}.`
+      });
+      hebeGesamt('gelb');
+    } else {
+      gruende.push({
+        faktor: 'Auffälligkeiten', status: 'gruen',
+        text: 'Keine Auffälligkeiten gemeldet.'
+      });
+    }
+
+    // 4. Vollstaendigkeit Dokumente (Foto nur Pflicht bei gemeldeter Auffaelligkeit)
+    const pflichtDokumente = [
+      { key: 'protokoll', label: 'Prüfprotokoll/STK-Bericht' },
+      { key: 'messprotokoll', label: 'Messprotokoll' },
+      { key: 'unterschrift', label: 'Kundenunterschrift/Abnahme' }
+    ];
+    if (auffaelligkeiten.length > 0) pflichtDokumente.push({ key: 'foto', label: 'Foto-Dokumentation' });
+    const fehlend = pflichtDokumente.filter(d => !dokumente[d.key]).map(d => d.label);
+    if (fehlend.length > 0) {
+      let text = `Dokumentation unvollständig — fehlend: ${fehlend.join(', ')}.`;
+      if (auffaelligkeiten.length > 0 && !dokumente.foto) {
+        text += ' Foto-Dokumentation bei Auffälligkeiten empfohlen.';
+      }
+      gruende.push({ faktor: 'Vollständigkeit Dokumente', status: 'rot', text });
+      hebeGesamt('rot');
+    } else {
+      gruende.push({
+        faktor: 'Vollständigkeit Dokumente', status: 'gruen',
+        text: 'Alle Pflichtdokumente vorhanden.'
+      });
+    }
+
+    return { status: gesamt, gruende };
+  }
+
+  function renderKiKontrolle(ergebnis) {
+    const LABEL = { gruen: 'GRÜN', gelb: 'GELB', rot: 'ROT' };
+    document.getElementById('ki-empty-hint').style.display = 'none';
+    const result = document.getElementById('ki-result');
+    result.classList.add('show');
+
+    document.getElementById('ki-overall').innerHTML =
+      `<span class="ampel ampel-${ergebnis.status}" style="font-size:12.5px;padding:5px 14px">● Gesamtergebnis: ${LABEL[ergebnis.status]}</span>`;
+
+    document.getElementById('ki-rows').innerHTML = ergebnis.gruende.map(g => `
+      <div class="ki-row">
+        <span class="ampel ampel-${g.status}">● ${LABEL[g.status]}</span>
+        <div style="flex:1">
+          <div class="ki-row-faktor">${g.faktor}</div>
+          <div class="ki-row-text">${g.text}</div>
+          ${g.begruendungNoetig ? `<textarea class="ki-begruendung" placeholder="Begründung für Abweichung (z.B. zusätzliches Gerät entdeckt, Parkplatzsuche, Wartezeit MTech)…"></textarea>` : ''}
+        </div>
       </div>
     `).join('');
+  }
 
-    window.toggleCheck = function (id) {
-      const cb = document.getElementById(`cb-${id}`);
-      document.getElementById(`ci-${id}`).classList.toggle('checked', cb.checked);
-      const done = items.filter(it => document.getElementById(`cb-${it.id}`).checked).length;
-      document.getElementById('checklist-progress').textContent = `${done}/${items.length} erledigt`;
+  window.fuehreAbschlussPruefungDurch = function () {
+    const anzahlErledigt = sammleErledigt();
+    const auffaelligkeiten = sammleAuffaelligkeiten();
+    const h = parseInt(document.getElementById('dauer-h').value, 10) || 0;
+    const m = parseInt(document.getElementById('dauer-m').value, 10) || 0;
+    const gemeldeteDauerMin = h * 60 + m;
+    const dokumente = {
+      protokoll: document.getElementById('doc-protokoll').checked,
+      messprotokoll: document.getElementById('doc-messprotokoll').checked,
+      unterschrift: document.getElementById('doc-unterschrift').checked,
+      foto: document.getElementById('doc-foto').checked
     };
-  })();
+    const ergebnis = prüfeAbschluss(EINSATZ_GESAMT_MIN, gemeldeteDauerMin, anzahlErledigt, ANZAHL_GERAETE, auffaelligkeiten, dokumente);
+    renderKiKontrolle(ergebnis);
+    showToast(ergebnis.status === 'gruen' ? '✓ Einsatz abgeschlossen' : 'Prüfung abgeschlossen — bitte Ergebnis prüfen');
+  };
 
   /* ───────────────────────── STEP-NAVIGATION ───────────────────────── */
   let furthestStep = 1;
