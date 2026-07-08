@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilotphasen-Workflow — Field Service AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #FFFFFF;
+  --bg2:     #F5F5F5;
+  --bg3:     #E8F0F8;
+  --glass:   rgba(0,81,149,0.05);
+  --glass2:  rgba(0,81,149,0.08);
+  --border:  rgba(0,81,149,0.18);
+  --border2: rgba(0,81,149,0.30);
+  --primary: #005195;
+  --accent:  #0066CC;
+  --text:    #1A1A1A;
+  --muted:   #666666;
+  --success: #00857C;
+  --warn:    #f5a623;
+  --error:   #e05252;
+  --gold:    #f5a623;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;overflow-x:hidden}
+
+/* PASSWORD OVERLAY */
+#pw-overlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+.pw-card{background:var(--glass2);border:1px solid var(--border2);border-radius:16px;padding:40px;width:360px;text-align:center;backdrop-filter:blur(20px)}
+.pw-card .logo-mark{margin-bottom:20px}
+.pw-card h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px}
+.pw-card p{color:var(--muted);font-size:13px;margin-bottom:24px}
+.pw-card input{width:100%;background:rgba(0,81,149,0.06);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;color:var(--text);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;letter-spacing:2px;text-align:center;margin-bottom:12px}
+.pw-card input:focus{border-color:var(--primary)}
+.pw-btn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background .2s}
+.pw-btn:hover{background:var(--accent)}
+.pw-error{color:var(--error);font-size:12px;margin-top:8px;display:none}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(0,81,149,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;color:#fff}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-svg{width:32px;height:32px}
+.logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);line-height:1.2}
+.logo-text span{color:var(--accent);display:block;font-size:10px;font-weight:400;letter-spacing:.05em;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.badge-demo{background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.4);color:var(--gold);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.06em}
+.nav-links{display:flex;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:12px;padding:6px 10px;border-radius:6px;transition:all .2s}
+.nav-links a:hover{color:var(--text);background:var(--glass2)}
+.nav-links a.current{color:var(--text);background:var(--glass2);font-weight:600}
+
+/* LAYOUT */
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:32px 24px 80px}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:28px}
+.page-header h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;margin-bottom:8px}
+.page-header h1 span{color:var(--accent)}
+.page-header p{color:var(--muted);font-size:14px;line-height:1.6;max-width:680px}
+.badge-muster{display:inline-flex;align-items:center;gap:5px;background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.4);color:#a6690a;font-size:10px;font-weight:800;padding:3px 9px;border-radius:5px;letter-spacing:.08em;vertical-align:middle;margin-left:10px}
+
+/* PROGRESS BAR */
+.wf-progress-wrap{margin-bottom:20px}
+.wf-progress-track{height:6px;background:var(--glass2);border-radius:3px;overflow:hidden;margin-bottom:16px}
+.wf-progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:3px;transition:width .3s ease}
+.wf-steps{display:flex;gap:4px;background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:4px;flex-wrap:wrap}
+.wf-step{flex:1;min-width:110px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:7px;border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;text-align:left}
+.wf-step:hover{color:var(--text);background:var(--glass2)}
+.wf-step.active{background:var(--primary);color:#fff}
+.wf-step .wf-step-num{width:19px;height:19px;border-radius:50%;background:rgba(0,81,149,0.15);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--primary)}
+.wf-step.active .wf-step-num{background:rgba(255,255,255,0.25);color:#fff}
+.wf-step.done .wf-step-num{background:var(--success);color:#fff}
+.wf-step.done .wf-step-num::before{content:"✓"}
+.wf-step.done .wf-step-num-txt{display:none}
+
+/* PANEL */
+.wf-panel{display:none}
+.wf-panel.active{display:block;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARD */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,81,149,0.08)}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.card-sub{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.5}
+.step-eyebrow{font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.step-h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px}
+.step-desc{color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:20px;max-width:680px}
+
+/* PILLS / BADGES */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.02em}
+.pill-auto{background:rgba(0,102,204,0.12);color:var(--accent);border:1px solid rgba(0,102,204,0.25)}
+.pill-mensch{background:rgba(245,166,35,0.15);color:#a6690a;border:1px solid rgba(245,166,35,0.35)}
+.ampel{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:14px;font-size:11px;font-weight:800;letter-spacing:.04em}
+.ampel-gruen{background:rgba(0,133,124,0.14);color:var(--success)}
+.ampel-gelb{background:rgba(245,166,35,0.16);color:#a6690a}
+.ampel-rot{background:rgba(224,82,82,0.14);color:var(--error)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot-gruen{background:var(--success)}
+.dot-gelb{background:var(--warn)}
+.dot-rot{background:var(--error)}
+
+/* AUFTRAGSKARTE */
+.auftrag-karte{background:linear-gradient(135deg,rgba(0,81,149,0.06),rgba(0,102,204,0.03));border:1px solid var(--border2);border-radius:12px;padding:20px 22px;margin-bottom:16px}
+.auftrag-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.auftrag-id{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--primary)}
+.auftrag-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:10px}
+.auftrag-field-lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.auftrag-field-val{font-size:13.5px;font-weight:600}
+.auto-banner{display:flex;align-items:center;gap:10px;background:rgba(0,102,204,0.08);border:1px solid rgba(0,102,204,0.2);border-radius:9px;padding:10px 14px;margin-top:14px;font-size:12.5px;color:var(--primary)}
+.auto-banner b{color:var(--accent)}
+
+/* SCORE CARDS */
+.tech-card{border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;background:var(--bg)}
+.tech-card.winner{border:2px solid var(--success);background:rgba(0,133,124,0.04)}
+.tech-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.tech-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+.tech-name .win-tag{font-size:10px;background:var(--success);color:#fff;padding:2px 8px;border-radius:10px;margin-left:8px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;letter-spacing:.04em}
+.tech-meta{font-size:12px;color:var(--muted);margin-bottom:10px}
+.score-bar-wrap{height:10px;background:var(--glass2);border-radius:5px;overflow:hidden;margin-bottom:8px}
+.score-bar-fill{height:100%;border-radius:5px}
+.tech-card.winner .score-bar-fill{background:linear-gradient(90deg,var(--success),#00A89C)}
+.tech-card:not(.winner) .score-bar-fill{background:linear-gradient(90deg,#8fa8bd,#b7c6d4)}
+.tech-facts{display:flex;flex-wrap:wrap;gap:8px;font-size:11.5px;color:var(--text)}
+.tech-fact{background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:4px 9px}
+.tech-reason{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+
+/* EINSATZ TABLE */
+.einsatz-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.einsatz-row:last-child{border-bottom:none}
+.einsatz-row.total{font-weight:700;border-top:2px solid var(--border2);margin-top:4px;padding-top:10px;color:var(--primary)}
+.einsatz-row .lbl{color:var(--muted)}
+.einsatz-row .lbl b{color:var(--text);font-weight:600}
+.tag-synergie{font-size:10px;background:rgba(0,102,204,0.12);color:var(--accent);padding:1px 7px;border-radius:8px;margin-left:6px}
+
+/* TERMIN OPTIONS */
+.termin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:6px}
+.termin-opt{border:1px solid var(--border2);border-radius:10px;padding:14px 16px;text-align:center;position:relative}
+.termin-opt.empfohlen{border-color:var(--success);background:rgba(0,133,124,0.05)}
+.termin-opt .termin-date{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px}
+.termin-opt .termin-sub{font-size:11px;color:var(--muted)}
+.termin-tag{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;font-size:9.5px;font-weight:800;padding:2px 9px;border-radius:8px;letter-spacing:.04em}
+
+/* MAIL PREVIEW */
+.mail-card{border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin-top:6px}
+.mail-head{background:var(--glass2);padding:12px 16px;font-size:12px;border-bottom:1px solid var(--border)}
+.mail-head-row{display:flex;gap:8px;margin-bottom:3px}
+.mail-head-row .k{color:var(--muted);width:52px;flex-shrink:0}
+.mail-head-row .v{font-weight:600}
+.mail-body{padding:16px;font-size:12.5px;line-height:1.7;white-space:pre-wrap;font-family:'JetBrains Mono','Consolas',monospace;color:var(--text);background:var(--bg);max-height:340px;overflow-y:auto}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;border:none;font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--muted)}
+.btn-outline:hover{border-color:var(--primary);color:var(--text)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--accent)}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{opacity:.9}
+.btn-error{background:transparent;border:1px solid rgba(224,82,82,0.4);color:var(--error)}
+.btn-error:hover{background:rgba(224,82,82,0.08)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* NAV BUTTONS (bottom of panel) */
+.wf-nav-row{display:flex;justify-content:space-between;margin-top:24px}
+
+/* PHONE FRAME */
+.phone-wrap{display:flex;justify-content:center;padding:10px 0}
+.phone{width:100%;max-width:380px;border:1px solid var(--border2);border-radius:28px;padding:10px;background:#0c1622;box-shadow:0 10px 40px rgba(0,20,40,0.25)}
+.phone-screen{background:var(--bg);border-radius:20px;overflow:hidden}
+.phone-status{background:#0c1622;color:#fff;font-size:10px;padding:8px 16px;display:flex;justify-content:space-between}
+.phone-body{padding:18px}
+.phone-app-bar{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--primary);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.phone-card{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.phone-card .k{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.phone-card .v{font-size:12.5px;font-weight:600}
+.phone-check{display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)}
+.phone-check:last-child{border-bottom:none}
+.phone-btn-row{display:flex;gap:8px;margin-top:14px}
+.phone-btn{flex:1;padding:11px;border-radius:9px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif}
+.phone-btn.ok{background:var(--success);color:#fff}
+.phone-btn.frag{background:transparent;border:1px solid var(--border2);color:var(--muted)}
+.badge-bestaetigt{display:none;align-items:center;gap:6px;background:rgba(0,133,124,0.14);color:var(--success);font-weight:800;font-size:11.5px;padding:6px 12px;border-radius:8px;margin-top:12px;justify-content:center}
+.badge-bestaetigt.show{display:flex}
+
+/* CHECKLIST STEP 7 */
+.checklist{margin-top:6px}
+.check-item{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.check-item:last-child{border-bottom:none}
+.check-item input{width:17px;height:17px;accent-color:var(--success);cursor:pointer}
+.check-item label{cursor:pointer;flex:1}
+.check-item.checked label{color:var(--muted);text-decoration:line-through}
+.progress-mini{font-size:12px;color:var(--muted);margin-top:10px}
+.summary-box{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-top:16px}
+.summary-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px dashed var(--border)}
+.summary-row:last-child{border-bottom:none}
+.summary-row .lbl{color:var(--muted)}
+.grenz-note{background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#a6690a;margin-top:14px}
+
+/* SYSTEMGRENZE */
+.sysgrenze{background:var(--glass2);border:1px dashed var(--border2);border-radius:10px;padding:14px 16px;font-size:12.5px;color:var(--muted);margin-top:16px;display:flex;gap:10px;align-items:flex-start}
+.sysgrenze b{color:var(--text)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--success);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:9998;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:640px){
+  .wf-steps{gap:2px}
+  .wf-step{min-width:0;padding:8px;font-size:10px}
+  .wf-step span.wf-step-label{display:none}
+  .card{padding:16px}
+  .auftrag-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD OVERLAY -->
+<div id="pw-overlay">
+  <div class="pw-card">
+    <div class="logo-mark">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="24,2 44,13 44,35 24,46 4,35 4,13" fill="none" stroke="#0072CE" stroke-width="1.5"/>
+        <polygon points="24,8 38,16 38,32 24,40 10,32 10,16" fill="none" stroke="#00A3E0" stroke-width="1" opacity=".5"/>
+        <circle cx="24" cy="24" r="4" fill="#0072CE"/>
+        <line x1="24" y1="8" x2="24" y2="20" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+        <line x1="24" y1="28" x2="24" y2="40" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+        <line x1="10" y1="16" x2="20" y2="22" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+        <line x1="28" y1="26" x2="38" y2="32" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+        <line x1="38" y1="16" x2="28" y2="22" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+        <line x1="20" y1="26" x2="10" y2="32" stroke="#0072CE" stroke-width="1.2" opacity=".6"/>
+      </svg>
+    </div>
+    <h2>Pilotphasen-Workflow</h2>
+    <p>Field Service AI — Datenzugang</p>
+    <input type="password" id="pw-input" placeholder="Passwort" autocomplete="off">
+    <button class="pw-btn" id="pw-btn">Anmelden</button>
+    <div class="pw-error" id="pw-error">Falsches Passwort</div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="index.html" class="logo">
+    <svg class="logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="none" stroke="#0072CE" stroke-width="1.5"/>
+      <polygon points="20,7 31,13.5 31,26.5 20,33 9,26.5 9,13.5" fill="none" stroke="#00A3E0" stroke-width="1" opacity=".45"/>
+      <circle cx="20" cy="20" r="3.5" fill="#0072CE"/>
+      <line x1="20" y1="7" x2="20" y2="16.5" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+      <line x1="20" y1="23.5" x2="20" y2="33" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+      <line x1="9" y1="13.5" x2="17" y2="18" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+      <line x1="23" y1="22" x2="31" y2="26.5" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+      <line x1="31" y1="13.5" x2="23" y2="18" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+      <line x1="17" y1="22" x2="9" y2="26.5" stroke="#0072CE" stroke-width="1.2" opacity=".55"/>
+    </svg>
+    <div class="logo-text">Field Service AI<span>Pilotphasen-Workflow</span></div>
+  </a>
+  <div class="topbar-right">
+    <div class="badge-demo">⬡ DEMO MODUS</div>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="demo.html">Demo</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="coordinator_import.html">Import</a>
+      <a href="workflow_demo.html" class="current">Workflow Demo</a>
+    </nav>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <h1>Pilotphasen-<span>Workflow</span><span class="badge-muster">⬡ MUSTER-AUFTRAG</span></h1>
+    <p>Ein-Klick-Automatisierung eines Serviceauftrags von Eingang bis Abschluss — vollständig im Browser, ohne SMax-API und ohne Backend. Techniker-Daten sind echte Werte aus dem Skills-Dashboard; der Auftrag ist ein fiktives Musterbeispiel.</p>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="wf-progress-wrap">
+    <div class="wf-progress-track"><div class="wf-progress-fill" id="wf-progress-fill" style="width:14.3%"></div></div>
+    <div class="wf-steps" id="wf-steps">
+      <button class="wf-step active" data-step="1"><span class="wf-step-num"><span class="wf-step-num-txt">1</span></span><span class="wf-step-label">Auftragseingang</span></button>
+      <button class="wf-step" data-step="2"><span class="wf-step-num"><span class="wf-step-num-txt">2</span></span><span class="wf-step-label">KI-Scoring</span></button>
+      <button class="wf-step" data-step="3"><span class="wf-step-num"><span class="wf-step-num-txt">3</span></span><span class="wf-step-label">Einsatzplanung</span></button>
+      <button class="wf-step" data-step="4"><span class="wf-step-num"><span class="wf-step-num-txt">4</span></span><span class="wf-step-label">Techniker-Info</span></button>
+      <button class="wf-step" data-step="5"><span class="wf-step-num"><span class="wf-step-num-txt">5</span></span><span class="wf-step-label">Mobile Ansicht</span></button>
+      <button class="wf-step" data-step="6"><span class="wf-step-num"><span class="wf-step-num-txt">6</span></span><span class="wf-step-label">Kunde info</span></button>
+      <button class="wf-step" data-step="7"><span class="wf-step-num"><span class="wf-step-num-txt">7</span></span><span class="wf-step-label">Abschluss</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════ SCHRITT 1 ═══════════ -->
+  <div class="wf-panel active" id="panel-1">
+    <div class="step-eyebrow">Schritt 1 von 7</div>
+    <h2 class="step-h2">Auftragseingang <span class="pill pill-auto">Auto</span></h2>
+    <p class="step-desc">Der Auftrag kommt täglich automatisch aus SMax Go. Das System erkennt Bündelungspotenzial und bewertet die Fälligkeit sofort — ohne Zutun des Koordinators.</p>
+
+    <div class="auftrag-karte">
+      <div class="auftrag-top">
+        <div>
+          <div class="auftrag-id" id="a1-id">WO-2026-M001</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px" id="a1-klinik">Klinikum Musterstadt · 72072 Tübingen</div>
+        </div>
+        <div class="ampel ampel-gruen" id="a1-faellig-ampel">● Fällig in 21 Tagen</div>
+      </div>
+      <div class="auftrag-grid">
+        <div><div class="auftrag-field-lbl">Gerät</div><div class="auftrag-field-val" id="a1-geraet">7× MC-FT10</div></div>
+        <div><div class="auftrag-field-lbl">Auftragstyp</div><div class="auftrag-field-val" id="a1-typ">STK</div></div>
+        <div><div class="auftrag-field-lbl">Eingang</div><div class="auftrag-field-val" id="a1-eingang">08.07.2026</div></div>
+        <div><div class="auftrag-field-lbl">Fälligkeit</div><div class="auftrag-field-val" id="a1-faellig">29.07.2026</div></div>
+        <div><div class="auftrag-field-lbl">Ansprechpartner</div><div class="auftrag-field-val" id="a1-ap">Fr. Dr. Weber, MTech</div></div>
+        <div><div class="auftrag-field-lbl">Telefon</div><div class="auftrag-field-val" id="a1-tel">+49 7071 000-0000</div></div>
+      </div>
+      <div class="auto-banner">
+        ⚙ <span><b>Bündelung erkannt</b> — 7 Geräte gleiche Familie (Elektrochirurgie/FT10) = 1 Einsatz statt 7 Anfahrten. Geschätzte Fahrzeit-Ersparnis gegenüber Einzelterminen: 6 Anfahrten entfallen.</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px">Fälligkeits-Bewertung</div>
+      <div class="card-sub">Planungsregel: mind. 3 Werktage Vorlauf, optimal 5 Werktage (Messmittel-Vorbereitung). Bei 21 Tagen Vorlauf besteht kein Zeitdruck — Ampel GRÜN.</div>
+    </div>
+
+    <div class="wf-nav-row"><span></span><button class="btn btn-primary" onclick="wfGoto(2)">Weiter zu Schritt 2 →</button></div>
+  </div>
+
+  <!-- ═══════════ SCHRITT 2 ═══════════ -->
+  <div class="wf-panel" id="panel-2">
+    <div class="step-eyebrow">Schritt 2 von 7</div>
+    <h2 class="step-h2">KI-Scoring <span class="pill pill-auto">Vollautomatisch</span></h2>
+    <p class="step-desc">Score = Kompetenz 40% + Fahrzeit 35% + Auslastung 25% (Haversine-Distanz × 1.35 Realverkehr). Alle Techniker-Kennzahlen stammen aus dem echten Skills-Dashboard (<code>smax_dashboard_data.json</code>).</p>
+
+    <div id="scoring-list"></div>
+
+    <div class="wf-nav-row"><button class="btn btn-outline" onclick="wfGoto(1)">← Zurück</button><button class="btn btn-primary" onclick="wfGoto(3)">Weiter zu Schritt 3 →</button></div>
+  </div>
+
+  <!-- ═══════════ SCHRITT 3 ═══════════ -->
+  <div class="wf-panel" id="panel-3">
+    <div class="step-eyebrow">Schritt 3 von 7</div>
+    <h2 class="step-h2">Einsatzplanung <span class="pill pill-auto">Vollautomatisch</span></h2>
+    <p class="step-desc">Einsatzdauer aus echten SMax-Labor-Zeiten (<code>labor_zeiten.csv</code>, technikerspezifischer Match für Marc L. / T10) mit Synergieeffekt und realistischen Pufferzeiten.</p>
+
+    <div class="card">
+      <div class="card-title">Einsatzdauer-Berechnung — 7× FT10</div>
+      <div class="card-sub" style="margin-bottom:10px">Quelle: SMax-historisch, technikerspezifischer Match T10 (Service 60min + Admin 20min je Gerät)</div>
+      <div class="einsatz-row"><span class="lbl">Gerät 1/7 <b>(volle Zeit)</b></span><span>80 min</span></div>
+      <div class="einsatz-row"><span class="lbl">Gerät 2–7/7 <b>(je Gerät)</b><span class="tag-synergie">70% Synergie</span></span><span>6 × 56 min = 336 min</span></div>
+      <div class="einsatz-row"><span class="lbl">Rüstzeit (Familienwechsel)</span><span>0 min — gleiche Familie</span></div>
+      <div class="einsatz-row"><span class="lbl">Netto</span><span><b>416 min (6h 56min)</b></span></div>
+      <div class="einsatz-row" style="padding-top:12px"><span class="lbl">+ Basis-Puffer</span><span>30 min</span></div>
+      <div class="einsatz-row"><span class="lbl">+ Gespräch MTech</span><span>15 min</span></div>
+      <div class="einsatz-row total"><span class="lbl">Gesamt geplant</span><span>461 min = 7h 41min</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Passt-in-Arbeitstag-Check</div>
+          <div class="card-sub">Einsatz 7h 41min + Fahrzeit (~35km, Hin/Rück ca. 1h 30min) = 9h 11min Gesamttag</div>
+        </div>
+        <div class="ampel ampel-gelb">● GELB</div>
+      </div>
+      <div class="grenz-note">Über dem 8h-Zielwert, aber innerhalb des ArbZG-Absolutmaximums (10h). Empfehlung: früher Start (08:00 Uhr) statt spätem Beginn.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:4px">Terminvorschläge</div>
+      <div class="card-sub" style="margin-bottom:14px">Mo–Do (Freitag = Home Office) · mind. 3 Werktage Vorlauf · optimal 5 Werktage</div>
+      <div class="termin-grid" id="termin-grid"></div>
+    </div>
+
+    <div class="wf-nav-row"><button class="btn btn-outline" onclick="wfGoto(2)">← Zurück</button><button class="btn btn-primary" onclick="wfGoto(4)">Weiter zu Schritt 4 →</button></div>
+  </div>
+
+  <!-- ═══════════ SCHRITT 4 ═══════════ -->
+  <div class="wf-panel" id="panel-4">
+    <div class="step-eyebrow">Schritt 4 von 7</div>
+    <h2 class="step-h2">Techniker benachrichtigen <span class="pill pill-mensch">Ein-Klick</span></h2>
+    <p class="step-desc"><code>generiereTechnikerMail()</code> erzeugt Empfänger/Betreff/Text — der Koordinator löst den Versand mit einem Klick aus (Pilotphase). Nach der Pilotphase übernimmt SMTP/Graph-API denselben Text automatisch.</p>
+
+    <div class="mail-card">
+      <div class="mail-head">
+        <div class="mail-head-row"><span class="k">Von:</span><span class="v">koordination.fieldservice@medtronic.com</span></div>
+        <div class="mail-head-row"><span class="k">An:</span><span class="v" id="m4-an">marc.liebhardt@medtronic.com</span></div>
+        <div class="mail-head-row"><span class="k">Betreff:</span><span class="v" id="m4-betreff"></span></div>
+      </div>
+      <div class="mail-body" id="m4-text"></div>
+    </div>
+
+    <div class="btn-row">
+      <a class="btn btn-primary" id="btn-outlook-tech" href="#" target="_blank">✉ In Outlook öffnen</a>
+      <button class="btn btn-outline" onclick="copyMail('tech')">⧉ Text kopieren</button>
+      <button class="btn btn-outline" onclick="downloadICS()">📅 Kalendereintrag (.ics)</button>
+    </div>
+
+    <div class="wf-nav-row"><button class="btn btn-outline" onclick="wfGoto(3)">← Zurück</button><button class="btn btn-primary" onclick="wfGoto(5)">Weiter zu Schritt 5 →</button></div>
+  </div>
+
+  <!-- ═══════════ SCHRITT 5 ═══════════ -->
+  <div class="wf-panel" id="panel-5">
+    <div class="step-eyebrow">Schritt 5 von 7</div>
+    <h2 class="step-h2">Techniker-Ansicht mobil <span class="pill pill-mensch">Simulation</span></h2>
+    <p class="step-desc">So sieht Marc den Auftrag auf dem Handy (SMax Go). Bestätigung schreibt den Status über eine kleine Abstraktionsschicht (<code>StatusStore</code>) — aktuell <code>localStorage</code>, später 1:1 gegen die SMax-API austauschbar.</p>
+
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-status"><span>09:14</span><span>SMax Go</span></div>
+          <div class="phone-body">
+            <div class="phone-app-bar"><span>WO-2026-M001</span><span class="ampel ampel-gelb" style="font-size:9px">STK</span></div>
+
+            <div class="phone-card">
+              <div class="k">Gerät</div><div class="v">7× MC-FT10 (Elektrochirurgie)</div>
+            </div>
+            <div class="phone-card">
+              <div class="k">Standort</div><div class="v">Klinikum Musterstadt, 72072 Tübingen</div>
+            </div>
+            <div class="phone-card">
+              <div class="k">Anfahrt</div><div class="v">~35 km ab Balingen · ca. 45 min</div>
+            </div>
+            <div class="phone-card">
+              <div class="k">Ansprechpartner</div><div class="v">Fr. Dr. Weber (MTech) · +49 7071 000-0000</div>
+            </div>
+            <div class="phone-card">
+              <div class="k">Zugangs-Hinweis</div><div class="v">Anmeldung Pforte Haupteingang → Medizintechnik, Ebene −1</div>
+            </div>
+            <div class="phone-card">
+              <div class="k">Messmittel-Checkliste</div>
+              <div class="phone-check"><span>☐</span><span>Sicherheitstester (VDE 0751-1)</span></div>
+              <div class="phone-check"><span>☐</span><span>HF-Leistungsmessgerät</span></div>
+              <div class="phone-check"><span>☐</span><span>Neutralelektroden-Prüfadapter</span></div>
+              <div class="phone-check"><span>☐</span><span>Prüfprotokoll FT10 (7×)</span></div>
+            </div>
+
+            <div class="phone-btn-row">
+              <button class="phone-btn ok" onclick="techBestaetigen()">✓ Bestätigen</button>
+              <button class="phone-btn frag" onclick="techRueckfrage()">✗ Rückfrage</button>
+            </div>
+            <div class="badge-bestaetigt" id="badge-bestaetigt">✓ BESTÄTIGT</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wf-nav-row"><button class="btn btn-outline" onclick="wfGoto(4)">← Zurück</button><button class="btn btn-primary" onclick="wfGoto(6)">Weiter zu Schritt 6 →</button></div>
+  </div>
+
+  <!-- ═══════════ SCHRITT 6 ═══════════ -->
+  <div class="wf-panel" id="panel-6">
+    <div class="step-eyebrow">Schritt 6 von 7</div>
+    <h2 class="step-h2">Kunde informieren <span class="pill pill-mensch">Ein-Klick</span></h2>
+    <p class="step-desc"><code>generiereKundenMail()</code> erzeugt die Terminbestätigung an die Klinik — gleiches Muster wie Schritt 4, eigener Consumer.</p>
+
+    <div class="mail-card">
+      <div class="mail-head">
+        <div class="mail-head-row"><span class="k">Von:</span><span class="v">koordination.fieldservice@medtronic.com</span></div>
+        <div class="mail-head-row"><span class="k">An:</span><span class="v" id="m6-an">dr.weber@klinikum-musterstadt.de</span></div>
+        <div class="mail-head-row"><span class="k">Betreff:</span><span class="v" id="m6-betreff"></span></div>
+      </div>
+      <div class="mail-body" id="m6-text"></div>
+    </div>
+
+    <div class="btn-row">
+      <a class="btn btn-primary" id="btn-outlook-kunde" href="#" target="_blank">✉ In Outlook öffnen</a>
+      <button class="btn btn-outline" onclick="copyMail('kunde')">⧉ Text kopieren</button>
+    </div>
+
+    <div class="wf-nav-row"><button class="btn btn-outline" onclick="wfGoto(5)">← Zurück</button><button class="btn btn-primary" onclick="wfGoto(7)">Weiter zu Schritt 7 →</button></div>
+  </div>
+
+  <!-- ═══════════ SCHRITT 7 ═══════════ -->
+  <div class="wf-panel" id="panel-7">
+    <div class="step-eyebrow">Schritt 7 von 7</div>
+    <h2 class="step-h2">Einsatz &amp; Abschluss</h2>
+    <p class="step-desc">Letzter Schritt vor der Rückkehr ins Bestandssystem — bewusste Systemgrenze der Pilotphase.</p>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:4px">Einsatz-Checkliste</div>
+      <div class="card-sub" style="margin-bottom:6px">7× FT10 geprüft + Abschlussschritte</div>
+      <div class="checklist" id="checklist"></div>
+      <div class="progress-mini" id="checklist-progress">0/9 erledigt</div>
+    </div>
+
+    <div class="sysgrenze">
+      <span>⛔</span>
+      <span><b>Dokumentation erfolgt in SMax Go (wie gewohnt).</b> Serviceberichte, Prüfprotokolle und die finale Auftragsdokumentation bleiben bewusst außerhalb dieses Prototyps — das ist Aufgabe des Bestandssystems, nicht dieser Pilot-Demo.</span>
+    </div>
+
+    <div class="summary-box">
+      <div class="card-title" style="margin-bottom:6px">Zeitersparnis dieser Planung <span class="badge-muster" style="margin-left:8px">DEMO-SCHÄTZUNG</span></div>
+      <div class="summary-row"><span class="lbl">Manuell (Techniker suchen, Termine abstimmen, 2× Mail einzeln formulieren, Kalender manuell anlegen)</span><span>~6 Arbeitsschritte</span></div>
+      <div class="summary-row"><span class="lbl">Mit diesem Workflow (Scoring, Planung &amp; Mailtexte automatisch, nur noch bestätigen)</span><span>3 Klicks</span></div>
+      <div class="summary-row"><span class="lbl">Keine validierten Zeiterfassungsdaten — Aussage bezieht sich auf Anzahl manueller Arbeitsschritte, nicht auf Minuten oder Euro.</span><span></span></div>
+    </div>
+
+    <div class="wf-nav-row"><button class="btn btn-outline" onclick="wfGoto(6)">← Zurück</button><span></span></div>
+  </div>
+
+</div><!-- /page -->
+
+<div id="toast">✓ Kopiert</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ───────────────────────── PASSWORD ───────────────────────── */
+  async function sha256(msg) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  const HASH = '037453db72fb8a93ebe48d4ff52b1b493cdf56ef6a28240a65c6055b76d8f360';
+  const ov = document.getElementById('pw-overlay');
+  if (localStorage.getItem('fsa_auth') === '1') ov.style.display = 'none';
+  document.getElementById('pw-btn').addEventListener('click', async function () {
+    const pw = document.getElementById('pw-input').value;
+    const h = await sha256(pw);
+    if (h === HASH) {
+      localStorage.setItem('fsa_auth', '1');
+      ov.style.display = 'none';
+    } else {
+      document.getElementById('pw-error').style.display = 'block';
+      document.getElementById('pw-input').value = '';
+    }
+  });
+  document.getElementById('pw-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('pw-btn').click();
+  });
+
+  /* ───────────────────────── DATENSCHICHT (fiktiver Musterauftrag + echte Techniker-Kennzahlen) ─────────────────────────
+     Techniker-Kennzahlen (L3-Abdeckung, Kapazität, Ampel, Lücken) stammen aus data/smax_dashboard_data.json /
+     dashboard.html. Der Auftrag WO-2026-M001 ist ein fiktives Muster-Beispiel (Gold-Badge). */
+
+  const AUFTRAG = {
+    id: 'WO-2026-M001',
+    klinik: 'Klinikum Musterstadt',
+    plz: '72072',
+    ort: 'Tübingen',
+    geraet: 'MC-FT10',
+    geraetName: 'FT10 (Elektrochirurgie)',
+    anzahl: 7,
+    typ: 'STK',
+    eingangLabel: '08.07.2026',
+    faelligLabel: '29.07.2026',
+    faelligTage: 21,
+    ansprechpartner: 'Fr. Dr. Weber',
+    ansprechpartnerRolle: 'MTech',
+    telefon: '+49 7071 000-0000',
+    kundenEmail: 'dr.weber@klinikum-musterstadt.de'
+  };
+
+  const TECHNIKER = [
+    {
+      id: 'T10', name: 'Marc L.', vorname: 'Marc', standort: 'Balingen', plz: '72336', region: 'BaWü-Süd',
+      hugoKA: true, l3: 53, fam: 192, famGesamt: 365, luecken: 173, kapazitaet: 25.6,
+      ampel: 'gelb', distanzKm: 35, ft10Qualifiziert: true, score: 40, email: 'marc.liebhardt@medtronic.com',
+      begruendung: 'FT10 PM+Repair ✓ qualifiziert (keine Crosstraining-Lücke) · kürzeste Anfahrt (~35km) · Auslastung GELB · Hugo Key Account, 25.6h/Woche Kapazität'
+    },
+    {
+      id: '—', name: 'Artur D.', vorname: 'Artur', standort: 'Wehingen', plz: '78564', region: 'BaWü-Süd',
+      hugoKA: false, l3: 33, fam: 120, famGesamt: 365, luecken: 245, kapazitaet: 32.0,
+      ampel: 'gelb', distanzKm: 65, ft10Qualifiziert: false, score: 35, email: '',
+      begruendung: 'MC-FT10 ist Crosstraining-Lücke (nicht qualifiziert) · weiteste Anfahrt (~65km) · Auslastung GELB'
+    },
+    {
+      id: '—', name: 'Roland K.', vorname: 'Roland', standort: 'Waldachtal', plz: '72178', region: 'BaWü-Süd',
+      hugoKA: false, l3: 11, fam: 41, famGesamt: 365, luecken: 324, kapazitaet: 32.0,
+      ampel: 'rot', distanzKm: 50, ft10Qualifiziert: true, score: 25, email: '',
+      begruendung: 'FT10 ✓ qualifiziert, aber Auslastung ROT (niedrigste L3-Abdeckung, 11%) · mittlere Anfahrt (~50km)'
+    }
+  ];
+
+  const TERMINE = [
+    { date: '2026-07-13', label: 'Montag, 13.07.2026', sub: '3 Werktage Vorlauf', empfohlen: false },
+    { date: '2026-07-15', label: 'Mittwoch, 15.07.2026', sub: '5 Werktage Vorlauf', empfohlen: true },
+    { date: '2026-07-16', label: 'Donnerstag, 16.07.2026', sub: '6 Werktage Vorlauf', empfohlen: false }
+  ];
+
+  const EINSATZ_GESAMT_MIN = 461; // 416 netto + 45 puffer
+  let gewaehlterTermin = TERMINE.find(t => t.empfohlen) || TERMINE[0];
+
+  /* ───────────────────────── RENDER: SCHRITT 1 ───────────────────────── */
+  document.getElementById('a1-id').textContent = AUFTRAG.id;
+  document.getElementById('a1-klinik').textContent = `${AUFTRAG.klinik} · ${AUFTRAG.plz} ${AUFTRAG.ort}`;
+  document.getElementById('a1-faellig-ampel').textContent = `● Fällig in ${AUFTRAG.faelligTage} Tagen`;
+  document.getElementById('a1-geraet').textContent = `${AUFTRAG.anzahl}× ${AUFTRAG.geraet}`;
+  document.getElementById('a1-typ').textContent = AUFTRAG.typ;
+  document.getElementById('a1-eingang').textContent = AUFTRAG.eingangLabel;
+  document.getElementById('a1-faellig').textContent = AUFTRAG.faelligLabel;
+  document.getElementById('a1-ap').textContent = `${AUFTRAG.ansprechpartner}, ${AUFTRAG.ansprechpartnerRolle}`;
+  document.getElementById('a1-tel').textContent = AUFTRAG.telefon;
+
+  /* ───────────────────────── RENDER: SCHRITT 2 (Scoring) ───────────────────────── */
+  (function renderScoring() {
+    const maxScore = Math.max(...TECHNIKER.map(t => t.score));
+    const wrap = document.getElementById('scoring-list');
+    wrap.innerHTML = TECHNIKER.map(t => `
+      <div class="tech-card ${t.score === maxScore ? 'winner' : ''}">
+        <div class="tech-head">
+          <div class="tech-name">${t.name}${t.score === maxScore ? '<span class="win-tag">GEWINNER</span>' : ''}</div>
+          <div class="ampel ampel-${t.ampel}">● ${t.ampel.toUpperCase()}</div>
+        </div>
+        <div class="tech-meta">${t.standort} (${t.plz}) · ${t.region}${t.hugoKA ? ' · Hugo Key Account' : ''}</div>
+        <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${(t.score / maxScore * 100).toFixed(0)}%"></div></div>
+        <div class="tech-facts">
+          <span class="tech-fact">Score ${t.score}</span>
+          <span class="tech-fact">L3-Abdeckung ${t.l3}% (${t.fam}/${t.famGesamt})</span>
+          <span class="tech-fact">Kapazität ${t.kapazitaet}h/Woche</span>
+          <span class="tech-fact">~${t.distanzKm}km Anfahrt</span>
+          <span class="tech-fact">FT10 ${t.ft10Qualifiziert ? '✓ qualifiziert' : '⚠ Crosstraining nötig'}</span>
+        </div>
+        <div class="tech-reason">${t.begruendung}</div>
+      </div>
+    `).join('');
+  })();
+
+  /* ───────────────────────── RENDER: SCHRITT 3 (Termine) ───────────────────────── */
+  function renderTermine() {
+    const wrap = document.getElementById('termin-grid');
+    wrap.innerHTML = TERMINE.map(t => `
+      <div class="termin-opt ${t.date === gewaehlterTermin.date ? 'empfohlen' : ''}" onclick="waehleTermin('${t.date}')" style="cursor:pointer">
+        ${t.empfohlen ? '<div class="termin-tag">EMPFOHLEN</div>' : ''}
+        <div class="termin-date">${t.label}</div>
+        <div class="termin-sub">${t.sub}</div>
+      </div>
+    `).join('');
+  }
+  window.waehleTermin = function (date) {
+    gewaehlterTermin = TERMINE.find(t => t.date === date);
+    renderTermine();
+    renderMails();
+  };
+  renderTermine();
+
+  /* ───────────────────────── MAIL-ERZEUGUNG (getrennt von Anzeige/Versand) ─────────────────────────
+     generiereTechnikerMail() / generiereKundenMail() geben {empfaenger, betreff, text} zurueck.
+     Der mailto:-Link ist nur EIN Consumer dieser Funktionen. Nach der Pilotphase kommt
+     SMTP/Graph-API als zweiter Consumer hinzu, ohne dass sich die Erzeugungslogik aendert. */
+
+  function fmtTerminZeit(termin, gesamtMin) {
+    const start = 8 * 60; // 08:00
+    const end = start + gesamtMin;
+    const f = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+    return `${termin.label}, ca. ${f(start)} – ${f(end)} Uhr`;
+  }
+
+  function generiereTechnikerMail(auftrag, techniker, termine, gewaehlt, gesamtMin) {
+    const terminListe = termine.map((t, i) =>
+      `  ${i + 1}. ${t.label} (${t.sub}${t.empfohlen ? ' — empfohlen' : ''})`
+    ).join('\n');
+    const text =
+`Hallo ${techniker.vorname},
+
+neuer Auftrag zugewiesen (automatische KI-Zuordnung):
+
+Auftrag:         ${auftrag.id}
+Klinik:          ${auftrag.klinik}, ${auftrag.plz} ${auftrag.ort}
+Gerät:           ${auftrag.anzahl}× ${auftrag.geraet} (${auftrag.geraetName}) — ${auftrag.typ}
+Fälligkeit:      ${auftrag.faelligLabel} (in ${auftrag.faelligTage} Tagen)
+Ansprechpartner: ${auftrag.ansprechpartner} (${auftrag.ansprechpartnerRolle}), ${auftrag.telefon}
+
+Geplante Einsatzdauer: ${Math.floor(gesamtMin / 60)}h ${String(gesamtMin % 60).padStart(2, '0')}min (7 Geräte, Synergieeffekt Gerät 2–7)
+Anfahrt: ca. ${techniker.distanzKm} km ab ${techniker.standort}
+
+Terminvorschläge (bitte einen bestätigen):
+${terminListe}
+
+Mobile Ansicht mit allen Details: ${location.href.split('#')[0]}#panel-5
+
+Bitte Messmittel am Vortag laden: Sicherheitstester, HF-Leistungsmessgerät, Neutralelektroden-Prüfadapter, Prüfprotokoll FT10 (7×).
+
+Viele Grüße
+Koordination Field Service`;
+    return {
+      empfaenger: techniker.email,
+      betreff: `Neuer Auftrag: ${auftrag.typ} ${auftrag.anzahl}x ${auftrag.geraet} — ${auftrag.klinik}, ${auftrag.ort}`,
+      text
+    };
+  }
+
+  function generiereKundenMail(auftrag, techniker, gewaehlt, gesamtMin) {
+    const text =
+`Sehr geehrte ${auftrag.ansprechpartner},
+
+vielen Dank für Ihren Auftrag ${auftrag.id}. Wir bestätigen den Termin für die ${auftrag.typ === 'STK' ? 'sicherheitstechnische Kontrolle (STK)' : auftrag.typ}-Prüfung Ihrer ${auftrag.anzahl}× ${auftrag.geraet}-Geräte:
+
+Termin:      ${fmtTerminZeit(gewaehlt, gesamtMin)}
+Techniker:   ${techniker.vorname === 'Marc' ? 'Marc Liebhardt' : techniker.name} (Medtronic Field Service${techniker.hugoKA ? ', Hugo Key Account' : ''})
+Dauer:       ca. ${Math.floor(gesamtMin / 60)}h ${String(gesamtMin % 60).padStart(2, '0')}min vor Ort (${auftrag.anzahl} Geräte)
+
+Bitte stellen Sie sicher, dass alle ${auftrag.anzahl} ${auftrag.geraet}-Geräte am Termin verfügbar und nicht im OP-Einsatz eingeplant sind.
+
+Bei Rückfragen erreichen Sie uns unter koordination.fieldservice@medtronic.com.
+
+Mit freundlichen Grüßen
+Medtronic GmbH · Field Service`;
+    return {
+      empfaenger: auftrag.kundenEmail,
+      betreff: `Terminbestätigung ${auftrag.typ} ${auftrag.anzahl}x ${auftrag.geraet} — Medtronic Field Service`,
+      text
+    };
+  }
+
+  const marc = TECHNIKER[0];
+
+  function renderMails() {
+    const techMail = generiereTechnikerMail(AUFTRAG, marc, TERMINE, gewaehlterTermin, EINSATZ_GESAMT_MIN);
+    document.getElementById('m4-an').textContent = techMail.empfaenger;
+    document.getElementById('m4-betreff').textContent = techMail.betreff;
+    document.getElementById('m4-text').textContent = techMail.text;
+    document.getElementById('btn-outlook-tech').href = buildMailto(techMail);
+
+    const kundenMail = generiereKundenMail(AUFTRAG, marc, gewaehlterTermin, EINSATZ_GESAMT_MIN);
+    document.getElementById('m6-an').textContent = kundenMail.empfaenger;
+    document.getElementById('m6-betreff').textContent = kundenMail.betreff;
+    document.getElementById('m6-text').textContent = kundenMail.text;
+    document.getElementById('btn-outlook-kunde').href = buildMailto(kundenMail);
+
+    window._mails = { tech: techMail, kunde: kundenMail };
+  }
+
+  /* mailto:-Link — EIN Consumer von generiereTechnikerMail()/generiereKundenMail() */
+  function buildMailto(mail) {
+    return `mailto:${encodeURIComponent(mail.empfaenger)}?subject=${encodeURIComponent(mail.betreff)}&body=${encodeURIComponent(mail.text)}`;
+  }
+
+  window.copyMail = function (which) {
+    const mail = window._mails[which];
+    const full = `Betreff: ${mail.betreff}\n\n${mail.text}`;
+    navigator.clipboard.writeText(full).then(() => showToast('✓ Text kopiert'));
+  };
+
+  /* ───────────────────────── ICS-GENERIERUNG ───────────────────────── */
+  function escapeICS(s) {
+    return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+  }
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function fmtICSDate(y, m, d, hh, mm) {
+    return `${y}${pad(m)}${pad(d)}T${pad(hh)}${pad(mm)}00`;
+  }
+  window.downloadICS = function () {
+    const [y, m, d] = gewaehlterTermin.date.split('-').map(Number);
+    const startMin = 8 * 60;
+    const endMin = startMin + EINSATZ_GESAMT_MIN;
+    const dtStart = fmtICSDate(y, m, d, Math.floor(startMin / 60), startMin % 60);
+    const dtEnd = fmtICSDate(y, m, d, Math.floor(endMin / 60), endMin % 60);
+    const now = new Date();
+    const dtStamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+    const desc = `${AUFTRAG.anzahl}x ${AUFTRAG.geraet} (${AUFTRAG.geraetName}) — ${AUFTRAG.typ}\\nAnsprechpartner: ${AUFTRAG.ansprechpartner}, ${AUFTRAG.telefon}\\nTechniker: Marc Liebhardt`;
+    const ics = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FieldServiceAI//Pilotphasen-Workflow//DE', 'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      `UID:${AUFTRAG.id}-${gewaehlterTermin.date}@fieldserviceai.demo`,
+      `DTSTAMP:${dtStamp}`,
+      `DTSTART:${dtStart}`,
+      `DTEND:${dtEnd}`,
+      `SUMMARY:${escapeICS(`${AUFTRAG.typ} ${AUFTRAG.anzahl}x ${AUFTRAG.geraet} — ${AUFTRAG.klinik}`)}`,
+      `LOCATION:${escapeICS(`${AUFTRAG.klinik}, ${AUFTRAG.plz} ${AUFTRAG.ort}`)}`,
+      `DESCRIPTION:${escapeICS(desc)}`,
+      'END:VEVENT', 'END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${AUFTRAG.id}_${gewaehlterTermin.date}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast('✓ Termin heruntergeladen');
+  };
+
+  /* ───────────────────────── STATUS-ABSTRAKTIONSSCHICHT ─────────────────────────
+     Aktuell duenner Wrapper um localStorage. Interface (get/setBestaetigt) bleibt
+     nach der Pilotphase identisch, wenn dahinter ein echter API-Client haengt. */
+  const StatusStore = {
+    _key(auftragId) { return `fsa_wf_status_${auftragId}`; },
+    get(auftragId) {
+      try { return JSON.parse(localStorage.getItem(this._key(auftragId))) || { bestaetigt: false }; }
+      catch (e) { return { bestaetigt: false }; }
+    },
+    setBestaetigt(auftragId, wert) {
+      const s = this.get(auftragId);
+      s.bestaetigt = wert;
+      s.zeitpunkt = new Date().toISOString();
+      localStorage.setItem(this._key(auftragId), JSON.stringify(s));
+      return s;
+    }
+  };
+
+  function refreshBestaetigtBadge() {
+    const s = StatusStore.get(AUFTRAG.id);
+    document.getElementById('badge-bestaetigt').classList.toggle('show', !!s.bestaetigt);
+  }
+  window.techBestaetigen = function () {
+    StatusStore.setBestaetigt(AUFTRAG.id, true);
+    refreshBestaetigtBadge();
+    showToast('✓ Termin bestätigt');
+  };
+  window.techRueckfrage = function () {
+    StatusStore.setBestaetigt(AUFTRAG.id, false);
+    refreshBestaetigtBadge();
+    showToast('Rückfrage vermerkt');
+  };
+  refreshBestaetigtBadge();
+
+  /* ───────────────────────── SCHRITT 7: CHECKLISTE ───────────────────────── */
+  (function renderChecklist() {
+    const items = [];
+    for (let i = 1; i <= 7; i++) items.push({ id: `geraet-${i}`, label: `FT10 Gerät ${i}/7 geprüft` });
+    items.push({ id: 'berichte', label: 'Serviceberichte erstellt (SMax Go)' });
+    items.push({ id: 'kunde', label: 'Kunde informiert (Terminbestätigung versendet)' });
+
+    const wrap = document.getElementById('checklist');
+    wrap.innerHTML = items.map(it => `
+      <div class="check-item" id="ci-${it.id}">
+        <input type="checkbox" id="cb-${it.id}" onchange="toggleCheck('${it.id}')">
+        <label for="cb-${it.id}">${it.label}</label>
+      </div>
+    `).join('');
+
+    window.toggleCheck = function (id) {
+      const cb = document.getElementById(`cb-${id}`);
+      document.getElementById(`ci-${id}`).classList.toggle('checked', cb.checked);
+      const done = items.filter(it => document.getElementById(`cb-${it.id}`).checked).length;
+      document.getElementById('checklist-progress').textContent = `${done}/${items.length} erledigt`;
+    };
+  })();
+
+  /* ───────────────────────── STEP-NAVIGATION ───────────────────────── */
+  let furthestStep = 1;
+  window.wfGoto = function (step) {
+    document.querySelectorAll('.wf-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${step}`).classList.add('active');
+    document.querySelectorAll('.wf-step').forEach(btn => {
+      const n = Number(btn.dataset.step);
+      btn.classList.toggle('active', n === step);
+      btn.classList.toggle('done', n < step || (n <= furthestStep && n !== step));
+    });
+    furthestStep = Math.max(furthestStep, step);
+    document.getElementById('wf-progress-fill').style.width = `${(step / 7 * 100).toFixed(1)}%`;
+    if (step === 4 || step === 6) renderMails();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  document.querySelectorAll('.wf-step').forEach(btn => {
+    btn.addEventListener('click', () => wfGoto(Number(btn.dataset.step)));
+  });
+
+  renderMails();
+
+  /* ───────────────────────── TOAST ───────────────────────── */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+});
+</script>
+</body>
+</html>

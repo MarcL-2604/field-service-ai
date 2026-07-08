@@ -415,3 +415,16 @@ Daten kommen als CSV/Excel-Exporte aus ServiceMax. Einlesepfad: `daten/`. Spalte
 - [ ] Persistenz-Layer einführen (Aufträge nur im Arbeitsspeicher)
 - [ ] Klinik-Coverage: 103 vs. 82 Kliniken abgleichen
 - [ ] Ersatzteile-Modul mit echten Stücklisten befüllen
+- [ ] `workflow_demo.html`: nach Pilotfreigabe auf SMax-API + SMTP/Graph-API umstellen (siehe Abschnitt 24)
+
+## 24. Pilotphasen-Workflow (workflow_demo.html)
+
+Interaktive 7-Schritte-Demo des automatisierten Workflows (Abschnitt 18) — läuft rein im Browser, ohne SMax-API und ohne Backend. Muster-Auftrag `WO-2026-M001` (Klinikum Musterstadt, 7× MC-FT10 STK) ist fiktiv und mit goldenem "MUSTER"-Badge gekennzeichnet; die Techniker-Kennzahlen (Marc L., Artur D., Roland K.: L3-Abdeckung, Kapazität, Ampel-Status) sind echte Werte aus `data/smax_dashboard_data.json` / `dashboard.html`.
+
+**Pilotphase = manuelle Trigger, Architektur = API-ready:**
+- Mail-Erzeugung getrennt von Mail-Versand: `generiereTechnikerMail()` / `generiereKundenMail()` geben `{empfaenger, betreff, text}` zurück. Der `mailto:`-Link (Button "In Outlook öffnen") ist nur EIN Consumer dieser Funktionen — nach der Pilotphase kommt SMTP/Graph-API als zweiter Consumer hinzu, ohne dass sich die Erzeugungslogik ändert.
+- Termin-/Planungslogik (Terminvorschläge, Einsatzdauer-Berechnung inkl. Synergieeffekt und Puffer) ist strikt von der Anzeige getrennt.
+- Status-Verwaltung (bestätigt/offen) läuft über `StatusStore` — aktuell ein dünner Wrapper um `localStorage` mit fixem Interface (`get()` / `setBestaetigt()`), später 1:1 gegen einen echten API-Client austauschbar.
+- Navigation: Link "Workflow Demo" in der Topbar aller HTML-Seiten.
+
+Nach Pilotfreigabe: Umstellung auf SMax-API-Anbindung + automatischen Mailversand (siehe Abschnitt 23).
