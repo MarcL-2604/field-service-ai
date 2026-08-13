@@ -299,12 +299,13 @@ class TestLadeKlinikenEchtdaten:
         for k in self.kliniken:
             assert k["id"].startswith("J")
 
-    def test_stk_count_ist_reale_auftragsanzahl(self):
-        """stk_count muss positive Ganzzahlen (echte Job-Zaehlung) enthalten, keine
-        gebrochenen STK/Jahr-Platzhalterwerte wie im Demo-Modell."""
+    def test_stk_count_ist_annualisierte_stk_jahr_rate(self):
+        """stk_count muss STK/Jahr sein (Closed Jobs / Beobachtungszeitraum +
+        Open Jobs) -- dieselbe Zeitbasis wie im Demo-Modell (anzahl/zyklus),
+        NICHT die rohe, mehrjaehrige Job-Summe (das war der Bug)."""
         for wert in self.stk_count.values():
-            assert wert == int(wert)
-            assert wert > 0
+            assert wert >= 0
+        assert any(wert > 0 for wert in self.stk_count.values())
 
     def test_stunden_pro_einsatz_aus_echtem_median(self):
         """stunden_pro_einsatz muss aus dem realen einsatz_median_min abgeleitet sein,

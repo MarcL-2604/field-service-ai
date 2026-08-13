@@ -286,7 +286,7 @@ def _berechne_ampeln_aus_smax(smax_techniker: list[dict]) -> list[dict]:
             "regional":        total,
             "abdeckung_pct":   round(abdeckung * 100),
             "fehlend_count":   total - pm,
-            "zusatz_stk":      0.0,
+            "zusatz_stk":      float(t.get("stk_potenzial", 0)),
             "partner":         "–",
             "ampel_css":       css,
             "ampel_label":     label,
@@ -312,7 +312,7 @@ def _berechne_nrw_warnung_aus_smax(
             "qualifiziert": a["qualifiziert"],
             "familien_l3":  f"{a['qualifiziert']} PM-Qualifikationen",
             "fehlend":      a["fehlend_count"],
-            "zusatz_stk":   0.0,
+            "zusatz_stk":   a["zusatz_stk"],
         })
     # Schwelle: > 800 fehlende Qualifikationen kumuliert als Proxy fuer STK-Potenzial
     if len(nrw_schwach) >= 2 and nrw_gap_gesamt >= _NRW_STK_WARNUNG_SCHWELLE:
@@ -1206,11 +1206,15 @@ def _lade_kliniken_demo() -> tuple[list[dict], dict[str, float], float]:
 def _lade_kliniken_echtdaten() -> tuple[list[dict], dict[str, float], float]:
     """Laedt echte Auftrags-Standorte aus dem SMax-Cache (job_standorte).
 
-    Reale Klinik-/Job-Standorte + reales Auftragsvolumen aus den importierten
-    Open/Closed Jobs (siehe api/smax_cache.py) -- kein Platzhalter-Datensatz.
-    Gibt (kliniken, stk_count, stunden_pro_einsatz) zurueck. stk_count ist die
-    reale Auftragsanzahl je Standort; stunden_pro_einsatz kommt aus dem realen
-    Median der Einsatzdauer (einsatz_median_min).
+    Reale Klinik-/Job-Standorte aus den importierten Open/Closed Jobs (siehe
+    api/smax_cache.py) -- kein Platzhalter-Datensatz. Gibt (kliniken, stk_count,
+    stunden_pro_einsatz) zurueck. stk_count ist STK/Jahr je Standort (bereits in
+    api/smax_cache.py annualisiert: Closed Jobs / Beobachtungszeitraum in Jahren
+    + Open Jobs als aktueller Rueckstand -- siehe "stk_jahr" dort), damit die
+    Auslastungs- und Fahrzeit-Berechnung dieselbe Zeitbasis hat wie im
+    Demo-Modus (dort ist stk_count bereits Anzahl/Wartungszyklus = STK/Jahr).
+    stunden_pro_einsatz kommt aus dem realen Median der Einsatzdauer
+    (einsatz_median_min).
     """
     from api.smax_cache import load_dashboard_data
 
@@ -1222,7 +1226,7 @@ def _lade_kliniken_echtdaten() -> tuple[list[dict], dict[str, float], float]:
     for i, s in enumerate(job_standorte):
         kid = f"J{i}"
         kliniken.append({"id": kid, "plz": s["plz"], "lat": s["lat"], "lon": s["lon"]})
-        stk_count[kid] = s["jobs"]
+        stk_count[kid] = s["stk_jahr"]
 
     einsatz_median_min = smax.get("einsatz_median_min", 0)
     stunden_pro_einsatz = (einsatz_median_min / 60) if einsatz_median_min else 1.5
@@ -3162,6 +3166,20 @@ def _render_gebietsoptimierung(
         "Techniker-Wohnorten und den ihnen historisch zugeordneten "
         "Klinik-PLZ-Gebieten. Jede Farbe entspricht einem Techniker-Gebiet.",
     )
+    zeitraum_hinweis = ""
+    if _ECHTDATEN:
+        try:
+            from api.smax_cache import load_dashboard_data as _load_smax_meta
+            _smax_meta = _load_smax_meta() or {}
+            _zeitraum_jahre = _smax_meta.get("beobachtungszeitraum_jahre")
+            if _zeitraum_jahre:
+                zeitraum_hinweis = (
+                    " Auslastung basiert auf der &Oslash; j&auml;hrlichen "
+                    f"Auftragsrate aus {_zeitraum_jahre:.1f} Jahren Historie "
+                    "(Closed Jobs) zzgl. aktuellem Auftragsr&uuml;ckstand (Open Jobs)."
+                )
+        except Exception:
+            pass
     info_optimiert = _go_info_box(
         "&#129504;",
         "Wie und warum wird optimiert?",
@@ -3174,7 +3192,8 @@ def _render_gebietsoptimierung(
         f"{OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN} Minuten, wandert die "
         "Klinik zu ihm. Ziel: gleichm&auml;&szlig;igere Auslastung bei "
         "vertretbaren Anfahrtswegen &mdash; unabh&auml;ngig von "
-        "Techniker-Anzahl oder -Bezeichnung.",
+        "Techniker-Anzahl oder -Bezeichnung."
+        f"{zeitraum_hinweis}",
     )
     info_luecken = _go_info_box(
         "&#9888;",
@@ -3186,10 +3205,9 @@ def _render_gebietsoptimierung(
     )
 
     # ── Ansicht 1: Aktuelle Gebiete – Tabelle ──
+    # Alle Techniker anzeigen, auch mit 0 zugewiesenen Kliniken (nicht filtern).
     rows_aktuell = ""
     for m in metriken_akt:
-        if m["kliniken"] == 0:
-            continue
         css = "go-gruen" if m["ratio"] >= 3.0 else ("go-gelb" if m["ratio"] >= 2.0 else "go-rot")
         rows_aktuell += (
             f'<tr class="{css}">'
@@ -3201,10 +3219,9 @@ def _render_gebietsoptimierung(
             f'</tr>')
 
     # ── Ansicht 2: Optimierte Gebiete – Vorher/Nachher Tabelle ──
+    # Alle Techniker anzeigen, auch mit 0 (verbliebenen) Kliniken (nicht filtern).
     rows_optimiert = ""
     for m_o in metriken_opt:
-        if m_o["kliniken"] == 0:
-            continue
         m_a = next((x for x in metriken_akt if x["id"] == m_o["id"]), None)
         ratio_vorher = m_a["ratio"] if m_a else 0.0
         ratio_nachher = m_o["ratio"]

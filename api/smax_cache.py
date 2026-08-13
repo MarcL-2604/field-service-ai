@@ -127,6 +127,46 @@ def _norm_umlaut(s: str) -> str:
             .replace("ß", "ss"))
 
 
+def _parse_datum(s: Optional[str]) -> Optional[datetime]:
+    """Parst 'DD.MM.YYYY, HH:MM' (SMax-Datumsformat) zu datetime, sonst None."""
+    if not s:
+        return None
+    try:
+        return datetime.strptime(s.split(",")[0].strip(), "%d.%m.%Y")
+    except ValueError:
+        return None
+
+
+def _berechne_beobachtungszeitraum_jahre(datums: list) -> float:
+    """Zeitraum (in Jahren) zwischen dem fruehesten und spaetesten Datum.
+
+    Closed Jobs sind eine Historie ueber mehrere Jahre, keine Jahresrate --
+    dieser Zeitraum wird gebraucht, um sie zu annualisieren (siehe
+    _berechne_stk_jahr). Faellt bei leerer/einwertiger Liste auf 1.0 Jahr
+    zurueck (kein Zeitraum bekannt -> keine Skalierung).
+    """
+    if not datums:
+        return 1.0
+    zeitraum_tage = (max(datums) - min(datums)).days
+    return zeitraum_tage / 365.25 if zeitraum_tage > 0 else 1.0
+
+
+def _berechne_stk_jahr(
+    closed_jobs: int,
+    open_jobs: int,
+    beobachtungszeitraum_jahre: float,
+) -> float:
+    """STK/Jahr aus realen Auftragszahlen.
+
+    Closed Jobs decken den vollen Beobachtungszeitraum ab (mehrjaehrige
+    Historie) und werden daher annualisiert (Anzahl / Zeitraum in Jahren).
+    Open Jobs sind ein aktueller Rueckstand ohne Zeitbezug und werden
+    ungeteilt addiert.
+    """
+    zeitraum = beobachtungszeitraum_jahre if beobachtungszeitraum_jahre > 0 else 1.0
+    return round(closed_jobs / zeitraum + open_jobs, 2)
+
+
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Luftlinien-Distanz in km (Haversine-Formel)."""
     R = 6371.0
@@ -218,30 +258,53 @@ def build_dashboard_data() -> dict:
             continue
         job_repair_orte.append((familie, coords[0], coords[1]))
 
+    # Beobachtungszeitraum: Closed Jobs sind eine Historie ueber mehrere Jahre,
+    # keine Jahresrate. Zeitraum aus den tatsaechlichen erledigung_datum-Werten
+    # ableiten (nicht hartcodieren), um Closed Jobs korrekt zu annualisieren.
+    closed_datums = [
+        d for d in (_parse_datum(a.erledigung_datum) for a in ergebnis.geschlossene_auftraege)
+        if d is not None
+    ]
+    beobachtungszeitraum_jahre = _berechne_beobachtungszeitraum_jahre(closed_datums)
+
     # Gebietsoptimierung: ALLE Jobs (nicht nur Repair) nach Standort aggregieren.
     # Reale Auftrags-Standorte + Auftragsvolumen -- Basis fuer die
     # Techniker<->Klinik-Zuordnung im "Gebietsoptimierung"-Tab.
+    # STK/Jahr = Closed Jobs annualisiert (Anzahl / Beobachtungszeitraum) +
+    # Open Jobs als aktueller Rueckstand (kein Zeitbezug, daher ungeteilt addiert).
     alle_auftraege = ergebnis.geschlossene_auftraege + ergebnis.offene_auftraege
     job_standorte_map: dict[tuple[str, str], dict] = {}
     jobs_aufgeloest = 0
-    for auftrag in alle_auftraege:
-        plz = (auftrag.plz or "").strip()
-        if not plz:
-            continue
-        plz5 = plz.zfill(5)
-        coords = hole_koordinaten(plz5)
-        if coords is None:
-            continue
-        jobs_aufgeloest += 1
-        account = (auftrag.account or "").strip()
-        key = (account, plz5)
-        eintrag = job_standorte_map.setdefault(key, {
-            "account": account, "plz": plz5,
-            "lat": coords[0], "lon": coords[1], "jobs": 0,
-        })
-        eintrag["jobs"] += 1
+    for ist_offen, auftraege_liste in (
+        (False, ergebnis.geschlossene_auftraege),
+        (True, ergebnis.offene_auftraege),
+    ):
+        for auftrag in auftraege_liste:
+            plz = (auftrag.plz or "").strip()
+            if not plz:
+                continue
+            plz5 = plz.zfill(5)
+            coords = hole_koordinaten(plz5)
+            if coords is None:
+                continue
+            jobs_aufgeloest += 1
+            account = (auftrag.account or "").strip()
+            key = (account, plz5)
+            eintrag = job_standorte_map.setdefault(key, {
+                "account": account, "plz": plz5,
+                "lat": coords[0], "lon": coords[1],
+                "closed_jobs": 0, "open_jobs": 0,
+            })
+            if ist_offen:
+                eintrag["open_jobs"] += 1
+            else:
+                eintrag["closed_jobs"] += 1
     jobs_gesamt = len(alle_auftraege)
-    job_standorte = sorted(job_standorte_map.values(), key=lambda s: -s["jobs"])
+    for eintrag in job_standorte_map.values():
+        eintrag["stk_jahr"] = _berechne_stk_jahr(
+            eintrag["closed_jobs"], eintrag["open_jobs"], beobachtungszeitraum_jahre
+        )
+    job_standorte = sorted(job_standorte_map.values(), key=lambda s: -s["stk_jahr"])
 
     techniker_list: list[dict] = []
     for tech in ergebnis.techniker:
@@ -323,6 +386,7 @@ def build_dashboard_data() -> dict:
         "job_standorte":              job_standorte,
         "jobs_plz_aufgeloest":        jobs_aufgeloest,
         "jobs_gesamt":                jobs_gesamt,
+        "beobachtungszeitraum_jahre": round(beobachtungszeitraum_jahre, 2),
         "generated_at":               datetime.now().isoformat(timespec="seconds"),
     }
 
@@ -360,6 +424,7 @@ if __name__ == "__main__":
         print(f"  Job-Standorte (Gebietsoptimierung): {len(data['job_standorte'])}")
         pct = data['jobs_plz_aufgeloest'] / data['jobs_gesamt'] * 100 if data['jobs_gesamt'] else 0
         print(f"  PLZ aufgeloest:          {data['jobs_plz_aufgeloest']}/{data['jobs_gesamt']} ({pct:.1f}%)")
+        print(f"  Beobachtungszeitraum:    {data['beobachtungszeitraum_jahre']} Jahre (Closed Jobs)")
         modus = "pseudonymisiert (SHA256)" if PSEUDONYMISIERUNG_AKTIV else "echte Namen (Nachname)"
         print()
         print(f"Techniker ({modus})  [PM-Codes / PM auf Repair-Geraeten / Abdeckung%]:")
