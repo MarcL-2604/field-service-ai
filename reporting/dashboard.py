@@ -2356,7 +2356,7 @@ _CSS = """\
       gap: 24px;
       align-items: flex-start;
     }
-    .gebiets-karte { flex-shrink: 0; }
+    .gebiets-karte { flex-shrink: 0; width: 480px; }
     .gebiets-karte svg {
       border: 1px solid rgba(0,81,149,.2);
       border-radius: 14px;
