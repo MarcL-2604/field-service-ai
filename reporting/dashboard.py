@@ -18,6 +18,7 @@ from __future__ import annotations
 import csv
 import json
 import math
+import re
 import sys
 import warnings
 from datetime import date, datetime, timedelta
@@ -1108,43 +1109,69 @@ def _soll_klinik_verschieben(
     )
 
 
-def _berechne_gebietsmetriken(
-    techniker: dict[str, dict],
-) -> tuple[list[dict], list[dict], dict[str, str]]:
-    """Berechnet Fahrzeit-Metriken (aktuell + optimiert) pro Techniker.
+_SVG_POINT_RE = re.compile(r'([ML])(-?\d+\.?\d*),(-?\d+\.?\d*)')
 
-    Optimierung: generische, ID-unabhaengige Heuristik -- funktioniert fuer
-    Demo- (T1-T14) und Echtdaten-Techniker (echte Namen) gleichermassen.
-    Fuer jede Klinik werden der 1.- und 2.-naechste Techniker (Fahrzeit)
-    ermittelt; die Klinik wandert zum 2.-naechsten wenn
-    _soll_klinik_verschieben() das erlaubt (siehe dort). Einmaliger
-    Durchgang, kein iteratives Konvergenzverfahren -- die Auslastung wird
-    einmal aus dem Ist-Zustand abgeleitet und bleibt waehrend der
-    Optimierungsentscheidung fix.
 
-    Gibt (metriken_aktuell, metriken_optimiert, gebiet_optimiert) zurueck.
-    gebiet_optimiert ist ein {bundesland: techniker_id}-Dict, abgeleitet aus
-    der tatsaechlichen optimierten Klinik-Zuweisung (fuer die Kartenfarben).
+def _parse_svg_polygon(d: str) -> list[list[tuple[float, float]]]:
+    """Parst ein einfaches SVG-Path 'd'-Attribut (nur M/L/Z, keine Kurven) in
+    Punktlisten je Teilpfad (Bundeslaender mit Inseln haben mehrere Teilpfade)."""
+    subpaths: list[list[tuple[float, float]]] = []
+    current: list[tuple[float, float]] = []
+    for cmd, xs, ys in _SVG_POINT_RE.findall(d):
+        if cmd == "M" and current:
+            subpaths.append(current)
+            current = []
+        current.append((float(xs), float(ys)))
+    if current:
+        subpaths.append(current)
+    return subpaths
+
+
+def _punkt_in_polygon(x: float, y: float, polygon: list[tuple[float, float]]) -> bool:
+    """Ray-Casting: liegt (x,y) innerhalb des Polygons?"""
+    inside = False
+    n = len(polygon)
+    j = n - 1
+    for i in range(n):
+        xi, yi = polygon[i]
+        xj, yj = polygon[j]
+        if ((yi > y) != (yj > y)) and (x < (xj - xi) * (y - yi) / (yj - yi) + xi):
+            inside = not inside
+        j = i
+    return inside
+
+
+def _bundesland_fuer_punkt(x: float, y: float, paths: list[dict]) -> str | None:
+    """Findet das Bundesland, dessen Polygon (x,y) enthaelt.
+
+    Nutzt die echten Geodaten aus daten/deutschland_topo.json (dieselben
+    Polygone wie die Kartendarstellung) statt einer PLZ-Naeherungstabelle.
     """
-    try:
-        from techniker.scoring import _KLINIK_COORDS
-    except ImportError:
-        return [], [], {}
-    from reporting.crosstraining_analyse import load_klinik_bl_map, klinik_zu_bundesland
+    for p in paths:
+        for subpath in _parse_svg_polygon(p["d"]):
+            if len(subpath) >= 3 and _punkt_in_polygon(x, y, subpath):
+                return p["name"]
+    return None
+
+
+def _lade_kliniken_demo() -> tuple[list[dict], dict[str, float], float]:
+    """Laedt die Demo-Kliniken (kliniken.csv + geraete.csv).
+
+    Gibt (kliniken, stk_count, stunden_pro_einsatz) zurueck. stk_count ist das
+    STK/Jahr-Volumen je Klinik (Anzahl Geraete / Wartungszyklus).
+    """
+    from techniker.scoring import _KLINIK_COORDS
 
     kliniken = []
-    klinik_namen: dict[str, str] = {}
     name_to_id: dict[str, str] = {}
     with open(_DATA_DIR / "kliniken.csv", newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             plz = row["plz"]
             kid = row["klinik_id"]
             name_to_id[row["name"].strip().lower()] = kid
-            klinik_namen[kid] = row["name"]
             if plz in _KLINIK_COORDS:
                 lat, lon = _KLINIK_COORDS[plz]
-                kliniken.append({"id": kid, "plz": plz,
-                                 "lat": lat, "lon": lon})
+                kliniken.append({"id": kid, "plz": plz, "lat": lat, "lon": lon})
 
     # geraete.csv nutzt klinik_name, nicht klinik_id → ueber Name matchen
     def _norm(s: str) -> str:
@@ -1172,6 +1199,70 @@ def _berechne_gebietsmetriken(
                 stk_count[kid] = stk_count.get(kid, 0) + anzahl / zyklus
             except ValueError:
                 stk_count[kid] = stk_count.get(kid, 0) + 1
+
+    return kliniken, stk_count, 2.0  # 2h/STK-Einsatz (Demo-Kostenmodell)
+
+
+def _lade_kliniken_echtdaten() -> tuple[list[dict], dict[str, float], float]:
+    """Laedt echte Auftrags-Standorte aus dem SMax-Cache (job_standorte).
+
+    Reale Klinik-/Job-Standorte + reales Auftragsvolumen aus den importierten
+    Open/Closed Jobs (siehe api/smax_cache.py) -- kein Platzhalter-Datensatz.
+    Gibt (kliniken, stk_count, stunden_pro_einsatz) zurueck. stk_count ist die
+    reale Auftragsanzahl je Standort; stunden_pro_einsatz kommt aus dem realen
+    Median der Einsatzdauer (einsatz_median_min).
+    """
+    from api.smax_cache import load_dashboard_data
+
+    smax = load_dashboard_data() or {}
+    job_standorte = smax.get("job_standorte", [])
+
+    kliniken = []
+    stk_count: dict[str, float] = {}
+    for i, s in enumerate(job_standorte):
+        kid = f"J{i}"
+        kliniken.append({"id": kid, "plz": s["plz"], "lat": s["lat"], "lon": s["lon"]})
+        stk_count[kid] = s["jobs"]
+
+    einsatz_median_min = smax.get("einsatz_median_min", 0)
+    stunden_pro_einsatz = (einsatz_median_min / 60) if einsatz_median_min else 1.5
+
+    return kliniken, stk_count, stunden_pro_einsatz
+
+
+def _berechne_gebietsmetriken(
+    techniker: dict[str, dict],
+) -> tuple[list[dict], list[dict], dict[str, str]]:
+    """Berechnet Fahrzeit-Metriken (aktuell + optimiert) pro Techniker.
+
+    Optimierung: generische, ID-unabhaengige Heuristik -- funktioniert fuer
+    Demo- (T1-T14) und Echtdaten-Techniker (echte Namen) gleichermassen.
+    Fuer jede Klinik werden der 1.- und 2.-naechste Techniker (Fahrzeit)
+    ermittelt; die Klinik wandert zum 2.-naechsten wenn
+    _soll_klinik_verschieben() das erlaubt (siehe dort). Einmaliger
+    Durchgang, kein iteratives Konvergenzverfahren -- die Auslastung wird
+    einmal aus dem Ist-Zustand abgeleitet und bleibt waehrend der
+    Optimierungsentscheidung fix.
+
+    Datenquelle: im Echtdaten-Modus die echten Auftrags-Standorte aus dem
+    SMax-Cache (_lade_kliniken_echtdaten, siehe api/smax_cache.py
+    job_standorte), sonst die Demo-Kliniken (_lade_kliniken_demo).
+
+    Gibt (metriken_aktuell, metriken_optimiert, gebiet_optimiert) zurueck.
+    gebiet_optimiert ist ein {bundesland: techniker_id}-Dict, abgeleitet aus
+    der tatsaechlichen optimierten Klinik-Zuweisung (fuer die Kartenfarben) --
+    per Punkt-in-Polygon-Test gegen die echten Bundeslaender-Geodaten.
+    """
+    if _ECHTDATEN:
+        kliniken, stk_count, stunden_pro_einsatz = _lade_kliniken_echtdaten()
+    else:
+        try:
+            kliniken, stk_count, stunden_pro_einsatz = _lade_kliniken_demo()
+        except ImportError:
+            return [], [], {}
+
+    if not kliniken:
+        return [], [], {}
 
     valid_tids = [tid for tid, td in techniker.items() if td.get("lat")]
 
@@ -1217,7 +1308,7 @@ def _berechne_gebietsmetriken(
             max_fz = max(x["fz"] for x in kl)
             total_stk = sum(x["stk"] for x in kl)
             drive_h = sum(x["stk"] * 2 * x["fz"] / 60 for x in kl)
-            onsite_h = total_stk * 2.0
+            onsite_h = total_stk * stunden_pro_einsatz
             result.append({
                 "id": tid, "standort": td.get("standort", ""),
                 "kliniken": len(kl), "avg_fahrzeit": round(avg_fz),
@@ -1268,13 +1359,14 @@ def _berechne_gebietsmetriken(
         m["verschoben_abgegeben"] = abgegeben.get(m["id"], 0)
 
     # ── Bundesland-Kartenfarben aus der tatsaechlichen optimierten Zuweisung ──
-    klinik_bl_map = load_klinik_bl_map()
+    topo_paths = _topo_to_svg_paths()
     bl_zaehler: dict[str, dict[str, int]] = {}
     for k in kliniken:
         tid = zuweisung_opt.get(k["id"])
         if not tid:
             continue
-        bl = klinik_zu_bundesland(klinik_namen.get(k["id"], ""), klinik_bl_map)
+        px, py = _project_mercator(k["lon"], k["lat"])
+        bl = _bundesland_fuer_punkt(px, py, topo_paths)
         if not bl:
             continue
         bl_zaehler.setdefault(bl, {})

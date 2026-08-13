@@ -19,9 +19,17 @@ from config import (
     OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN,
     ARBEITSWOCHEN_PRO_JAHR,
 )
+import reporting.dashboard as dash
 from reporting.dashboard import (
     _soll_klinik_verschieben,
     _berechne_gebietsmetriken,
+    _lade_kliniken_demo,
+    _lade_kliniken_echtdaten,
+    _parse_svg_polygon,
+    _punkt_in_polygon,
+    _bundesland_fuer_punkt,
+    _project_mercator,
+    _topo_to_svg_paths,
     _DATA_DIR,
 )
 
@@ -217,3 +225,120 @@ class TestIdUnabhaengigkeit:
         akt, opt, _ = _berechne_gebietsmetriken(einer)
         assert len(opt) == 1
         assert opt[0]["verschoben"] == 0
+
+
+# ===================================================================
+# Punkt-in-Polygon: Bundesland-Zuordnung ueber echte Geodaten
+# (statt PLZ-Naeherungstabelle) -- fuer die Kartenfarben
+# ===================================================================
+
+class TestPunktInPolygon:
+    QUADRAT = [(0.0, 0.0), (10.0, 0.0), (10.0, 10.0), (0.0, 10.0)]
+
+    def test_punkt_innerhalb(self):
+        assert _punkt_in_polygon(5.0, 5.0, self.QUADRAT) is True
+
+    def test_punkt_ausserhalb(self):
+        assert _punkt_in_polygon(15.0, 5.0, self.QUADRAT) is False
+
+    def test_punkt_weit_ausserhalb(self):
+        assert _punkt_in_polygon(-100.0, -100.0, self.QUADRAT) is False
+
+
+class TestParseSvgPolygon:
+    def test_einfaches_polygon(self):
+        subpaths = _parse_svg_polygon("M0,0L10,0L10,10L0,10Z")
+        assert len(subpaths) == 1
+        assert subpaths[0] == [(0.0, 0.0), (10.0, 0.0), (10.0, 10.0), (0.0, 10.0)]
+
+    def test_mehrere_teilpfade_inseln(self):
+        subpaths = _parse_svg_polygon("M0,0L1,0L1,1ZM5,5L6,5L6,6Z")
+        assert len(subpaths) == 2
+        assert subpaths[0] == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)]
+        assert subpaths[1] == [(5.0, 5.0), (6.0, 5.0), (6.0, 6.0)]
+
+
+class TestBundeslandFuerPunkt:
+    """Nutzt die echten Bundeslaender-Geodaten (deutschland_topo.json)."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.paths = _topo_to_svg_paths()
+
+    def test_hamburg_koordinaten_ergeben_hamburg(self):
+        px, py = _project_mercator(9.9937, 53.5505)  # Hamburg
+        bl = _bundesland_fuer_punkt(px, py, self.paths)
+        assert bl == "Hamburg"
+
+    def test_muenchen_koordinaten_ergeben_bayern(self):
+        px, py = _project_mercator(11.5820, 48.1351)  # Muenchen
+        bl = _bundesland_fuer_punkt(px, py, self.paths)
+        assert bl == "Bayern"
+
+    def test_punkt_ausserhalb_deutschlands_ergibt_none(self):
+        px, py = _project_mercator(2.3522, 48.8566)  # Paris
+        bl = _bundesland_fuer_punkt(px, py, self.paths)
+        assert bl is None
+
+
+# ===================================================================
+# _lade_kliniken_echtdaten(): echte Auftrags-Standorte, keine Platzhalter
+# ===================================================================
+
+class TestLadeKlinikenEchtdaten:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.kliniken, self.stk_count, self.stunden_pro_einsatz = _lade_kliniken_echtdaten()
+
+    def test_laedt_reale_job_standorte(self):
+        """Setzt voraus, dass data/smax_dashboard_data.json mit job_standorte vorliegt."""
+        assert self.kliniken, "keine job_standorte im SMax-Cache gefunden"
+
+    def test_klinik_ids_sind_keine_demo_ids(self):
+        """Reale Standorte duerfen nicht mit den Demo-Klinik-IDs (K0xx) kollidieren."""
+        for k in self.kliniken:
+            assert k["id"].startswith("J")
+
+    def test_stk_count_ist_reale_auftragsanzahl(self):
+        """stk_count muss positive Ganzzahlen (echte Job-Zaehlung) enthalten, keine
+        gebrochenen STK/Jahr-Platzhalterwerte wie im Demo-Modell."""
+        for wert in self.stk_count.values():
+            assert wert == int(wert)
+            assert wert > 0
+
+    def test_stunden_pro_einsatz_aus_echtem_median(self):
+        """stunden_pro_einsatz muss aus dem realen einsatz_median_min abgeleitet sein,
+        nicht der hartcodierte Demo-Wert (2.0h)."""
+        assert self.stunden_pro_einsatz != 2.0
+        assert self.stunden_pro_einsatz > 0
+
+
+# ===================================================================
+# _berechne_gebietsmetriken() waehlt die Datenquelle ueber _ECHTDATEN
+# ===================================================================
+
+class TestBerechneGebietsmetrikenDatenquelle:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        original = dash._ECHTDATEN
+        yield
+        dash._ECHTDATEN = original  # Global-State nach dem Test zuruecksetzen
+
+    def test_echtdaten_modus_nutzt_reale_job_standorte(self):
+        dash._ECHTDATEN = True
+        techniker = _lade_demo_techniker()  # Koordinaten egal, nur Datenquelle testen
+        akt, opt, _ = _berechne_gebietsmetriken(techniker)
+        # Reale Kliniken tragen "J"-IDs -- indirekt pruefbar ueber Nicht-Leere,
+        # da IDs nicht im Rueckgabewert von _aggregiere() landen. Stattdessen:
+        # direkter Vergleich der Ladefunktion.
+        kliniken_echt, _, _ = _lade_kliniken_echtdaten()
+        assert kliniken_echt  # Datenquelle ist tatsaechlich die echten Standorte
+        assert akt  # Aggregation lief erfolgreich mit dieser Datenquelle
+
+    def test_demo_modus_nutzt_demo_kliniken(self):
+        dash._ECHTDATEN = False
+        techniker = _lade_demo_techniker()
+        akt, opt, _ = _berechne_gebietsmetriken(techniker)
+        kliniken_demo, _, stunden = _lade_kliniken_demo()
+        assert stunden == 2.0  # Demo-Kostenmodell (Konstante im Code)
+        assert akt

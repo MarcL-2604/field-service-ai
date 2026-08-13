@@ -901,5 +901,1064 @@
   "open_jobs": 786,
   "stk_potenzial_gesamt": 1472,
   "einsatz_median_min": 157,
-  "generated_at": "2026-08-13T16:15:51"
+  "job_standorte": [
+    {
+      "account": "Universitätsklinikum Ulm",
+      "plz": "89081",
+      "lat": 48.397,
+      "lon": 9.998,
+      "jobs": 93
+    },
+    {
+      "account": "Universitätsklinikum Erlangen",
+      "plz": "91054",
+      "lat": 49.599,
+      "lon": 11.003,
+      "jobs": 83
+    },
+    {
+      "account": "Universitätsklinikum Heidelberg",
+      "plz": "69120",
+      "lat": 49.409,
+      "lon": 8.694,
+      "jobs": 78
+    },
+    {
+      "account": "Universitätsmedizin der Johannes-",
+      "plz": "55131",
+      "lat": 49.993,
+      "lon": 8.247,
+      "jobs": 73
+    },
+    {
+      "account": "Klinikum der Stadt Ludwigshafen",
+      "plz": "67063",
+      "lat": 49.481,
+      "lon": 8.435,
+      "jobs": 61
+    },
+    {
+      "account": "Medizinische Hochschule Hannover",
+      "plz": "30625",
+      "lat": 52.376,
+      "lon": 9.732,
+      "jobs": 58
+    },
+    {
+      "account": "Universitätsklinikum Düsseldorf",
+      "plz": "40225",
+      "lat": 51.222,
+      "lon": 6.776,
+      "jobs": 55
+    },
+    {
+      "account": "KLE Klinik Logistik &",
+      "plz": "20246",
+      "lat": 53.566,
+      "lon": 10.01,
+      "jobs": 55
+    },
+    {
+      "account": "Städt. Klinikum Braunschweig gGmbH",
+      "plz": "38126",
+      "lat": 52.269,
+      "lon": 10.527,
+      "jobs": 54
+    },
+    {
+      "account": "Universitätsklinikum des Saarlandes",
+      "plz": "66421",
+      "lat": 49.327,
+      "lon": 7.34,
+      "jobs": 54
+    },
+    {
+      "account": "Universitätsklinikum Leipzig AöR",
+      "plz": "04103",
+      "lat": 51.34,
+      "lon": 12.373,
+      "jobs": 54
+    },
+    {
+      "account": "Katharinenhospital",
+      "plz": "70174",
+      "lat": 48.778,
+      "lon": 9.18,
+      "jobs": 51
+    },
+    {
+      "account": "Uniklinikum Carl-Gustav-Carus",
+      "plz": "01307",
+      "lat": 51.05,
+      "lon": 13.737,
+      "jobs": 42
+    },
+    {
+      "account": "Uniklinik Hamburg-Eppendorf",
+      "plz": "20246",
+      "lat": 53.566,
+      "lon": 10.01,
+      "jobs": 39
+    },
+    {
+      "account": "UKM Universitätsklinikum Münster",
+      "plz": "48149",
+      "lat": 51.961,
+      "lon": 7.626,
+      "jobs": 36
+    },
+    {
+      "account": "Universitätsklinikum Regensburg",
+      "plz": "93053",
+      "lat": 49.013,
+      "lon": 12.102,
+      "jobs": 33
+    },
+    {
+      "account": "Klinikum Itzehoe",
+      "plz": "25524",
+      "lat": 53.925,
+      "lon": 9.514,
+      "jobs": 33
+    },
+    {
+      "account": "Klinikum Darmstadt GmbH",
+      "plz": "64283",
+      "lat": 49.873,
+      "lon": 8.651,
+      "jobs": 33
+    },
+    {
+      "account": "Städt.Klinikum Karlsruhe gGmbH",
+      "plz": "76133",
+      "lat": 49.007,
+      "lon": 8.404,
+      "jobs": 32
+    },
+    {
+      "account": "Universitätsklinikum Frankfurt",
+      "plz": "60590",
+      "lat": 50.094,
+      "lon": 8.653,
+      "jobs": 29
+    },
+    {
+      "account": "Universitätsklinikum Bonn",
+      "plz": "53127",
+      "lat": 50.732,
+      "lon": 7.115,
+      "jobs": 27
+    },
+    {
+      "account": "Universitätsklinikum Schleswig-",
+      "plz": "23538",
+      "lat": 53.866,
+      "lon": 10.687,
+      "jobs": 26
+    },
+    {
+      "account": "Kath. Marienkrankenhaus gGmbH",
+      "plz": "22087",
+      "lat": 53.572,
+      "lon": 10.039,
+      "jobs": 25
+    },
+    {
+      "account": "St. Josefs-Hospital Wiesbaden GmbH",
+      "plz": "65189",
+      "lat": 50.078,
+      "lon": 8.24,
+      "jobs": 23
+    },
+    {
+      "account": "Klinik der Georg-August-Universität",
+      "plz": "37075",
+      "lat": 51.541,
+      "lon": 9.916,
+      "jobs": 23
+    },
+    {
+      "account": "Vivantes Humboldt-Klinikum",
+      "plz": "12351",
+      "lat": 52.482,
+      "lon": 13.438,
+      "jobs": 22
+    },
+    {
+      "account": "Charité Campus Virchow-Klinikum",
+      "plz": "13353",
+      "lat": 52.542,
+      "lon": 13.35,
+      "jobs": 22
+    },
+    {
+      "account": "Klinikum Osnabrück GmbH",
+      "plz": "49076",
+      "lat": 52.28,
+      "lon": 8.047,
+      "jobs": 21
+    },
+    {
+      "account": "Universitätsklinikum Augsburg AöR",
+      "plz": "86156",
+      "lat": 48.371,
+      "lon": 10.898,
+      "jobs": 20
+    },
+    {
+      "account": "Klinikum Memmingen",
+      "plz": "87700",
+      "lat": 47.984,
+      "lon": 10.181,
+      "jobs": 20
+    },
+    {
+      "account": "Klinikum Ernst von Bergmann gGmbH",
+      "plz": "14467",
+      "lat": 52.391,
+      "lon": 13.065,
+      "jobs": 19
+    },
+    {
+      "account": "Universitätsklinikum Gießen",
+      "plz": "35392",
+      "lat": 50.584,
+      "lon": 8.678,
+      "jobs": 17
+    },
+    {
+      "account": "Universitätsklinikum Aachen AöR",
+      "plz": "52074",
+      "lat": 50.775,
+      "lon": 6.084,
+      "jobs": 16
+    },
+    {
+      "account": "Universitätsklinikum Köln (AöR)",
+      "plz": "50937",
+      "lat": 50.933,
+      "lon": 6.922,
+      "jobs": 16
+    },
+    {
+      "account": "Universitätsklinikum Würzburg",
+      "plz": "97080",
+      "lat": 49.791,
+      "lon": 9.953,
+      "jobs": 16
+    },
+    {
+      "account": "Universitätsklinikum Jena",
+      "plz": "07747",
+      "lat": 50.927,
+      "lon": 11.586,
+      "jobs": 16
+    },
+    {
+      "account": "Medizinische Universität Lausitz -",
+      "plz": "03048",
+      "lat": 51.756,
+      "lon": 14.333,
+      "jobs": 16
+    },
+    {
+      "account": "Asklepios Klinik Altona GmbH",
+      "plz": "22763",
+      "lat": 53.553,
+      "lon": 9.936,
+      "jobs": 15
+    },
+    {
+      "account": "SLK Kliniken Heilbronn GmbH HN",
+      "plz": "74078",
+      "lat": 49.143,
+      "lon": 9.211,
+      "jobs": 14
+    },
+    {
+      "account": "Evangelisches Krankenhaus Göttingen",
+      "plz": "37075",
+      "lat": 51.541,
+      "lon": 9.916,
+      "jobs": 14
+    },
+    {
+      "account": "SRH Zentralklinikum Suhl GmbH",
+      "plz": "98527",
+      "lat": 50.61,
+      "lon": 10.694,
+      "jobs": 14
+    },
+    {
+      "account": "Vivantes Netzwerk",
+      "plz": "12351",
+      "lat": 52.482,
+      "lon": 13.438,
+      "jobs": 13
+    },
+    {
+      "account": "Klinikum rechts der Isar AöR",
+      "plz": "81675",
+      "lat": 48.137,
+      "lon": 11.601,
+      "jobs": 13
+    },
+    {
+      "account": "Universitätsklinikum Tübingen",
+      "plz": "72076",
+      "lat": 48.522,
+      "lon": 9.058,
+      "jobs": 13
+    },
+    {
+      "account": "Universitätsklinikum Magdeburg AöR",
+      "plz": "39120",
+      "lat": 52.121,
+      "lon": 11.628,
+      "jobs": 13
+    },
+    {
+      "account": "Universitätsklinikum Freiburg",
+      "plz": "79106",
+      "lat": 47.999,
+      "lon": 7.842,
+      "jobs": 13
+    },
+    {
+      "account": "Universitätsklinikum Halle (Saale)",
+      "plz": "06120",
+      "lat": 51.497,
+      "lon": 11.969,
+      "jobs": 13
+    },
+    {
+      "account": "Kliniken der Stadt Köln gGmbH",
+      "plz": "51109",
+      "lat": 50.94,
+      "lon": 7.03,
+      "jobs": 12
+    },
+    {
+      "account": "Klinikum Nürnberg",
+      "plz": "90419",
+      "lat": 49.452,
+      "lon": 11.077,
+      "jobs": 12
+    },
+    {
+      "account": "Charité Campus Mitte",
+      "plz": "10117",
+      "lat": 52.52,
+      "lon": 13.405,
+      "jobs": 12
+    },
+    {
+      "account": "Universitätsklinikum Schleswig-",
+      "plz": "24105",
+      "lat": 54.323,
+      "lon": 10.123,
+      "jobs": 11
+    },
+    {
+      "account": "Malteser Waldkrankenhaus",
+      "plz": "91054",
+      "lat": 49.599,
+      "lon": 11.003,
+      "jobs": 11
+    },
+    {
+      "account": "Deutsches Herzzentrum der Charité",
+      "plz": "13353",
+      "lat": 52.542,
+      "lon": 13.35,
+      "jobs": 10
+    },
+    {
+      "account": "Klinikum St. Georg gGmbH",
+      "plz": "04129",
+      "lat": 51.366,
+      "lon": 12.371,
+      "jobs": 10
+    },
+    {
+      "account": "Charité Campus Benjamin Franklin",
+      "plz": "13353",
+      "lat": 52.542,
+      "lon": 13.35,
+      "jobs": 10
+    },
+    {
+      "account": "Life Systems",
+      "plz": "07747",
+      "lat": 50.927,
+      "lon": 11.586,
+      "jobs": 9
+    },
+    {
+      "account": "HERMED Technische Beratungs GmbH",
+      "plz": "64283",
+      "lat": 49.873,
+      "lon": 8.651,
+      "jobs": 9
+    },
+    {
+      "account": "Klinikum Ingolstadt GmbH",
+      "plz": "85049",
+      "lat": 48.767,
+      "lon": 11.426,
+      "jobs": 9
+    },
+    {
+      "account": "Klinikum Fulda gAG",
+      "plz": "36043",
+      "lat": 50.556,
+      "lon": 9.675,
+      "jobs": 9
+    },
+    {
+      "account": "HELIOS Dr. Horst Schmidt Kliniken",
+      "plz": "65199",
+      "lat": 50.078,
+      "lon": 8.24,
+      "jobs": 9
+    },
+    {
+      "account": "Vivantes Klinikum Neukölln",
+      "plz": "12351",
+      "lat": 52.482,
+      "lon": 13.438,
+      "jobs": 9
+    },
+    {
+      "account": "Gesundheitsministerium Rheinland-",
+      "plz": "55131",
+      "lat": 49.993,
+      "lon": 8.247,
+      "jobs": 9
+    },
+    {
+      "account": "Klinikverbund Allgäu gGmbH",
+      "plz": "87439",
+      "lat": 47.726,
+      "lon": 10.316,
+      "jobs": 8
+    },
+    {
+      "account": "Universitätsmedizin Rostock",
+      "plz": "18057",
+      "lat": 54.089,
+      "lon": 12.14,
+      "jobs": 8
+    },
+    {
+      "account": "Schwarzwald-Baar Klinikum",
+      "plz": "78052",
+      "lat": 48.06,
+      "lon": 8.459,
+      "jobs": 7
+    },
+    {
+      "account": "HELIOS Klinikum Erfurt GmbH",
+      "plz": "99089",
+      "lat": 50.979,
+      "lon": 11.033,
+      "jobs": 7
+    },
+    {
+      "account": "Asklepios Kliniken Hamburg GmbH",
+      "plz": "22291",
+      "lat": 53.587,
+      "lon": 10.04,
+      "jobs": 7
+    },
+    {
+      "account": "HOST GmbH",
+      "plz": "60590",
+      "lat": 50.094,
+      "lon": 8.653,
+      "jobs": 6
+    },
+    {
+      "account": "Berufsgenossenschaftliches Univer-",
+      "plz": "44789",
+      "lat": 51.482,
+      "lon": 7.216,
+      "jobs": 6
+    },
+    {
+      "account": "Klinikum Kassel GmbH",
+      "plz": "34125",
+      "lat": 51.317,
+      "lon": 9.498,
+      "jobs": 6
+    },
+    {
+      "account": "Bundeswehrzentralkrankenhaus",
+      "plz": "56072",
+      "lat": 50.36,
+      "lon": 7.598,
+      "jobs": 6
+    },
+    {
+      "account": "WKK Perfusionsservice GmbH & Co. KG",
+      "plz": "36043",
+      "lat": 50.556,
+      "lon": 9.675,
+      "jobs": 6
+    },
+    {
+      "account": "Klinikum der Universität München",
+      "plz": "81377",
+      "lat": 48.113,
+      "lon": 11.472,
+      "jobs": 6
+    },
+    {
+      "account": "WKK Perfusionsservice GmbH & Co. KG",
+      "plz": "91054",
+      "lat": 49.599,
+      "lon": 11.003,
+      "jobs": 6
+    },
+    {
+      "account": "Rheinland Klinikum Neuss GmbH",
+      "plz": "41464",
+      "lat": 51.206,
+      "lon": 6.69,
+      "jobs": 6
+    },
+    {
+      "account": "HELIOS Klinikum Berlin-Buch",
+      "plz": "13125",
+      "lat": 52.631,
+      "lon": 13.496,
+      "jobs": 5
+    },
+    {
+      "account": "Klinikum Dortmund gGmbH",
+      "plz": "44137",
+      "lat": 51.514,
+      "lon": 7.465,
+      "jobs": 5
+    },
+    {
+      "account": "Life Systems",
+      "plz": "50937",
+      "lat": 50.933,
+      "lon": 6.922,
+      "jobs": 5
+    },
+    {
+      "account": "medfacilities Betrieb GmbH",
+      "plz": "50937",
+      "lat": 50.933,
+      "lon": 6.922,
+      "jobs": 5
+    },
+    {
+      "account": "Klinikum Saarbrücken gGmbH",
+      "plz": "66119",
+      "lat": 49.235,
+      "lon": 6.997,
+      "jobs": 5
+    },
+    {
+      "account": "Charité Campus Virchow-Klinikum",
+      "plz": "10117",
+      "lat": 52.52,
+      "lon": 13.405,
+      "jobs": 5
+    },
+    {
+      "account": "Ortenau Klinikum Offenburg",
+      "plz": "77654",
+      "lat": 48.474,
+      "lon": 7.941,
+      "jobs": 4
+    },
+    {
+      "account": "Klinikum Frankfurt (Oder) GmbH",
+      "plz": "15236",
+      "lat": 52.347,
+      "lon": 14.551,
+      "jobs": 4
+    },
+    {
+      "account": "Bundeswehrkrankenhaus Ulm",
+      "plz": "89081",
+      "lat": 48.397,
+      "lon": 9.998,
+      "jobs": 4
+    },
+    {
+      "account": "Meoclinic GmbH",
+      "plz": "10117",
+      "lat": 52.52,
+      "lon": 13.405,
+      "jobs": 4
+    },
+    {
+      "account": "Kliniken Ostallgäu-Kaufbeuren",
+      "plz": "87600",
+      "lat": 47.88,
+      "lon": 10.623,
+      "jobs": 4
+    },
+    {
+      "account": "Städtisches Klinikum Dresden",
+      "plz": "01067",
+      "lat": 51.056,
+      "lon": 13.722,
+      "jobs": 4
+    },
+    {
+      "account": "Klinikum Chemnitz gGmbH",
+      "plz": "09116",
+      "lat": 50.828,
+      "lon": 12.921,
+      "jobs": 4
+    },
+    {
+      "account": "Dietrich-Bonhoeffer-Klinikum",
+      "plz": "17036",
+      "lat": 53.557,
+      "lon": 13.265,
+      "jobs": 4
+    },
+    {
+      "account": "Malteser Fördeklinikum St.Katharina",
+      "plz": "24939",
+      "lat": 54.783,
+      "lon": 9.441,
+      "jobs": 4
+    },
+    {
+      "account": "HELIOS Klinikum Niederberg",
+      "plz": "42549",
+      "lat": 51.334,
+      "lon": 7.044,
+      "jobs": 3
+    },
+    {
+      "account": "Weinert, Susanne",
+      "plz": "13125",
+      "lat": 52.631,
+      "lon": 13.496,
+      "jobs": 3
+    },
+    {
+      "account": "#Hirt, Fabian",
+      "plz": "78052",
+      "lat": 48.06,
+      "lon": 8.459,
+      "jobs": 3
+    },
+    {
+      "account": "Herzzentrum Dresden GmbH",
+      "plz": "01307",
+      "lat": 51.05,
+      "lon": 13.737,
+      "jobs": 3
+    },
+    {
+      "account": "KH Bau und Technik GmbH",
+      "plz": "06449",
+      "lat": 51.759,
+      "lon": 11.474,
+      "jobs": 3
+    },
+    {
+      "account": "AMEOS Klinikum Aschersleben-",
+      "plz": "06449",
+      "lat": 51.759,
+      "lon": 11.474,
+      "jobs": 3
+    },
+    {
+      "account": "St. Georg Klinikum Eisenach gGmbH",
+      "plz": "99817",
+      "lat": 50.98,
+      "lon": 10.315,
+      "jobs": 3
+    },
+    {
+      "account": "Sana-Herzzentrum Cottbus GmbH",
+      "plz": "03048",
+      "lat": 51.756,
+      "lon": 14.333,
+      "jobs": 3
+    },
+    {
+      "account": "Kiparski, Anna",
+      "plz": "84034",
+      "lat": 48.537,
+      "lon": 12.154,
+      "jobs": 3
+    },
+    {
+      "account": "HELIOS Kliniken Schwerin GmbH",
+      "plz": "19049",
+      "lat": 53.629,
+      "lon": 11.415,
+      "jobs": 3
+    },
+    {
+      "account": "Helios St. Johannes Klinik",
+      "plz": "47166",
+      "lat": 51.435,
+      "lon": 6.762,
+      "jobs": 3
+    },
+    {
+      "account": "Universitätsmedizin Greifswald KdöR",
+      "plz": "17475",
+      "lat": 54.096,
+      "lon": 13.382,
+      "jobs": 3
+    },
+    {
+      "account": "Klinikum Gütersloh gGmbH",
+      "plz": "33332",
+      "lat": 51.908,
+      "lon": 8.384,
+      "jobs": 3
+    },
+    {
+      "account": "Sana-Medizintechnisches",
+      "plz": "25421",
+      "lat": 53.664,
+      "lon": 9.8,
+      "jobs": 3
+    },
+    {
+      "account": "St. Johannes-Hospital",
+      "plz": "44137",
+      "lat": 51.514,
+      "lon": 7.465,
+      "jobs": 3
+    },
+    {
+      "account": "Klinikum Friedrichshafen GmbH",
+      "plz": "88048",
+      "lat": 47.657,
+      "lon": 9.479,
+      "jobs": 2
+    },
+    {
+      "account": "Klinik Hallerwiese-Cnopfsche",
+      "plz": "90419",
+      "lat": 49.452,
+      "lon": 11.077,
+      "jobs": 2
+    },
+    {
+      "account": "Heigl Health GmbH",
+      "plz": "87439",
+      "lat": 47.726,
+      "lon": 10.316,
+      "jobs": 2
+    },
+    {
+      "account": "Regio Klinikum Pinneberg",
+      "plz": "25421",
+      "lat": 53.664,
+      "lon": 9.8,
+      "jobs": 2
+    },
+    {
+      "account": "MVZ Dorfen",
+      "plz": "85049",
+      "lat": 48.767,
+      "lon": 11.426,
+      "jobs": 2
+    },
+    {
+      "account": "Krankenhaus St. Joseph-Stift",
+      "plz": "01307",
+      "lat": 51.05,
+      "lon": 13.737,
+      "jobs": 2
+    },
+    {
+      "account": "RKU - Universitäts- und",
+      "plz": "89081",
+      "lat": 48.397,
+      "lon": 9.998,
+      "jobs": 2
+    },
+    {
+      "account": "Charité CFM Facility Management",
+      "plz": "13353",
+      "lat": 52.542,
+      "lon": 13.35,
+      "jobs": 2
+    },
+    {
+      "account": "RoMed Klinikum Rosenheim",
+      "plz": "83022",
+      "lat": 47.856,
+      "lon": 12.129,
+      "jobs": 2
+    },
+    {
+      "account": "Evangelische Lungenklinik Berlin",
+      "plz": "13125",
+      "lat": 52.631,
+      "lon": 13.496,
+      "jobs": 2
+    },
+    {
+      "account": "RNS Gemeinschaftspraxis GbR",
+      "plz": "65189",
+      "lat": 50.078,
+      "lon": 8.24,
+      "jobs": 2
+    },
+    {
+      "account": "Ev. Klinikum Bethel gGmbH",
+      "plz": "33617",
+      "lat": 52.03,
+      "lon": 8.533,
+      "jobs": 2
+    },
+    {
+      "account": "Niels-Stensen-Kliniken",
+      "plz": "49076",
+      "lat": 52.28,
+      "lon": 8.047,
+      "jobs": 2
+    },
+    {
+      "account": "Cardio CliniC Augsburg",
+      "plz": "86156",
+      "lat": 48.371,
+      "lon": 10.898,
+      "jobs": 2
+    },
+    {
+      "account": "St. Elisabeth-Hospital",
+      "plz": "33332",
+      "lat": 51.908,
+      "lon": 8.384,
+      "jobs": 2
+    },
+    {
+      "account": "Medtronic Directo Meerbusch",
+      "plz": "06120",
+      "lat": 51.497,
+      "lon": 11.969,
+      "jobs": 1
+    },
+    {
+      "account": "Stephan, Guido",
+      "plz": "86156",
+      "lat": 48.371,
+      "lon": 10.898,
+      "jobs": 1
+    },
+    {
+      "account": "Krankenhaus Haunstetten",
+      "plz": "86156",
+      "lat": 48.371,
+      "lon": 10.898,
+      "jobs": 1
+    },
+    {
+      "account": "Philips GmbH Market DACH",
+      "plz": "34125",
+      "lat": 51.317,
+      "lon": 9.498,
+      "jobs": 1
+    },
+    {
+      "account": "Universitäres Herzzentrum",
+      "plz": "20246",
+      "lat": 53.566,
+      "lon": 10.01,
+      "jobs": 1
+    },
+    {
+      "account": "Marienhospital Oelde",
+      "plz": "33332",
+      "lat": 51.908,
+      "lon": 8.384,
+      "jobs": 1
+    },
+    {
+      "account": "Klinikum Aschaffenburg-Alzenau",
+      "plz": "72076",
+      "lat": 48.522,
+      "lon": 9.058,
+      "jobs": 1
+    },
+    {
+      "account": "Mueller, Conny",
+      "plz": "91054",
+      "lat": 49.599,
+      "lon": 11.003,
+      "jobs": 1
+    },
+    {
+      "account": "Dr. Mohr-Kahaly",
+      "plz": "65189",
+      "lat": 50.078,
+      "lon": 8.24,
+      "jobs": 1
+    },
+    {
+      "account": "Marienhaus Klinikum Mainz",
+      "plz": "55131",
+      "lat": 49.993,
+      "lon": 8.247,
+      "jobs": 1
+    },
+    {
+      "account": "#VAMED Technical Services",
+      "plz": "12351",
+      "lat": 52.482,
+      "lon": 13.438,
+      "jobs": 1
+    },
+    {
+      "account": "Oberlinklinik gGmbH",
+      "plz": "07747",
+      "lat": 50.927,
+      "lon": 11.586,
+      "jobs": 1
+    },
+    {
+      "account": "UKM Marienhospital GmbH",
+      "plz": "48149",
+      "lat": 51.961,
+      "lon": 7.626,
+      "jobs": 1
+    },
+    {
+      "account": "Helios St. Anna Klinik",
+      "plz": "47166",
+      "lat": 51.435,
+      "lon": 6.762,
+      "jobs": 1
+    },
+    {
+      "account": "Sinke, Andreas",
+      "plz": "99817",
+      "lat": 50.98,
+      "lon": 10.315,
+      "jobs": 1
+    },
+    {
+      "account": "VenaZiel Berlin MVZ GmbH",
+      "plz": "10117",
+      "lat": 52.52,
+      "lon": 13.405,
+      "jobs": 1
+    },
+    {
+      "account": "Justus-Liebig Universität",
+      "plz": "35392",
+      "lat": 50.584,
+      "lon": 8.678,
+      "jobs": 1
+    },
+    {
+      "account": "Martha-Maria Krankenhaus",
+      "plz": "06120",
+      "lat": 51.497,
+      "lon": 11.969,
+      "jobs": 1
+    },
+    {
+      "account": "#Medtronic GmbH",
+      "plz": "24105",
+      "lat": 54.323,
+      "lon": 10.123,
+      "jobs": 1
+    },
+    {
+      "account": "Charité Campus Benjamin Franklin",
+      "plz": "10117",
+      "lat": 52.52,
+      "lon": 13.405,
+      "jobs": 1
+    },
+    {
+      "account": "Cellitinnen-Krankenhaus St. Josef",
+      "plz": "66421",
+      "lat": 49.327,
+      "lon": 7.34,
+      "jobs": 1
+    },
+    {
+      "account": "Isar Kliniken GmbH",
+      "plz": "80336",
+      "lat": 48.135,
+      "lon": 11.582,
+      "jobs": 1
+    },
+    {
+      "account": "SLK Kliniken Heilbronn GmbH HN",
+      "plz": "78052",
+      "lat": 48.06,
+      "lon": 8.459,
+      "jobs": 1
+    },
+    {
+      "account": "Krankenhaus Bad Cannstatt",
+      "plz": "70174",
+      "lat": 48.778,
+      "lon": 9.18,
+      "jobs": 1
+    },
+    {
+      "account": "Hilhorst, Jesper",
+      "plz": "76133",
+      "lat": 49.007,
+      "lon": 8.404,
+      "jobs": 1
+    },
+    {
+      "account": "LA-Regio Kliniken gKU",
+      "plz": "84034",
+      "lat": 48.537,
+      "lon": 12.154,
+      "jobs": 1
+    },
+    {
+      "account": "HELIOS Klinikum Erfurt GmbH",
+      "plz": "85221",
+      "lat": 48.26,
+      "lon": 11.435,
+      "jobs": 1
+    },
+    {
+      "account": "HELIOS Amper Klinikum Dachau",
+      "plz": "85221",
+      "lat": 48.26,
+      "lon": 11.435,
+      "jobs": 1
+    },
+    {
+      "account": "Kassaew, Igor",
+      "plz": "25524",
+      "lat": 53.925,
+      "lon": 9.514,
+      "jobs": 1
+    },
+    {
+      "account": "HELIOS Klinikum Wuppertal GmbH",
+      "plz": "42549",
+      "lat": 51.334,
+      "lon": 7.044,
+      "jobs": 1
+    },
+    {
+      "account": "Universitätsklinikum Augsburg AöR",
+      "plz": "79106",
+      "lat": 47.999,
+      "lon": 7.842,
+      "jobs": 1
+    }
+  ],
+  "generated_at": "2026-08-13T16:27:06"
 }

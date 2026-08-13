@@ -218,6 +218,27 @@ def build_dashboard_data() -> dict:
             continue
         job_repair_orte.append((familie, coords[0], coords[1]))
 
+    # Gebietsoptimierung: ALLE Jobs (nicht nur Repair) nach Standort aggregieren.
+    # Reale Auftrags-Standorte + Auftragsvolumen -- Basis fuer die
+    # Techniker<->Klinik-Zuordnung im "Gebietsoptimierung"-Tab.
+    job_standorte_map: dict[tuple[str, str], dict] = {}
+    for auftrag in ergebnis.geschlossene_auftraege + ergebnis.offene_auftraege:
+        plz = (auftrag.plz or "").strip()
+        if not plz:
+            continue
+        plz5 = plz.zfill(5)
+        coords = _KLINIK_COORDS.get(plz5)
+        if coords is None:
+            continue
+        account = (auftrag.account or "").strip()
+        key = (account, plz5)
+        eintrag = job_standorte_map.setdefault(key, {
+            "account": account, "plz": plz5,
+            "lat": coords[0], "lon": coords[1], "jobs": 0,
+        })
+        eintrag["jobs"] += 1
+    job_standorte = sorted(job_standorte_map.values(), key=lambda s: -s["jobs"])
+
     techniker_list: list[dict] = []
     for tech in ergebnis.techniker:
         ort      = tech.ort.strip()
@@ -295,6 +316,7 @@ def build_dashboard_data() -> dict:
         "open_jobs":                  len(ergebnis.offene_auftraege),
         "stk_potenzial_gesamt":       sum(t["stk_potenzial"] for t in techniker_list),
         "einsatz_median_min":         einsatz_median_min,
+        "job_standorte":              job_standorte,
         "generated_at":               datetime.now().isoformat(timespec="seconds"),
     }
 
@@ -329,6 +351,7 @@ if __name__ == "__main__":
         print(f"  davon Repair-relevant:   {data['total_repair_codes']}")
         print(f"  Closed Jobs:             {data['closed_jobs']}")
         print(f"  Open Jobs:               {data['open_jobs']}")
+        print(f"  Job-Standorte (Gebietsoptimierung): {len(data['job_standorte'])}")
         modus = "pseudonymisiert (SHA256)" if PSEUDONYMISIERUNG_AKTIV else "echte Namen (Nachname)"
         print()
         print(f"Techniker ({modus})  [PM-Codes / PM auf Repair-Geraeten / Abdeckung%]:")
