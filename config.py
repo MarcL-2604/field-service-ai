@@ -117,3 +117,8 @@ PSEUDONYMISIERUNG_AKTIV = False   # False = echte Namen, True = SHA256-Pseudonym
 SMAX_API_URL = None               # wird konfiguriert
 OUTLOOK_GRAPH_API_URL = None      # wird konfiguriert
 KALENDER_INTEGRIERT = False       # Prototyp-Flag
+
+# ─── Test-Suite (Dashboard-Footer) ─────────────────
+# Manuell bei jedem pytest-Lauf/Release aktualisieren (`pytest --collect-only -q`).
+# Einzige Stelle im Code -- dashboard.py liest von hier, nicht hardcodiert.
+TESTS_ANZAHL = 821

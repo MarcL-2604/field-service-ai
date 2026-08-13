@@ -64,6 +64,7 @@ from config import (
     KALENDER_INTEGRIERT,
     MIN_GERAETE_FUER_CROSSTRAINING,
     MIN_STK_POTENZIAL_CROSSTRAINING,
+    TESTS_ANZAHL,
 )
 
 
@@ -210,6 +211,16 @@ class TestConfigWerte:
 
     def test_min_stk_potenzial_crosstraining(self):
         assert MIN_STK_POTENZIAL_CROSSTRAINING == 15
+
+    # ─── Test-Suite (Dashboard-Footer) ─────────────
+    def test_tests_anzahl_ist_positiver_int(self):
+        assert isinstance(TESTS_ANZAHL, int)
+        assert TESTS_ANZAHL > 0
+
+    def test_dashboard_footer_nutzt_zentrale_konstante(self):
+        """dashboard.py darf die Testzahl nicht mehr hardcodieren."""
+        from reporting.dashboard import TESTS_ANZAHL as DASHBOARD_TESTS_ANZAHL
+        assert DASHBOARD_TESTS_ANZAHL == TESTS_ANZAHL
 
     # ─── Training ──────────────────────────────────
     def test_training_small_capital(self):

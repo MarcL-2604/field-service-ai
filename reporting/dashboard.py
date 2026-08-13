@@ -40,6 +40,7 @@ from config import (  # noqa: E402
     HAVERSINE_UMWEG_FAKTOR,
     MIN_GERAETE_FUER_CROSSTRAINING,
     MIN_STK_POTENZIAL_CROSSTRAINING,
+    TESTS_ANZAHL,
 )
 from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
@@ -3549,7 +3550,7 @@ def render_html(
   Field Service AI &nbsp;|&nbsp;
   Medtronic GmbH Service &amp; Repair &nbsp;|&nbsp;
   <span data-i18n="footer.copilot">Vollautomatisiert &middot; Copilot &mdash; kein Autopilot</span> &nbsp;|&nbsp;
-  704 Tests gr&uuml;n
+  {TESTS_ANZAHL} Tests gr&uuml;n
 </footer>
 
 </div><!-- /dashboard-panel -->
@@ -4095,8 +4096,8 @@ def _vollstaendigkeits_pruefung(html: str) -> list[tuple[str, bool]]:
          'hugo-ka-badge' in html and html.count('Hugo Key Account') >= 4),
         ("Demo-Badge (gold) im Header",
          'demo-badge' in html),
-        ("Footer: 704 Tests gruen",
-         '704 Tests' in html),
+        (f"Footer: {TESTS_ANZAHL} Tests gruen",
+         f'{TESTS_ANZAHL} Tests' in html),
     ]
     return checks
 
