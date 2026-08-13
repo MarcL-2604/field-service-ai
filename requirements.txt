@@ -1,5 +1,6 @@
 pydantic>=2.0
 pandas>=2.0
 openpyxl>=3.1       # Excel-Import aus SMax
+pgeocode>=0.5       # PLZ-Koordinaten-Lookup (GeoNames, offline nach Erstinstallation)
 pytest>=8.0
 flake8>=7.0

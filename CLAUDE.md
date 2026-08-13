@@ -15,7 +15,7 @@ Das System hat drei Kernfunktionen:
 - Hauptverzeichnis: C:\Projekte\FieldServiceAI
 - Tests: pytest · aktuell 516 Tests grün · 9 Testdateien
 - Dashboard: reporting/dashboard.py → reporting/dashboard.html
-- Abhängigkeiten: pydantic>=2.0, pandas>=2.0, openpyxl>=3.1, pytest>=8.0, flake8>=7.0
+- Abhängigkeiten: pydantic>=2.0, pandas>=2.0, openpyxl>=3.1, pgeocode>=0.5, pytest>=8.0, flake8>=7.0
 
 | Bereich | Status | Details |
 |---|---|---|
@@ -396,6 +396,12 @@ flake8 . --max-line-length=120
 
 Daten kommen als CSV/Excel-Exporte aus ServiceMax. Einlesepfad: `daten/`. Spaltennamen folgen dem SMax-Schema (englisch). Transformationslogik liegt im jeweiligen Modul, nicht in `daten/`.
 
+**PLZ-Koordinaten-Lookup** (`techniker/plz_koordinaten.py`, Funktion `hole_koordinaten(plz)`):
+Löst PLZ → (lat, lon) für Crosstraining-Umkreisberechnung (`api/smax_cache.py`) und Gebietsoptimierung (`reporting/dashboard.py`). Fallback-Kette: `techniker.scoring._KLINIK_COORDS` (kuratiert, ~90 Einträge, hat Vorrang) → `pgeocode.Nominatim('de')` (breite Abdeckung) → `None`.
+- Datenquelle: [pgeocode](https://github.com/symerio/pgeocode)-Paket, das die GeoNames-Postleitzahlendatenbank für Deutschland (~10.800 PLZ) beim ersten Zugriff herunterlädt und lokal cached (`~/.cache/pgeocode/DE.txt`). GeoNames-Daten stehen unter [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/); pgeocode selbst ist BSD-3-Clause lizenziert. Keine Datei wird im Repo vorgehalten — nur das Paket in `requirements.txt`.
+- Deckt nur deutsche PLZ ab (`Nominatim('de')`). Reale SMax-Auftragsdaten enthalten auch Kliniken in Österreich und der Schweiz (4-stellige PLZ, in den Rohdaten mit führender „0" auf 5 Stellen aufgefüllt, z. B. Lausanne „1011" → „01011") — diese bleiben bewusst unaufgelöst (`None`), da außerhalb des Scopes. Aktuelle Auflösungsrate: ~70% der importierten Jobs (vorher ~19% mit der reinen `_KLINIK_COORDS`-Liste); die Differenz zu 100% ist überwiegend AT/CH-Volumen, keine fehlende deutsche PLZ.
+- `techniker/plz_lookup.py` (Techniker-Wohnort-PLZ, 24 Techniker, manuell kuratiert) ist davon unabhängig und bleibt unverändert.
+
 ## 22. Konventionen
 
 - Sprache im Code: Englisch (Variablen, Funktionen, Klassen)
@@ -404,7 +410,7 @@ Daten kommen als CSV/Excel-Exporte aus ServiceMax. Einlesepfad: `daten/`. Spalte
 - Alle Datumswerte als `datetime`-Objekte, keine Strings in der Verarbeitung
 - Pydantic v2 für alle Datenmodelle
 - Tests: `pytest tests/` — 516 Tests, alle grün. Einzeltest: `pytest tests/test_<modul>.py::test_<funktion> -v`
-- Python 3.12, Abhängigkeiten: pydantic>=2.0, pandas>=2.0, openpyxl>=3.1, pytest>=8.0, flake8>=7.0
+- Python 3.12, Abhängigkeiten: pydantic>=2.0, pandas>=2.0, openpyxl>=3.1, pgeocode>=0.5, pytest>=8.0, flake8>=7.0
 
 ## 23. Offene Aufgaben
 - [ ] SMax Go API-Anbindung (nach Pilotfreigabe)

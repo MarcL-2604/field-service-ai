@@ -174,7 +174,7 @@ def build_dashboard_data() -> dict:
     """Parst XLSX und erstellt dashboard-kompatible Daten mit pseudonymisierten IDs."""
     from api.import_real_data import parse_smax_xlsx
     from api.cluster_mapping import finde_repair_familie
-    from techniker.scoring import _KLINIK_COORDS
+    from techniker.plz_koordinaten import hole_koordinaten
 
     if not _XLSX.exists():
         raise FileNotFoundError(f"XLSX nicht gefunden: {_XLSX}")
@@ -213,7 +213,7 @@ def build_dashboard_data() -> dict:
         plz = (auftrag.plz or "").strip()
         if not plz:
             continue
-        coords = _KLINIK_COORDS.get(plz.zfill(5))
+        coords = hole_koordinaten(plz)
         if coords is None:
             continue
         job_repair_orte.append((familie, coords[0], coords[1]))
@@ -221,15 +221,18 @@ def build_dashboard_data() -> dict:
     # Gebietsoptimierung: ALLE Jobs (nicht nur Repair) nach Standort aggregieren.
     # Reale Auftrags-Standorte + Auftragsvolumen -- Basis fuer die
     # Techniker<->Klinik-Zuordnung im "Gebietsoptimierung"-Tab.
+    alle_auftraege = ergebnis.geschlossene_auftraege + ergebnis.offene_auftraege
     job_standorte_map: dict[tuple[str, str], dict] = {}
-    for auftrag in ergebnis.geschlossene_auftraege + ergebnis.offene_auftraege:
+    jobs_aufgeloest = 0
+    for auftrag in alle_auftraege:
         plz = (auftrag.plz or "").strip()
         if not plz:
             continue
         plz5 = plz.zfill(5)
-        coords = _KLINIK_COORDS.get(plz5)
+        coords = hole_koordinaten(plz5)
         if coords is None:
             continue
+        jobs_aufgeloest += 1
         account = (auftrag.account or "").strip()
         key = (account, plz5)
         eintrag = job_standorte_map.setdefault(key, {
@@ -237,6 +240,7 @@ def build_dashboard_data() -> dict:
             "lat": coords[0], "lon": coords[1], "jobs": 0,
         })
         eintrag["jobs"] += 1
+    jobs_gesamt = len(alle_auftraege)
     job_standorte = sorted(job_standorte_map.values(), key=lambda s: -s["jobs"])
 
     techniker_list: list[dict] = []
@@ -317,6 +321,8 @@ def build_dashboard_data() -> dict:
         "stk_potenzial_gesamt":       sum(t["stk_potenzial"] for t in techniker_list),
         "einsatz_median_min":         einsatz_median_min,
         "job_standorte":              job_standorte,
+        "jobs_plz_aufgeloest":        jobs_aufgeloest,
+        "jobs_gesamt":                jobs_gesamt,
         "generated_at":               datetime.now().isoformat(timespec="seconds"),
     }
 
@@ -352,6 +358,8 @@ if __name__ == "__main__":
         print(f"  Closed Jobs:             {data['closed_jobs']}")
         print(f"  Open Jobs:               {data['open_jobs']}")
         print(f"  Job-Standorte (Gebietsoptimierung): {len(data['job_standorte'])}")
+        pct = data['jobs_plz_aufgeloest'] / data['jobs_gesamt'] * 100 if data['jobs_gesamt'] else 0
+        print(f"  PLZ aufgeloest:          {data['jobs_plz_aufgeloest']}/{data['jobs_gesamt']} ({pct:.1f}%)")
         modus = "pseudonymisiert (SHA256)" if PSEUDONYMISIERUNG_AKTIV else "echte Namen (Nachname)"
         print()
         print(f"Techniker ({modus})  [PM-Codes / PM auf Repair-Geraeten / Abdeckung%]:")
