@@ -37,6 +37,9 @@ from config import (  # noqa: E402
     PUFFER_GROSSGERAET_MIN,
     PUFFER_GESPRAECH_MIN,
     PSEUDONYMISIERUNG_AKTIV,
+    HAVERSINE_UMWEG_FAKTOR,
+    MIN_GERAETE_FUER_CROSSTRAINING,
+    MIN_STK_POTENZIAL_CROSSTRAINING,
 )
 from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
@@ -466,7 +469,33 @@ def _render_repair_tabelle(repair_rows: list[dict]) -> str:
     return "\n".join(zeilen)
 
 
-def _render_ct_tabelle(ct_top5: list[dict], techniker: dict[str, dict]) -> str:
+_DEFAULT_EINSATZDAUER_STUNDEN = 4.0  # Fallback: siehe crosstraining_analyse.py Kapazitaetsbasis
+
+
+def _avg_einsatzdauer_stunden(labor_zeiten: list[dict], produktfamilie: str) -> float:
+    """Durchschnittliche Einsatzdauer (Service+Admin) in Stunden aus labor_zeiten.csv.
+
+    Faellt auf den Gesamtdurchschnitt zurueck, wenn keine Eintraege fuer die
+    Produktfamilie vorliegen, und auf _DEFAULT_EINSATZDAUER_STUNDEN wenn
+    labor_zeiten.csv leer ist.
+    """
+    treffer = [lz for lz in labor_zeiten if lz.get("produkt_familie") == produktfamilie]
+    quelle = treffer or labor_zeiten
+    if not quelle:
+        return _DEFAULT_EINSATZDAUER_STUNDEN
+    gesamt_min = sum(
+        int(lz.get("service_zeit_min", 0) or 0) + int(lz.get("admin_zeit_min", 0) or 0)
+        for lz in quelle
+    )
+    return round(gesamt_min / len(quelle) / 60, 2)
+
+
+def _render_ct_tabelle(
+    ct_top5: list[dict],
+    techniker: dict[str, dict],
+    labor_zeiten: list[dict] | None = None,
+) -> str:
+    labor_zeiten = labor_zeiten or []
     zeilen = []
     for row in ct_top5:
         tid = row["techniker_id"]
@@ -499,16 +528,59 @@ def _render_ct_tabelle(ct_top5: list[dict], techniker: dict[str, dict]) -> str:
             )
         badges_html = " ".join(cluster_badges)
 
+        # Mehrwert-Begruendung: nur fuer die wirtschaftlich tragende Top-Familie
+        top_familie = row.get("top_familie", "")
+        stk_potenzial = float(row.get("top_familie_stk_potenzial", 0) or 0)
+        mehrwert_html = ""
+        if top_familie and stk_potenzial > 0:
+            qualifiziert = len(
+                [f for f in row.get("qualifizierte_familien_l3plus", "").split(";") if f]
+            )
+            regional = len(
+                [f for f in row.get("regionale_produktfamilien", "").split(";") if f]
+            )
+            y_pct = round(qualifiziert / regional * 100) if regional else 0
+            z_pct = round((qualifiziert + 1) / regional * 100) if regional else 0
+            avg_h = _avg_einsatzdauer_stunden(labor_zeiten, top_familie)
+            zusatz_stunden = round(stk_potenzial * avg_h, 1)
+            mehrwert_html = (
+                f'<div class="ct-mehrwert">'
+                f'<div>Potenzial: <strong>+{stk_potenzial:.0f} STK/Jahr</strong> ({top_familie})</div>'
+                f'<div>Bessere Auslastung: von {y_pct}% auf {z_pct}% (gesch&auml;tzt)</div>'
+                f'<div>Unternehmensmehrwert: {stk_potenzial:.0f} STK/a &times; '
+                f'&#216;{avg_h:.1f}h Einsatzdauer &asymp; '
+                f'<strong>{zusatz_stunden:.0f}h</strong> zus&auml;tzliche Kapazit&auml;t nutzbar</div>'
+                f'</div>'
+            )
+
         zeilen.append(
             f"      <tr>"
             f"<td><strong>{tid}</strong> <span class='sub'>({standort})</span></td>"
             f"<td>{row['anzahl_luecken']}</td>"
-            f"<td><strong>{float(row['potentielles_zusatz_stk_pa']):.0f}</strong></td>"
-            f"<td class='fehlend-liste'>{badges_html}{dauer_badge}</td>"
+            f"<td><strong>{stk_potenzial:.0f}</strong></td>"
+            f"<td class='fehlend-liste'>{badges_html}{dauer_badge}{mehrwert_html}</td>"
             f"<td>{partner}<br>{kosten_badge}</td>"
             f"</tr>"
         )
     return "\n".join(zeilen)
+
+
+def _render_ct_ausschluss_hint(ct_rows: list[dict]) -> str:
+    """Hinweis-Box fuer Techniker ohne wirtschaftlich sinnvolles Crosstraining."""
+    ausgeschlossen = [r for r in ct_rows if r.get("wirtschaftlich_sinnvoll") == "Nein"]
+    if not ausgeschlossen:
+        return ""
+    ids = ", ".join(r["techniker_id"] for r in ausgeschlossen)
+    return (
+        f'<div class="ct-ausschluss-hint">'
+        f'<strong>{len(ausgeschlossen)} von {len(ct_rows)} Techniker</strong> '
+        f'erreichen die Wirtschaftlichkeits-Schwelle nicht '
+        f'(&lt;{MIN_GERAETE_FUER_CROSSTRAINING} Ger&auml;te oder '
+        f'&lt;{MIN_STK_POTENZIAL_CROSSTRAINING} STK/a Potenzial der fehlenden Produktfamilie '
+        f'im Gebiet): {ids}. Kein wirtschaftlich sinnvolles Crosstraining im aktuellen '
+        f'Gebiet &mdash; Ger&auml;tedichte zu gering.'
+        f'</div>'
+    )
 
 
 def _render_nrw_warnung(warnung: dict | None) -> str:
@@ -2419,6 +2491,50 @@ _CSS = """\
     .gebiets-karte svg circle.td { filter: drop-shadow(0 0 4px rgba(0,163,224,.4)); }
     .gebiets-metriken { flex: 1; min-width: 0; overflow-x: auto; }
 
+    /* ── Gebietsoptimierung: Erlaeuterungsboxen ── */
+    .go-info-box {
+      display: flex;
+      gap: 12px;
+      background: rgba(0,81,149,.05);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+    .go-info-icon { font-size: 20px; line-height: 1.3; flex-shrink: 0; }
+    .go-info-body { flex: 1; min-width: 0; }
+    .go-info-title {
+      font-family: var(--font-heading);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .go-info-text { font-size: 12.5px; color: var(--text); line-height: 1.55; }
+
+    /* ── Crosstraining: Mehrwert-Begruendung / Ausschluss-Hinweis ── */
+    .ct-mehrwert {
+      margin-top: 6px;
+      padding: 8px 10px;
+      background: rgba(0,133,124,.06);
+      border: 1px solid rgba(0,133,124,.2);
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .ct-mehrwert strong { color: var(--success-text); }
+    .ct-ausschluss-hint {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: rgba(204,112,0,.06);
+      border: 1px solid rgba(204,112,0,.2);
+      border-radius: 8px;
+      font-size: 11.5px;
+      color: var(--warning-text);
+      line-height: 1.5;
+    }
+
     /* Einstellungsbedarf */
     .einst-layout {
       display: flex;
@@ -2953,6 +3069,18 @@ _CSS = """\
     section:nth-child(4) { animation-delay: .15s; }"""
 
 
+def _go_info_box(icon: str, titel: str, text: str) -> str:
+    """Erzeugt eine Erlaeuterungsbox (Icon + Titel + Text) im Medtronic Light Theme."""
+    return (
+        f'<div class="go-info-box">'
+        f'<div class="go-info-icon">{icon}</div>'
+        f'<div class="go-info-body">'
+        f'<div class="go-info-title">{titel}</div>'
+        f'<div class="go-info-text">{text}</div>'
+        f'</div></div>'
+    )
+
+
 def _render_gebietsoptimierung(
     metriken_akt: list[dict],
     metriken_opt: list[dict],
@@ -2961,6 +3089,33 @@ def _render_gebietsoptimierung(
     """Erzeugt den Gebietsoptimierung-Tab mit 3 klickbaren Ansicht-Buttons."""
     if not metriken_akt:
         return ""
+
+    umweg_faktor_text = f"{HAVERSINE_UMWEG_FAKTOR:.2f}".replace(".", ",")
+    info_aktuell = _go_info_box(
+        "&#128506;",
+        "Was zeigt diese Ansicht?",
+        "Zeigt die IST-Gebietsaufteilung basierend auf den aktuellen "
+        "Techniker-Wohnorten und den ihnen historisch zugeordneten "
+        "Klinik-PLZ-Gebieten. Jede Farbe entspricht einem Techniker-Gebiet.",
+    )
+    info_optimiert = _go_info_box(
+        "&#129504;",
+        "Wie und warum wird optimiert?",
+        "Die KI berechnet auf Basis der tats&auml;chlichen Auftragsstandorte "
+        "(Open + Closed Jobs) und der Techniker-PLZ eine fahrzeitminimierte "
+        "Neuaufteilung der Gebiete. Ziel: k&uuml;rzere Anfahrtswege, "
+        "gleichm&auml;&szlig;igere Auslastung. Berechnungsgrundlage: "
+        f"Haversine-Distanz &times; {umweg_faktor_text} Stra&szlig;enfaktor, "
+        "siehe Scoring-Methodik.",
+    )
+    info_luecken = _go_info_box(
+        "&#9888;",
+        "Was ist hier zu sehen?",
+        "Zeigt Gebiete mit doppelter Abdeckung (mehrere Techniker nah "
+        "beieinander = &Uuml;berschneidung, Optimierungspotenzial) und "
+        "Gebiete ohne nahen Techniker (L&uuml;cke = l&auml;ngere "
+        "Anfahrtszeiten f&uuml;r Kunden in dieser Region).",
+    )
 
     # ── Ansicht 1: Aktuelle Gebiete – Tabelle ──
     rows_aktuell = ""
@@ -3094,6 +3249,7 @@ def _render_gebietsoptimierung(
       <div class="gebiets-metriken">
         <!-- Ansicht 1: Aktuelle Gebiete -->
         <div class="go-view-content active" id="go-view-aktuell">
+          {info_aktuell}
           <table>
             <thead>
               <tr>
@@ -3111,6 +3267,7 @@ def _render_gebietsoptimierung(
         </div>
         <!-- Ansicht 2: Optimierte Gebiete -->
         <div class="go-view-content" id="go-view-optimiert">
+          {info_optimiert}
           <div class="bc-gold-hint" style="margin-bottom:14px">
             &#9733; Demo-Optimierung &middot; Basiert auf Fahrzeit-Minimierung und Auslastungsausgleich
           </div>
@@ -3136,6 +3293,7 @@ def _render_gebietsoptimierung(
         </div>
         <!-- Ansicht 3: Lücken & Überschneidungen -->
         <div class="go-view-content" id="go-view-luecken">
+          {info_luecken}
           <table>
             <thead>
               <tr>
@@ -3186,7 +3344,8 @@ def render_html(
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten)
     stk_html      = _render_stk_tabelle(stk_rows)
     repair_html   = _render_repair_tabelle(repair_rows or [])
-    ct_html       = _render_ct_tabelle(ct_top5, techniker)
+    ct_html       = _render_ct_tabelle(ct_top5, techniker, labor_zeiten or [])
+    ct_ausschluss_html = _render_ct_ausschluss_hint(ct_rows or [])
     warnung_html  = _render_nrw_warnung(nrw_warnung)
     puffer_html   = _render_puffer_section(labor_zeiten or [])
     workflow_html = _render_workflow_status()
@@ -3341,8 +3500,8 @@ def render_html(
   <section>
     <h2 data-i18n="h.ct">Crosstraining Top 5</h2>
     <p class="section-hint" data-i18n="hint.ct">
-      T2 +664 &middot; T8 +527 &middot; T13 +498 &middot; T12 +449 &middot; T1 +453 STK/a &middot;
-      Sortiert nach zus&auml;tzlichem STK-Potenzial pro Jahr
+      Nur Techniker mit wirtschaftlich sinnvollem Crosstraining (Ger&auml;tedichte
+      &amp; STK-Potenzial &uuml;ber Schwellwert) &middot; sortiert nach STK-Potenzial pro Jahr
     </p>
     <table>
       <thead>
@@ -3358,6 +3517,7 @@ def render_html(
 {ct_html}
       </tbody>
     </table>
+{ct_ausschluss_html}
   </section>
 {warnung_html}
   </div>
@@ -3495,7 +3655,7 @@ var _I18N = {{
     'th.phase': 'Phase',
     'th.sparePart': 'Ersatzteil',
     'h.ct': 'Crosstraining Top 5',
-    'hint.ct': 'T2 +664 \u00b7 T8 +527 \u00b7 T13 +498 \u00b7 T12 +449 \u00b7 T1 +453 STK/a \u00b7 Sortiert nach zus\u00e4tzlichem STK-Potenzial pro Jahr',
+    'hint.ct': 'Nur Techniker mit wirtschaftlich sinnvollem Crosstraining (Ger\u00e4tedichte & STK-Potenzial \u00fcber Schwellwert) \u00b7 sortiert nach STK-Potenzial pro Jahr',
     'th.technician': 'Techniker',
     'th.gaps': 'L\u00fccken',
     'th.stkYear': '+STK/Jahr',
@@ -3572,7 +3732,7 @@ var _I18N = {{
     'th.phase': 'Phase',
     'th.sparePart': 'Spare Part',
     'h.ct': 'Cross-Training Top 5',
-    'hint.ct': 'T2 +664 \u00b7 T8 +527 \u00b7 T13 +498 \u00b7 T12 +449 \u00b7 T1 +453 STK/yr \u00b7 Sorted by additional STK potential per year',
+    'hint.ct': 'Only technicians with an economically viable crosstraining case (device density & STK potential above threshold) \u00b7 sorted by STK potential per year',
     'th.technician': 'Technician',
     'th.gaps': 'Gaps',
     'th.stkYear': '+STK/Year',
@@ -4116,12 +4276,17 @@ def main() -> None:
             "ersatzteil": rd["ersatzteil"],
         })
 
-    print("Sortiere Crosstraining-Top-5...")
+    print("Filtere Crosstraining nach Wirtschaftlichkeit und sortiere Top-5...")
+    ct_wirtschaftlich = [r for r in ct_rows if r.get("wirtschaftlich_sinnvoll") == "Ja"]
     ct_top5 = sorted(
-        ct_rows,
-        key=lambda r: float(r.get("potentielles_zusatz_stk_pa", 0)),
+        ct_wirtschaftlich,
+        key=lambda r: float(r.get("top_familie_stk_potenzial", 0) or 0),
         reverse=True,
     )[:5]
+    print(
+        f"  {len(ct_wirtschaftlich)}/{len(ct_rows)} Techniker wirtschaftlich sinnvoll "
+        f"-> {len(ct_top5)} in Top-5"
+    )
 
     print("Berechne Gebietsmetriken...")
     gebiets_metriken = _berechne_gebietsmetriken(techniker)

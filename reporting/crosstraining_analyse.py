@@ -41,6 +41,8 @@ from config import (  # noqa: E402
     HANDON_REPAIR_STUNDEN,
     HANDON_PM_STUNDEN,
     HUGO_KA_IDS,
+    MIN_GERAETE_FUER_CROSSTRAINING,
+    MIN_STK_POTENZIAL_CROSSTRAINING,
 )
 
 BASE = _ROOT / "daten"
@@ -482,6 +484,39 @@ def load_geraete(klinik_bl_map: dict[str, str]) -> dict[str, dict[str, float]]:
     return {bl: dict(pf) for bl, pf in bl_volumen.items()}
 
 
+def load_geraete_anzahl(klinik_bl_map: dict[str, str]) -> dict[str, dict[str, int]]:
+    """
+    Gibt {bundesland: {training_produktfamilie: geraete_anzahl}} zurueck.
+    Im Gegensatz zu load_geraete() wird hier die rohe Geraeteanzahl summiert
+    (nicht das STK/Jahr-Volumen) -- Basis fuer die Crosstraining-Wirtschaftlichkeit.
+    """
+    bl_anzahl: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+
+    with open(BASE / "geraete.csv", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(
+            (line for line in f if not line.strip().startswith("#"))
+        )
+        for row in reader:
+            klinik = row["klinik_name"].strip()
+            produkt = row["produkt_familie"].strip()
+            try:
+                anzahl = int(row["anzahl"])
+            except ValueError:
+                continue
+
+            training_produkt = GERAET_ZU_TRAINING.get(produkt)
+            if training_produkt is None:
+                continue
+
+            bl = klinik_zu_bundesland(klinik, klinik_bl_map)
+            if bl is None:
+                continue
+
+            bl_anzahl[bl][training_produkt] += anzahl
+
+    return {bl: dict(pf) for bl, pf in bl_anzahl.items()}
+
+
 def bundeslaender_fuer_techniker(
     tid: str,
     regionen: dict[str, set[str]],
@@ -565,6 +600,7 @@ def main() -> None:
     regionen_map = load_regionen()
     klinik_bl_map = load_klinik_bl_map()
     bl_volumen = load_geraete(klinik_bl_map)
+    bl_geraete_anzahl = load_geraete_anzahl(klinik_bl_map)
 
     # Alle Techniker-IDs aus trainingsmatrix (T1..T14)
     alle_ids = sorted(qualifikationen.keys(), key=lambda x: int(x[1:]))
@@ -595,10 +631,22 @@ def main() -> None:
 
         # Schulungsdetails fuer die Top-Luecke (groesstes STK-Volumen)
         top_schulung = {}
+        top_pf = ""
+        top_familie_geraete = 0
+        top_familie_stk = 0.0
+        wirtschaftlich_sinnvoll = False
         if fehlend:
             top_pf = max(fehlend, key=lambda pf: reg_vol.get(pf, 0))
             top_schulung = berechne_schulungsdetails(
                 top_pf, tid, qualifikationen, regionen_map, tech_bls,
+            )
+            top_familie_geraete = sum(
+                bl_geraete_anzahl.get(bl, {}).get(top_pf, 0) for bl in tech_bls
+            )
+            top_familie_stk = round(reg_vol.get(top_pf, 0), 1)
+            wirtschaftlich_sinnvoll = (
+                top_familie_geraete >= MIN_GERAETE_FUER_CROSSTRAINING
+                and top_familie_stk >= MIN_STK_POTENZIAL_CROSSTRAINING
             )
 
         # Gesamtkosten: PLATZHALTER wenn mind. 1 Cluster T&E-pflichtig
@@ -624,11 +672,20 @@ def main() -> None:
             "top_schulung_dauer": top_schulung.get("dauer_text", ""),
             "top_schulung_trainer": top_schulung.get("trainer_id", ""),
             "geschaetzte_gesamtkosten_eur": gesamt_kosten,
+            "top_familie": top_pf,
+            "top_familie_geraete_anzahl": top_familie_geraete,
+            "top_familie_stk_potenzial": top_familie_stk,
+            "wirtschaftlich_sinnvoll": "Ja" if wirtschaftlich_sinnvoll else "Nein",
         })
 
+        wirtschaft_info = (
+            f"wirtschaftlich ({top_pf}: {top_familie_geraete} Geraete, "
+            f"+{top_familie_stk} STK/a)" if wirtschaftlich_sinnvoll
+            else "nicht wirtschaftlich (Geraetedichte zu gering)"
+        )
         print(
             f"  {tid}: {len(fehlend)} Luecken, "
-            f"+{round(zusatz_stk,1)} STK/a -> Partner: {partner or '–'}"
+            f"+{round(zusatz_stk,1)} STK/a -> Partner: {partner or '–'} -- {wirtschaft_info}"
         )
 
     out_path = BASE / "crosstraining_empfehlungen.csv"
@@ -646,6 +703,10 @@ def main() -> None:
         "top_schulung_dauer",
         "top_schulung_trainer",
         "geschaetzte_gesamtkosten_eur",
+        "top_familie",
+        "top_familie_geraete_anzahl",
+        "top_familie_stk_potenzial",
+        "wirtschaftlich_sinnvoll",
     ]
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)

@@ -91,6 +91,10 @@ PUFFER_GROSSGERAET_MIN = 30      # Hugo, EC300
 PUFFER_GESPRAECH_MIN = 15        # Medizintechnik-Gespraech
 PUFFER_MESSMITTEL_LADEN = 30     # Vortag (nicht in Einsatz)
 
+# ─── Crosstraining Wirtschaftlichkeit ──────────────
+MIN_GERAETE_FUER_CROSSTRAINING = 5      # Mindestanzahl Repair-Geraete der fehlenden Produktfamilie im Gebiet
+MIN_STK_POTENZIAL_CROSSTRAINING = 15    # Mindest-STK/Jahr-Potenzial der fehlenden Produktfamilie
+
 # ─── Trainingskosten (Platzhalter) ─────────────────
 TRAINING_SMALL_CAPITAL_EUR = 0        # intern
 TRAINING_HF_CHIRURGIE_EUR = 0         # STK/PM intern

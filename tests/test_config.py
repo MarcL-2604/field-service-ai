@@ -62,6 +62,8 @@ from config import (
     BUENDELUNG_RADIUS_KM,
     BUENDELUNG_GLEICHE_KLINIK,
     KALENDER_INTEGRIERT,
+    MIN_GERAETE_FUER_CROSSTRAINING,
+    MIN_STK_POTENZIAL_CROSSTRAINING,
 )
 
 
@@ -201,6 +203,13 @@ class TestConfigWerte:
 
     def test_puffer_messmittel(self):
         assert PUFFER_MESSMITTEL_LADEN == 30
+
+    # ─── Crosstraining Wirtschaftlichkeit ──────────
+    def test_min_geraete_fuer_crosstraining(self):
+        assert MIN_GERAETE_FUER_CROSSTRAINING == 5
+
+    def test_min_stk_potenzial_crosstraining(self):
+        assert MIN_STK_POTENZIAL_CROSSTRAINING == 15
 
     # ─── Training ──────────────────────────────────
     def test_training_small_capital(self):
@@ -439,3 +448,11 @@ class TestConfigImportKonsistenz:
         assert KOSTEN_HF_CHIRURGIE_STK_PM == TRAINING_HF_CHIRURGIE_EUR
         assert HANDON_STUNDEN_REPAIR_L3 == HANDON_REPAIR_STUNDEN
         assert HANDON_STUNDEN_PM == HANDON_PM_STUNDEN
+
+    def test_crosstraining_wirtschaftlichkeit_schwellwerte(self):
+        from reporting.crosstraining_analyse import (
+            MIN_GERAETE_FUER_CROSSTRAINING as CT_MIN_GERAETE,
+            MIN_STK_POTENZIAL_CROSSTRAINING as CT_MIN_STK,
+        )
+        assert CT_MIN_GERAETE == MIN_GERAETE_FUER_CROSSTRAINING
+        assert CT_MIN_STK == MIN_STK_POTENZIAL_CROSSTRAINING
