@@ -1251,72 +1251,18 @@ def _render_gebietsplanung(
     metriken_opt: list[dict],
     plz_abdeckung: list[dict] | None = None,
 ) -> str:
+    """Erzeugt den 'PLZ-Abdeckung & Einstellungsbedarf'-Abschnitt (Tab Einstellungsbedarf).
+
+    HINWEIS: Enthielt frueher zusaetzlich eine 'Gebietsplanung'-Detailansicht
+    (Aktuelle/Optimierte-Gebiete-Buttons + Karte + Ratio-Tabelle), die inhaltlich
+    und optisch die neue Tab 6 'Gebietsoptimierung' dupliziert hat. Wurde entfernt,
+    da sie -- oberhalb dieses Abschnitts im selben Tab-Panel platziert -- dazu
+    fuehrte, dass beim Wechsel auf "Einstellungsbedarf" scheinbar noch der
+    Gebietsoptimierung-Inhalt zu sehen war (der echte Inhalt kam erst nach
+    Scrollen). metriken_opt bleibt Teil der Signatur fuer Aufrufkompatibilitaet.
+    """
     if not metriken_akt:
         return ""
-
-    def _ampel(ratio: float) -> tuple[str, str]:
-        if ratio >= 3.0:
-            return "gebiets-gruen", "GRÜN"
-        if ratio >= 2.0:
-            return "gebiets-gelb", "GELB"
-        return "gebiets-rot", "ROT"
-
-    def _rows(metriken: list[dict], prefix: str) -> str:
-        lines = []
-        vis = "table-row" if prefix == "aktuell" else "none"
-        for m in metriken:
-            css, _ = _ampel(m["ratio"])
-            max_warn = " !" if m.get("max_fahrzeit", 0) > 90 else ""
-            vorschlag = _OPTIMIERUNGS_VORSCHLAEGE.get(m["id"], "")
-            detail_id = f'detail-{prefix}-{m["id"]}'
-            lines.append(
-                f'      <tr class="gebiets-row gebiets-{prefix} {css}" '
-                f'style="display:{vis};cursor:pointer" '
-                f'onclick="document.getElementById(\'{detail_id}\').style.display='
-                f'document.getElementById(\'{detail_id}\').style.display===\'none\'?'
-                f'\'table-row\':\'none\'">'
-                f'<td><span class="gebiets-ampel-dot {css}"></span>'
-                f'<strong>{m["id"]}</strong> '
-                f'<span class="sub">({m["standort"]})</span></td>'
-                f'<td>{m["kliniken"]}</td>'
-                f'<td>{m["avg_fahrzeit"]} min</td>'
-                f'<td>{m.get("max_fahrzeit", 0)} min{max_warn}</td>'
-                f'<td>{m["fahrtstunden_jahr"]}</td>'
-                f'<td>{m["onsite_stunden"]}</td>'
-                f'<td><span class="badge badge-ratio {css}">'
-                f'{m["ratio"]}</span></td></tr>')
-            if vorschlag:
-                lines.append(
-                    f'      <tr id="{detail_id}" class="gebiets-{prefix} '
-                    f'gebiets-detail" style="display:none">'
-                    f'<td colspan="7"><div class="gebiets-detail-box">'
-                    f'<strong>Optimierungsvorschlag {m["id"]}:</strong> '
-                    f'{vorschlag}</div></td></tr>')
-            else:
-                lines.append(
-                    f'      <tr id="{detail_id}" class="gebiets-{prefix} '
-                    f'gebiets-detail" style="display:none">'
-                    f'<td colspan="7"><div class="gebiets-detail-box">'
-                    f'Keine Optimierung empfohlen &mdash; Gebiet effizient.'
-                    f'</div></td></tr>')
-        return "\n".join(lines)
-
-    rows_akt = _rows(metriken_akt, "aktuell")
-    rows_opt = _rows(metriken_opt, "optimiert")
-
-    # Fahrzeitbilanz: nur Einsparungen zaehlen (Allgaeu-Shift)
-    bawue_saving = 0
-    for tid in ("T2", "T10", "T14"):
-        a = next((m for m in metriken_akt if m["id"] == tid), None)
-        o = next((m for m in metriken_opt if m["id"] == tid), None)
-        if a and o:
-            bawue_saving += max(0, a["fahrtstunden_jahr"] - o["fahrtstunden_jahr"])
-
-    # Ampel-Zusammenfassung Techniker
-    gruen = sum(1 for m in metriken_akt if m["ratio"] >= 3.0)
-    gelb = sum(1 for m in metriken_akt if 2.0 <= m["ratio"] < 3.0)
-    rot = sum(1 for m in metriken_akt if m["ratio"] < 2.0 and m["kliniken"] > 0)
-    ueber_90 = sum(1 for m in metriken_akt if m.get("max_fahrzeit", 0) > 90)
 
     # PLZ-Abdeckung Zusammenfassung
     abd = plz_abdeckung or []
@@ -1358,59 +1304,7 @@ def _render_gebietsplanung(
 
     return f"""
   <section>
-    <h2>4 &mdash; Gebietsplanung &mdash; Fahrzeit-Optimierung</h2>
-    <p class="section-hint">
-      Fahrzeit-basierte Gebietsberechnung &middot;
-      Autobahn 1.0x (60&thinsp;min/100km) &middot;
-      Bundesstra&szlig;e 1.5x (90&thinsp;min) &middot;
-      Landstra&szlig;e 2.0x (120&thinsp;min) &middot;
-      Ziel: max 90&thinsp;min zum weitesten Kunden &middot;
-      Klick auf Zeile f&uuml;r Details
-    </p>
-    <div class="gebiets-summary">
-      <span><span class="dot dot-gruen"></span> <strong>{gruen}</strong> effizient (Ratio &ge;3.0)</span>
-      <span><span class="dot dot-gelb"></span> <strong>{gelb}</strong> optimierbar (2.0&ndash;3.0)</span>
-      <span><span class="dot dot-rot"></span> <strong>{rot}</strong> dringend (Ratio &lt;2.0)</span>
-      <span style="margin-left:auto"><strong>{ueber_90}</strong> Techniker &gt;90&thinsp;min zum weitesten Kunden</span>
-    </div>
-    <div class="go-view-buttons" id="go-view-buttons-plan">
-      <button class="go-view-btn active" data-view="aktuell" data-target="plan">Aktuelle Gebiete</button>
-      <button class="go-view-btn" data-view="optimiert" data-target="plan">Optimierte Gebiete</button>
-    </div>
-    <div class="gebiets-layout">
-      <div class="gebiets-karte">
-        <svg id="germany-map" width="480" height="580"><!-- filled by _build_gebiets_svg --></svg>
-        <div class="gebiets-legende" id="gebiets-legende"></div>
-      </div>
-      <div class="gebiets-metriken">
-        <table>
-          <thead>
-            <tr>
-              <th>Techniker</th>
-              <th>Kliniken</th>
-              <th>&Oslash; Fahrzeit</th>
-              <th>Max Fahrzeit</th>
-              <th>Fahrt h/a</th>
-              <th>Onsite h/a</th>
-              <th>Ratio</th>
-            </tr>
-          </thead>
-          <tbody id="gebiets-tbody">
-{rows_akt}
-{rows_opt}
-          </tbody>
-        </table>
-        <div class="gebiets-team-saving">
-          <strong>Allg&auml;u-Shift Einsparung:</strong>
-          BaW&uuml;-S&uuml;d (T2/T10/T14) spart {bawue_saving}&thinsp;h Fahrzeit/Jahr
-          durch Verlagerung PLZ 87/88 an T7
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2>5 &mdash; PLZ-Abdeckung &amp; Einstellungsbedarf</h2>
+    <h2>PLZ-Abdeckung &amp; Einstellungsbedarf</h2>
     <p class="section-hint">
       Analyse aller {plz_total} PLZ-Bereiche (2-stellig) &middot;
       Gr&uuml;n &lt;60&thinsp;min &middot; Gelb 60&ndash;90&thinsp;min &middot;
@@ -1624,34 +1518,15 @@ def _build_gebiets_script(
     tc = json.dumps(_TECH_FARBEN, ensure_ascii=False)
 
     return (
-        "/* ── Gebietsplanung (offline, pre-rendered SVG) ── */\n"
+        "/* ── Gebietsoptimierung (offline, pre-rendered SVG) ── */\n"
         "(function(){\n"
         "  var C=" + tc + ";\n"
-        "  /* Gebietsplanung Tab: Button-Umschaltung aktuell/optimiert */\n"
-        "  var planBtns=document.querySelectorAll('#go-view-buttons-plan .go-view-btn');\n"
-        "  planBtns.forEach(function(btn){\n"
-        "    btn.addEventListener('click',function(){\n"
-        "      var m=this.getAttribute('data-view');\n"
-        "      planBtns.forEach(function(b){b.classList.remove('active');});\n"
-        "      this.classList.add('active');\n"
-        "      var map=document.getElementById('germany-map');\n"
-        "      if(map){map.querySelectorAll('path.st').forEach(function(p){\n"
-        "        p.setAttribute('fill',p.getAttribute('data-fill-'+m)||'#1a2030');\n"
-        "      });}\n"
-        "      document.querySelectorAll('.gebiets-aktuell').forEach(function(r){\n"
-        "        r.style.display=m==='aktuell'?'table-row':'none';});\n"
-        "      document.querySelectorAll('.gebiets-optimiert').forEach(function(r){\n"
-        "        r.style.display=m==='optimiert'?'table-row':'none';});\n"
-        "    });\n"
-        "  });\n"
-        "  ['gebiets-legende','gebiets-legende-opt'].forEach(function(id){\n"
-        "    var lg=document.getElementById(id);\n"
-        "    if(lg){Object.keys(C).sort().forEach(function(t){\n"
-        "      lg.innerHTML+='<span class=\"gebiets-legende-item\">'\n"
-        "        +'<span class=\"gebiets-legende-dot\" style=\"background:'+C[t]+'\"></span>'\n"
-        "        +t+'</span>';});\n"
-        "    }\n"
-        "  });\n"
+        "  var lg=document.getElementById('gebiets-legende-opt');\n"
+        "  if(lg){Object.keys(C).sort().forEach(function(t){\n"
+        "    lg.innerHTML+='<span class=\"gebiets-legende-item\">'\n"
+        "      +'<span class=\"gebiets-legende-dot\" style=\"background:'+C[t]+'\"></span>'\n"
+        "      +t+'</span>';});\n"
+        "  }\n"
         "})();\n"
         "\n"
         "/* ── Einstellungsempfehlung: Hover-Sync ── */\n"
@@ -3813,6 +3688,10 @@ if (_currentLang !== 'DE') setLang(_currentLang);
       }});
       var target = document.getElementById(tab.getAttribute('data-tab'));
       if (target) target.classList.add('active');
+      /* Scroll-Position zuruecksetzen, damit der neue Tab-Inhalt oben beginnt */
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
     }});
   }});
 }})();
