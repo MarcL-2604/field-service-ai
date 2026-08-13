@@ -65,6 +65,9 @@ from config import (
     MIN_GERAETE_FUER_CROSSTRAINING,
     MIN_STK_POTENZIAL_CROSSTRAINING,
     TESTS_ANZAHL,
+    OPTIMIERUNG_AUSLASTUNGS_SCHWELLE,
+    OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN,
+    ARBEITSWOCHEN_PRO_JAHR,
 )
 
 
@@ -211,6 +214,16 @@ class TestConfigWerte:
 
     def test_min_stk_potenzial_crosstraining(self):
         assert MIN_STK_POTENZIAL_CROSSTRAINING == 15
+
+    # ─── Gebietsoptimierung: Algorithmus ───────────
+    def test_optimierung_auslastungs_schwelle(self):
+        assert OPTIMIERUNG_AUSLASTUNGS_SCHWELLE == 15
+
+    def test_optimierung_max_fahrzeit_mehraufwand(self):
+        assert OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN == 20
+
+    def test_arbeitswochen_pro_jahr(self):
+        assert ARBEITSWOCHEN_PRO_JAHR == 46
 
     # ─── Test-Suite (Dashboard-Footer) ─────────────
     def test_tests_anzahl_ist_positiver_int(self):

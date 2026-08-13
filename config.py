@@ -95,6 +95,14 @@ PUFFER_MESSMITTEL_LADEN = 30     # Vortag (nicht in Einsatz)
 MIN_GERAETE_FUER_CROSSTRAINING = 5      # Mindestanzahl Repair-Geraete der fehlenden Produktfamilie im Gebiet
 MIN_STK_POTENZIAL_CROSSTRAINING = 15    # Mindest-STK/Jahr-Potenzial der fehlenden Produktfamilie
 
+# ─── Gebietsoptimierung: Algorithmus ───────────────
+# Generische Heuristik (ID-unabhaengig): Klinik wandert zum 2.-naechsten
+# Techniker, wenn dieser deutlich weniger ausgelastet ist und die
+# Fahrzeit-Mehrbelastung vertretbar bleibt.
+OPTIMIERUNG_AUSLASTUNGS_SCHWELLE = 15            # Mindest-Auslastungsdifferenz in Prozentpunkten
+OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN = 20    # max. akzeptierte Fahrzeit-Mehrbelastung (Minuten)
+ARBEITSWOCHEN_PRO_JAHR = 46                      # Kapazitaetsbasis fuer Auslastungs-Berechnung
+
 # ─── Trainingskosten (Platzhalter) ─────────────────
 TRAINING_SMALL_CAPITAL_EUR = 0        # intern
 TRAINING_HF_CHIRURGIE_EUR = 0         # STK/PM intern
@@ -121,4 +129,4 @@ KALENDER_INTEGRIERT = False       # Prototyp-Flag
 # ─── Test-Suite (Dashboard-Footer) ─────────────────
 # Manuell bei jedem pytest-Lauf/Release aktualisieren (`pytest --collect-only -q`).
 # Einzige Stelle im Code -- dashboard.py liest von hier, nicht hardcodiert.
-TESTS_ANZAHL = 821
+TESTS_ANZAHL = 846

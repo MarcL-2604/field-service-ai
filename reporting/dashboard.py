@@ -41,6 +41,9 @@ from config import (  # noqa: E402
     MIN_GERAETE_FUER_CROSSTRAINING,
     MIN_STK_POTENZIAL_CROSSTRAINING,
     TESTS_ANZAHL,
+    OPTIMIERUNG_AUSLASTUNGS_SCHWELLE,
+    OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN,
+    ARBEITSWOCHEN_PRO_JAHR,
 )
 from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
@@ -1088,22 +1091,56 @@ def _strassenfaktor(plz: str) -> float:
     return 1.3
 
 
+def _soll_klinik_verschieben(
+    auslastung_diff_pp: float,
+    fahrzeit_mehraufwand_min: float,
+) -> bool:
+    """Generische Optimierungsregel (ID-unabhaengig, funktioniert fuer jedes
+    Techniker-Set).
+
+    Eine Klinik wandert vom naechstgelegenen zum zweitnaechsten Techniker,
+    wenn dieser deutlich weniger ausgelastet ist (Auslastungsdifferenz ueber
+    dem Schwellwert) UND die zusaetzliche Fahrzeit vertretbar bleibt.
+    """
+    return (
+        auslastung_diff_pp > OPTIMIERUNG_AUSLASTUNGS_SCHWELLE
+        and fahrzeit_mehraufwand_min <= OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN
+    )
+
+
 def _berechne_gebietsmetriken(
     techniker: dict[str, dict],
-) -> tuple[list[dict], list[dict]]:
-    """Berechnet Fahrzeit-Metriken (aktuell + optimiert) pro Techniker."""
+) -> tuple[list[dict], list[dict], dict[str, str]]:
+    """Berechnet Fahrzeit-Metriken (aktuell + optimiert) pro Techniker.
+
+    Optimierung: generische, ID-unabhaengige Heuristik -- funktioniert fuer
+    Demo- (T1-T14) und Echtdaten-Techniker (echte Namen) gleichermassen.
+    Fuer jede Klinik werden der 1.- und 2.-naechste Techniker (Fahrzeit)
+    ermittelt; die Klinik wandert zum 2.-naechsten wenn
+    _soll_klinik_verschieben() das erlaubt (siehe dort). Einmaliger
+    Durchgang, kein iteratives Konvergenzverfahren -- die Auslastung wird
+    einmal aus dem Ist-Zustand abgeleitet und bleibt waehrend der
+    Optimierungsentscheidung fix.
+
+    Gibt (metriken_aktuell, metriken_optimiert, gebiet_optimiert) zurueck.
+    gebiet_optimiert ist ein {bundesland: techniker_id}-Dict, abgeleitet aus
+    der tatsaechlichen optimierten Klinik-Zuweisung (fuer die Kartenfarben).
+    """
     try:
         from techniker.scoring import _KLINIK_COORDS
     except ImportError:
-        return [], []
+        return [], [], {}
+    from reporting.crosstraining_analyse import load_klinik_bl_map, klinik_zu_bundesland
 
     kliniken = []
+    klinik_namen: dict[str, str] = {}
     name_to_id: dict[str, str] = {}
     with open(_DATA_DIR / "kliniken.csv", newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             plz = row["plz"]
             kid = row["klinik_id"]
             name_to_id[row["name"].strip().lower()] = kid
+            klinik_namen[kid] = row["name"]
             if plz in _KLINIK_COORDS:
                 lat, lon = _KLINIK_COORDS[plz]
                 kliniken.append({"id": kid, "plz": plz,
@@ -1136,35 +1173,38 @@ def _berechne_gebietsmetriken(
             except ValueError:
                 stk_count[kid] = stk_count.get(kid, 0) + 1
 
-    def _calc(allgaeu_shift: bool = False) -> list[dict]:
-        zuweisungen: dict[str, list] = {tid: [] for tid in techniker}
-        for k in kliniken:
-            best_tid, best_dist = "", float("inf")
-            for tid, td in techniker.items():
-                if not td.get("lat"):
-                    continue
-                d = _haversine_km(td["lat"], td["lon"], k["lat"], k["lon"])
-                if d < best_dist:
-                    best_dist, best_tid = d, tid
-            # Optimiert: Allgaeu/West-Bayern (PLZ 87/88) von BaWue-Sued-Technikern nach T7
-            if (allgaeu_shift
-                    and k["plz"][:2] in ("87", "88")
-                    and best_tid in ("T2", "T10", "T14")):
-                td7 = techniker.get("T7", {})
-                if td7.get("lat"):
-                    best_tid = "T7"
-                    best_dist = _haversine_km(
-                        td7["lat"], td7["lon"], k["lat"], k["lon"])
-            if best_tid:
-                eff_speed = 100.0 / _strassenfaktor(k["plz"])
-                zuweisungen[best_tid].append({
-                    "fz": best_dist / eff_speed * 60,
-                    "stk": stk_count.get(k["id"], 0),
-                })
+    valid_tids = [tid for tid, td in techniker.items() if td.get("lat")]
 
+    # ── Schritt 1: Ist-Zuweisung -- 1. und 2.-naechster Techniker je Klinik ──
+    kandidaten: dict[str, list[tuple[str, float]]] = {}
+    zuweisung_akt: dict[str, str] = {}
+    fahrzeit_akt: dict[str, float] = {}
+    for k in kliniken:
+        dists = sorted(
+            (
+                (tid, _haversine_km(techniker[tid]["lat"], techniker[tid]["lon"],
+                                     k["lat"], k["lon"]))
+                for tid in valid_tids
+            ),
+            key=lambda x: x[1],
+        )
+        kandidaten[k["id"]] = dists
+        if dists:
+            best_tid, best_dist = dists[0]
+            eff_speed = 100.0 / _strassenfaktor(k["plz"])
+            zuweisung_akt[k["id"]] = best_tid
+            fahrzeit_akt[k["id"]] = best_dist / eff_speed * 60
+
+    def _aggregiere(zuweisung: dict[str, str], fahrzeit: dict[str, float]) -> list[dict]:
+        zuord: dict[str, list] = {tid: [] for tid in techniker}
+        for k in kliniken:
+            tid = zuweisung.get(k["id"])
+            if not tid:
+                continue
+            zuord[tid].append({"fz": fahrzeit[k["id"]], "stk": stk_count.get(k["id"], 0)})
         result = []
         for tid in sorted(techniker):
-            kl = zuweisungen.get(tid, [])
+            kl = zuord.get(tid, [])
             td = techniker[tid]
             if not kl:
                 result.append({"id": tid, "standort": td.get("standort", ""),
@@ -1188,7 +1228,63 @@ def _berechne_gebietsmetriken(
             })
         return result
 
-    return _calc(False), _calc(True)
+    metriken_akt = _aggregiere(zuweisung_akt, fahrzeit_akt)
+
+    # ── Auslastung je Techniker aus dem Ist-Zustand (fix fuer die Optimierung) ──
+    jahreskapazitaet_h = AUSSENDIENST_STUNDEN * ARBEITSWOCHEN_PRO_JAHR
+    auslastung_pct: dict[str, float] = {}
+    for m in metriken_akt:
+        gesamt_h = m["fahrtstunden_jahr"] + m["onsite_stunden"]
+        auslastung_pct[m["id"]] = (
+            gesamt_h / jahreskapazitaet_h * 100 if jahreskapazitaet_h else 0.0
+        )
+
+    # ── Schritt 2: Optimierungsschritt (2.-naechster Techniker vs. Auslastung) ──
+    zuweisung_opt = dict(zuweisung_akt)
+    fahrzeit_opt = dict(fahrzeit_akt)
+    gewonnen: dict[str, int] = {tid: 0 for tid in techniker}
+    abgegeben: dict[str, int] = {tid: 0 for tid in techniker}
+
+    for k in kliniken:
+        dists = kandidaten.get(k["id"], [])
+        if len(dists) < 2:
+            continue
+        tid1, dist1 = dists[0]
+        tid2, dist2 = dists[1]
+        eff_speed = 100.0 / _strassenfaktor(k["plz"])
+        fz1 = dist1 / eff_speed * 60
+        fz2 = dist2 / eff_speed * 60
+        auslastung_diff = auslastung_pct.get(tid1, 0.0) - auslastung_pct.get(tid2, 0.0)
+        if _soll_klinik_verschieben(auslastung_diff, fz2 - fz1):
+            zuweisung_opt[k["id"]] = tid2
+            fahrzeit_opt[k["id"]] = fz2
+            abgegeben[tid1] += 1
+            gewonnen[tid2] += 1
+
+    metriken_opt = _aggregiere(zuweisung_opt, fahrzeit_opt)
+    for m in metriken_opt:
+        m["verschoben"] = gewonnen.get(m["id"], 0) + abgegeben.get(m["id"], 0)
+        m["verschoben_gewonnen"] = gewonnen.get(m["id"], 0)
+        m["verschoben_abgegeben"] = abgegeben.get(m["id"], 0)
+
+    # ── Bundesland-Kartenfarben aus der tatsaechlichen optimierten Zuweisung ──
+    klinik_bl_map = load_klinik_bl_map()
+    bl_zaehler: dict[str, dict[str, int]] = {}
+    for k in kliniken:
+        tid = zuweisung_opt.get(k["id"])
+        if not tid:
+            continue
+        bl = klinik_zu_bundesland(klinik_namen.get(k["id"], ""), klinik_bl_map)
+        if not bl:
+            continue
+        bl_zaehler.setdefault(bl, {})
+        bl_zaehler[bl][tid] = bl_zaehler[bl].get(tid, 0) + 1
+    gebiet_optimiert = {
+        bl: max(zaehler, key=lambda t: zaehler[t])
+        for bl, zaehler in bl_zaehler.items()
+    }
+
+    return metriken_akt, metriken_opt, gebiet_optimiert
 
 
 def _berechne_plz_abdeckung(
@@ -2977,12 +3073,16 @@ def _render_gebietsoptimierung(
     info_optimiert = _go_info_box(
         "&#129504;",
         "Wie und warum wird optimiert?",
-        "Die KI berechnet auf Basis der tats&auml;chlichen Auftragsstandorte "
-        "(Open + Closed Jobs) und der Techniker-PLZ eine fahrzeitminimierte "
-        "Neuaufteilung der Gebiete. Ziel: k&uuml;rzere Anfahrtswege, "
-        "gleichm&auml;&szlig;igere Auslastung. Berechnungsgrundlage: "
-        f"Haversine-Distanz &times; {umweg_faktor_text} Stra&szlig;enfaktor, "
-        "siehe Scoring-Methodik.",
+        "F&uuml;r jede Klinik werden der 1.- und 2.-n&auml;chstgelegene "
+        "Techniker (Fahrzeit, Haversine-Distanz &times; "
+        f"{umweg_faktor_text} Stra&szlig;enfaktor) verglichen. Ist der "
+        f"2.-n&auml;chste um mehr als {OPTIMIERUNG_AUSLASTUNGS_SCHWELLE} "
+        "Prozentpunkte weniger ausgelastet und betr&auml;gt die "
+        f"Fahrzeit-Mehrbelastung h&ouml;chstens "
+        f"{OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN} Minuten, wandert die "
+        "Klinik zu ihm. Ziel: gleichm&auml;&szlig;igere Auslastung bei "
+        "vertretbaren Anfahrtswegen &mdash; unabh&auml;ngig von "
+        "Techniker-Anzahl oder -Bezeichnung.",
     )
     info_luecken = _go_info_box(
         "&#9888;",
@@ -3024,6 +3124,7 @@ def _render_gebietsoptimierung(
             delta_css = "go-delta-neg"
         else:
             delta_css = "go-delta-neutral"
+        verschoben = m_o.get("verschoben", 0)
         rows_optimiert += (
             f'<tr>'
             f'<td><strong>{m_o["id"]}</strong></td>'
@@ -3031,7 +3132,27 @@ def _render_gebietsoptimierung(
             f'<td>{ratio_vorher}</td>'
             f'<td>{ratio_nachher}</td>'
             f'<td class="{delta_css}">{delta_sign}{delta_fz} h</td>'
+            f'<td>{verschoben}</td>'
             f'</tr>')
+
+    # Top-Verschiebungen fuer die Erlaeuterungsbox (dynamisch aus dem Algorithmus)
+    top_verschiebungen = sorted(
+        (m for m in metriken_opt if m.get("verschoben", 0) > 0),
+        key=lambda m: m["verschoben"],
+        reverse=True,
+    )[:3]
+    if top_verschiebungen:
+        changes_html = "\n".join(
+            f'<div class="go-change-item">{m["id"]} ({m["standort"]}): '
+            f'+{m["verschoben_gewonnen"]} / &minus;{m["verschoben_abgegeben"]} Kliniken</div>'
+            for m in top_verschiebungen
+        )
+    else:
+        changes_html = (
+            '<div class="go-change-item">Keine Verschiebungen &mdash; alle Kliniken '
+            'liegen bereits innerhalb der Schwellwerte beim n&auml;chstgelegenen '
+            'Techniker.</div>'
+        )
 
     # ── Ansicht 3: Lücken & Überschneidungen ──
     # Identifiziere Problembereiche aus den Metriken
@@ -3145,7 +3266,9 @@ def _render_gebietsoptimierung(
         <div class="go-view-content" id="go-view-optimiert">
           {info_optimiert}
           <div class="bc-gold-hint" style="margin-bottom:14px">
-            &#9733; Demo-Optimierung &middot; Basiert auf Fahrzeit-Minimierung und Auslastungsausgleich
+            &#9733; Algorithmus: Klinik wechselt zum 2.-n&auml;chsten Techniker, wenn dessen
+            Auslastung &ge;{OPTIMIERUNG_AUSLASTUNGS_SCHWELLE} Prozentpunkte niedriger ist und
+            die Fahrzeit-Mehrbelastung &le;{OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN} min bleibt
           </div>
           <table>
             <thead>
@@ -3155,6 +3278,7 @@ def _render_gebietsoptimierung(
                 <th>Ratio vorher</th>
                 <th>Ratio nachher</th>
                 <th>&Delta; Fahrzeit</th>
+                <th>Verschobene Kliniken</th>
               </tr>
             </thead>
             <tbody>
@@ -3162,9 +3286,7 @@ def _render_gebietsoptimierung(
             </tbody>
           </table>
           <div class="go-changes-highlight">
-            <div class="go-change-item">T2 Wehingen &rarr; bekommt mehr BaW&uuml;-S&uuml;d Kliniken</div>
-            <div class="go-change-item">T3 Weimar &rarr; bekommt Th&uuml;ringen komplett</div>
-            <div class="go-change-item">T8 Hennef &rarr; NRW-S&uuml;d konsolidiert</div>
+{changes_html}
           </div>
         </div>
         <!-- Ansicht 3: Lücken & Überschneidungen -->
@@ -4050,7 +4172,6 @@ def main() -> None:
             if bl in _BL_KARTE and _BL_KARTE[bl] is None:
                 _BL_KARTE[bl] = tid
         _GEBIET_AKTUELL  = {k: v for k, v in _BL_KARTE.items() if v}
-        _GEBIET_OPTIMIERT = dict(_GEBIET_AKTUELL)
 
     else:
         print("  -> Demo-Modus: T1-T14 aus CSV")
@@ -4169,7 +4290,11 @@ def main() -> None:
     )
 
     print("Berechne Gebietsmetriken...")
-    gebiets_metriken = _berechne_gebietsmetriken(techniker)
+    m_akt, m_opt, gebiet_optimiert_neu = _berechne_gebietsmetriken(techniker)
+    gebiets_metriken = (m_akt, m_opt)
+    _GEBIET_OPTIMIERT = {**_GEBIET_AKTUELL, **gebiet_optimiert_neu}
+    verschoben_gesamt = sum(m.get("verschoben_gewonnen", 0) for m in m_opt)
+    print(f"  {verschoben_gesamt} Kliniken durch Optimierung verschoben")
 
     print("Generiere Demo-Einsatzhistorie...")
     demo_history = _generate_demo_history(techniker, labor_zeiten)
