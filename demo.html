@@ -640,8 +640,8 @@ textarea.chat-in::placeholder{color:#666666}
 <div class="screen" id="main4">
 <div class="content">
   <div class="stat-grid">
-    <div class="stat-c"><div class="stat-v" style="color:#5EDD9F">516</div><div class="stat-l">Tests grün</div></div>
-    <div class="stat-c"><div class="stat-v" style="color:var(--sky)">1.985</div><div class="stat-l">Vertragsgeräte</div></div>
+    <div class="stat-c"><div class="stat-v" style="color:#5EDD9F">897</div><div class="stat-l">Tests grün</div></div>
+    <div class="stat-c"><div class="stat-v" style="color:var(--sky)">6.569</div><div class="stat-l">Vertragsgeräte</div></div>
     <div class="stat-c"><div class="stat-v" style="color:#FFB347">32h</div><div class="stat-l">Außendienst/Woche</div></div>
     <div class="stat-c"><div class="stat-v" style="color:#FF8080">380</div><div class="stat-l">STK/Kopf NRW</div></div>
   </div>
@@ -676,7 +676,7 @@ textarea.chat-in::placeholder{color:#666666}
     </div>
   </div>
   <div class="msgs" id="chatMsgs">
-    <div class="msg msg-ai">Hallo! Ich kenne alle 14 Techniker, 1.985 Geräte, Tour-Optimierung und Planungsregeln. Was möchtest du wissen?</div>
+    <div class="msg msg-ai">Hallo! Ich kenne alle 24 Techniker, 6.569 Geräte, Tour-Optimierung und Planungsregeln. Was möchtest du wissen?</div>
   </div>
   <div class="quick-row">
     <button class="qbtn" onclick="sendQuick('q1')">Warum T5?</button>
@@ -695,7 +695,7 @@ textarea.chat-in::placeholder{color:#666666}
 
 </div><!-- /main -->
 
-<div class="ftr" id="ftr-el">AI Assisted Field Service Assistant · Medtronic GmbH Service &amp; Repair · Demo v2 · 516 Tests grün</div>
+<div class="ftr" id="ftr-el">AI Assisted Field Service Assistant · Medtronic GmbH Service &amp; Repair · Demo v2 · 897 Tests grün</div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── LANGUAGE FROM URL ──────────────────────────────────────────────────────
@@ -741,7 +741,7 @@ de:{
   'api-sub':'Anthropic API-Key für echten KI-Chat',
   'api-save':'Speichern','api-demo':'Demo-Modus',
   'chat-title':'Field Service Assistent','chat-sub':'Claude-powered · Medtronic',
-  'chat-welcome':'Hallo! Ich kenne alle 14 Techniker, 1.985 Geräte, Tour-Optimierung und Planungsregeln. Was möchtest du wissen?',
+  'chat-welcome':'Hallo! Ich kenne alle 24 Techniker, 6.569 Geräte, Tour-Optimierung und Planungsregeln. Was möchtest du wissen?',
   'chat-placeholder':'Frage stellen...',
   'send':'Senden',
   'q1':'Warum T5?','q2':'Tour-Logik','q3':'T8 L2-Regel','q4':'T10 Kalibr.','q5':'Puffer?',
@@ -750,7 +750,7 @@ de:{
   'qs3':'Wann darf T8 eigenständig fahren?',
   'qs4':'T10 Kalibrierung — was tun?',
   'qs5':'Wie wird der Puffer berechnet?',
-  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · Demo v2 · 516 Tests grün',
+  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · Demo v2 · 897 Tests grün',
   'sys-lang':'Deutsch'
 },
 en:{
@@ -792,7 +792,7 @@ en:{
   'api-sub':'Anthropic API key for real AI chat',
   'api-save':'Save','api-demo':'Demo mode',
   'chat-title':'Field Service Assistant','chat-sub':'Claude-powered · Medtronic',
-  'chat-welcome':'Hello! I know all 14 technicians, 1,985 devices, tour optimization and planning rules. What would you like to know?',
+  'chat-welcome':'Hello! I know all 24 technicians, 6,569 devices, tour optimization and planning rules. What would you like to know?',
   'chat-placeholder':'Ask a question...',
   'send':'Send',
   'q1':'Why T5?','q2':'Tour logic','q3':'T8 L2 rule','q4':'T10 calib.','q5':'Buffer?',
@@ -801,7 +801,7 @@ en:{
   'qs3':'When can T8 work independently?',
   'qs4':'T10 calibration — what to do?',
   'qs5':'How is the buffer calculated?',
-  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · Demo v2 · 516 Tests passed',
+  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · Demo v2 · 897 Tests passed',
   'sys-lang':'English'
 }};
 
@@ -1022,7 +1022,7 @@ document.getElementById('chatMsgs').innerHTML =
   var K='fsa_auth';
   function initPw(){
     var ov=document.getElementById('pw-overlay');
-    if(sessionStorage.getItem(K)===H){ov.style.display='none';return;}
+    if(localStorage.getItem(K)===H){ov.style.display='none';return;}
     ov.style.display='flex';
     document.getElementById('pw-input').focus();
   }
@@ -1031,10 +1031,12 @@ document.getElementById('chatMsgs').innerHTML =
     var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));
     var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
     if(h===H){
-      sessionStorage.setItem(K,H);
+      localStorage.setItem(K,H);
       document.getElementById('pw-overlay').style.display='none';
     } else {
-
+      document.getElementById('pw-err').style.display='block';
+      document.getElementById('pw-input').value='';
+      document.getElementById('pw-input').focus();
     }
   }
   window.checkPw=checkPw;

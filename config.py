@@ -130,3 +130,16 @@ KALENDER_INTEGRIERT = False       # Prototyp-Flag
 # Manuell bei jedem pytest-Lauf/Release aktualisieren (`pytest --collect-only -q`).
 # Einzige Stelle im Code -- dashboard.py liest von hier, nicht hardcodiert.
 TESTS_ANZAHL = 897
+
+# ─── Projekt-Kennzahlen (Landingpage index.html) ───
+# Einzige Quelle fuer die auf index.html beworbenen Kennzahlen. Bei neuem
+# SMax-Import oder Codeaenderung hier aktualisieren, dann
+# `python scripts/sync_landing_page_stats.py` ausfuehren -- NICHT einzeln in
+# index.html editieren (dort mehrfach dupliziert: Hero-Stats, Prototyp-Karten,
+# Config-Panel, DE/EN-Uebersetzungen).
+PROJEKT_TECHNIKER_ANZAHL = 24          # smax_dashboard_data.json: len(techniker)
+PROJEKT_GERAETE_ANZAHL = 6569          # distinct Seriennummern (Closed+Open Jobs)
+PROJEKT_KLINIKEN_ANZAHL = 1444         # distinct Klinik-Accounts (Closed+Open Jobs)
+PROJEKT_DASHBOARD_CHECKS = 17          # reporting/dashboard.py: _vollstaendigkeits_pruefung()
+PROJEKT_CLUSTER_ANZAHL = 6             # techniker/models.py: produkt_cluster()-Kategorien
+PROJEKT_PRODUKTFAMILIEN_ANZAHL = 31    # techniker/models.py: distinct Produktfamilien

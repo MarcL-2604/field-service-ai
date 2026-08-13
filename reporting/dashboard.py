@@ -3501,12 +3501,16 @@ def render_html(
 
 <header>
   <div class="header-brand">
-    <div>
-      <div class="header-logo">Field Service <span class="brand-ai">AI</span></div>
-      <div class="header-sub">Medtronic GmbH</div>
-    </div>
+    <a href="index.html" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px" title="Zur&uuml;ck zur Startseite">
+      <span style="font-size:18px">&#8592;</span>
+      <div>
+        <div class="header-logo">Field Service <span class="brand-ai">AI</span></div>
+        <div class="header-sub">Medtronic GmbH</div>
+      </div>
+    </a>
   </div>
   <div class="header-right">
+    <a href="workflow_demo.html" class="lang-toggle" style="text-decoration:none">Workflow Demo</a>
     <span class="demo-badge" data-i18n="header.demo">{"Echtdaten &middot; Pseudonymisiert" if (is_echtdaten and PSEUDONYMISIERUNG_AKTIV) else ("Echtdaten" if is_echtdaten else "Demo-Daten &middot; Konfigurierbar")}</span>
     <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleLang()">EN</button>
     <button class="api-key-btn" onclick="document.getElementById('chat-setup').style.display='block';document.getElementById('api-key-input').focus()">API-Key &#128273;</button>
@@ -4164,6 +4168,42 @@ document.addEventListener('keydown', function(e) {{
 }})();
 </script>
 
+<!-- PASSWORD PROTECTION (gleicher Mechanismus wie index.html/demo.html/animation.html/
+     coordinator_import.html: SHA-256-Hash-Vergleich, localStorage-persistiert.
+     Noetig da Echtdaten-Modus reale Techniker-Namen und Leistungsdaten zeigt.) -->
+<div id="pw-overlay" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#005195,#0066CC);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.6)">Medtronic GmbH &middot; Field Service AI</div>
+  <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:#fff">Zugangscode erforderlich</div>
+  <div style="display:flex;flex-direction:column;gap:.6rem;width:280px">
+    <input id="pw-input" type="password" placeholder="Passwort eingeben..." style="padding:.75rem 1rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;outline:none;width:100%" onkeydown="if(event.key==='Enter')checkPw()" oninput="document.getElementById('pw-err').style.display='none'">
+    <button onclick="checkPw()" style="padding:.75rem;background:#fff;border:none;border-radius:8px;color:#005195;font-size:.88rem;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">Zugang &rarr;</button>
+    <div id="pw-err" style="display:none;font-size:.75rem;color:#FFB3B3;text-align:center">Falsches Passwort</div>
+  </div>
+  <div style="font-size:.68rem;color:rgba(255,255,255,.5)">Vertraulich &middot; Nur f&uuml;r autorisierte Personen</div>
+</div>
+<script>
+(function(){{
+  var H='037453db72fb8a93ebe48d4ff52b1b493cdf56ef6a28240a65c6055b76d8f360';
+  var K='fsa_auth';
+  function initPw(){{
+    var ov=document.getElementById('pw-overlay');
+    if(localStorage.getItem(K)===H){{ov.style.display='none';return;}}
+    ov.style.display='flex';
+    setTimeout(function(){{var i=document.getElementById('pw-input');if(i)i.focus();}},100);
+  }}
+  async function checkPw(){{
+    var v=document.getElementById('pw-input').value;
+    var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));
+    var h=Array.from(new Uint8Array(b)).map(function(x){{return x.toString(16).padStart(2,'0')}}).join('');
+    if(h===H){{localStorage.setItem(K,H);document.getElementById('pw-overlay').style.display='none';}}
+    else{{document.getElementById('pw-err').style.display='block';document.getElementById('pw-input').value='';document.getElementById('pw-input').focus();}}
+  }}
+  window.checkPw=checkPw;
+  if(document.readyState==='loading'){{document.addEventListener('DOMContentLoaded',initPw);}}
+  else{{initPw();}}
+}})();
+</script>
+
 </body>
 </html>"""
     return html.replace("<!-- filled by _build_gebiets_svg -->", gebiets_svg_content)
@@ -4208,6 +4248,8 @@ def _vollstaendigkeits_pruefung(html: str) -> list[tuple[str, bool]]:
          'demo-badge' in html),
         (f"Footer: {TESTS_ANZAHL} Tests gruen",
          f'{TESTS_ANZAHL} Tests' in html),
+        ("Passwortschutz (konsistent mit index.html/demo.html/...)",
+         'id="pw-overlay"' in html and 'checkPw' in html),
     ]
     return checks
 

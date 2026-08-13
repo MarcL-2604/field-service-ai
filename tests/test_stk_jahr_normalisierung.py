@@ -130,13 +130,12 @@ class TestAlleTechnikerSichtbar:
             "ratio": 0.5,
         }
         metriken_akt = [{"id": "T1", **basis}, {"id": "T2", **{**basis, "kliniken": 3}}]
-        metriken_opt = [
-            {"id": "T1", **{**basis, "kliniken": 0, "avg_fahrzeit": 0, "max_fahrzeit": 0,
-                             "fahrtstunden_jahr": 0, "onsite_stunden": 0, "ratio": 0.0,
-                             "verschoben": 5, "verschoben_gewonnen": 0, "verschoben_abgegeben": 5}},
-            {"id": "T2", **{**basis, "kliniken": 8, "verschoben": 5,
-                             "verschoben_gewonnen": 5, "verschoben_abgegeben": 0}},
-        ]
+        t1_opt = dict(basis, kliniken=0, avg_fahrzeit=0, max_fahrzeit=0,
+                      fahrtstunden_jahr=0, onsite_stunden=0, ratio=0.0,
+                      verschoben=5, verschoben_gewonnen=0, verschoben_abgegeben=5)
+        t2_opt = dict(basis, kliniken=8, verschoben=5,
+                      verschoben_gewonnen=5, verschoben_abgegeben=0)
+        metriken_opt = [{"id": "T1", **t1_opt}, {"id": "T2", **t2_opt}]
         techniker = {"T1": {"standort": "Teststadt"}, "T2": {"standort": "Teststadt"}}
         html = _render_gebietsoptimierung(metriken_akt, metriken_opt, techniker)
 

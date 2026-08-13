@@ -1290,12 +1290,16 @@
 
 <header>
   <div class="header-brand">
-    <div>
-      <div class="header-logo">Field Service <span class="brand-ai">AI</span></div>
-      <div class="header-sub">Medtronic GmbH</div>
-    </div>
+    <a href="index.html" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px" title="Zur&uuml;ck zur Startseite">
+      <span style="font-size:18px">&#8592;</span>
+      <div>
+        <div class="header-logo">Field Service <span class="brand-ai">AI</span></div>
+        <div class="header-sub">Medtronic GmbH</div>
+      </div>
+    </a>
   </div>
   <div class="header-right">
+    <a href="workflow_demo.html" class="lang-toggle" style="text-decoration:none">Workflow Demo</a>
     <span class="demo-badge" data-i18n="header.demo">Echtdaten</span>
     <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleLang()">EN</button>
     <button class="api-key-btn" onclick="document.getElementById('chat-setup').style.display='block';document.getElementById('api-key-input').focus()">API-Key &#128273;</button>
@@ -1316,7 +1320,7 @@
   <span><span class="dot dot-gruen"></span> <span data-i18n="summary.green">Gr&uuml;n</span>: <strong>0</strong> (&ge;60&thinsp;% L3)</span>
   <span><span class="dot dot-gelb"></span> <span data-i18n="summary.yellow">Gelb</span>: <strong>4</strong> (30&ndash;59&thinsp;%)</span>
   <span><span class="dot dot-rot"></span> <span data-i18n="summary.red">Rot</span>: <strong>20</strong> (&lt;30&thinsp;%)</span>
-  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 13.08.2026 22:14 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
+  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 13.08.2026 23:00 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
 </div>
 
 <main>
@@ -2761,11 +2765,11 @@
         </tr>
       </thead>
       <tbody>
-      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>13.08. 15:14</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>12.08. 15:14</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>11.08. 20:14</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>13.08. 02:14</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
-      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>12.08. 10:14</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
+      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>13.08. 16:00</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>12.08. 16:00</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>11.08. 21:00</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>13.08. 03:00</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
+      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>12.08. 11:00</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
       </tbody>
     </table>
   </section>
@@ -4046,6 +4050,42 @@ document.addEventListener('keydown', function(e) {
   } else {
     showSetup();
   }
+})();
+</script>
+
+<!-- PASSWORD PROTECTION (gleicher Mechanismus wie index.html/demo.html/animation.html/
+     coordinator_import.html: SHA-256-Hash-Vergleich, localStorage-persistiert.
+     Noetig da Echtdaten-Modus reale Techniker-Namen und Leistungsdaten zeigt.) -->
+<div id="pw-overlay" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#005195,#0066CC);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.6)">Medtronic GmbH &middot; Field Service AI</div>
+  <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:#fff">Zugangscode erforderlich</div>
+  <div style="display:flex;flex-direction:column;gap:.6rem;width:280px">
+    <input id="pw-input" type="password" placeholder="Passwort eingeben..." style="padding:.75rem 1rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;outline:none;width:100%" onkeydown="if(event.key==='Enter')checkPw()" oninput="document.getElementById('pw-err').style.display='none'">
+    <button onclick="checkPw()" style="padding:.75rem;background:#fff;border:none;border-radius:8px;color:#005195;font-size:.88rem;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">Zugang &rarr;</button>
+    <div id="pw-err" style="display:none;font-size:.75rem;color:#FFB3B3;text-align:center">Falsches Passwort</div>
+  </div>
+  <div style="font-size:.68rem;color:rgba(255,255,255,.5)">Vertraulich &middot; Nur f&uuml;r autorisierte Personen</div>
+</div>
+<script>
+(function(){
+  var H='037453db72fb8a93ebe48d4ff52b1b493cdf56ef6a28240a65c6055b76d8f360';
+  var K='fsa_auth';
+  function initPw(){
+    var ov=document.getElementById('pw-overlay');
+    if(localStorage.getItem(K)===H){ov.style.display='none';return;}
+    ov.style.display='flex';
+    setTimeout(function(){var i=document.getElementById('pw-input');if(i)i.focus();},100);
+  }
+  async function checkPw(){
+    var v=document.getElementById('pw-input').value;
+    var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));
+    var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+    if(h===H){localStorage.setItem(K,H);document.getElementById('pw-overlay').style.display='none';}
+    else{document.getElementById('pw-err').style.display='block';document.getElementById('pw-input').value='';document.getElementById('pw-input').focus();}
+  }
+  window.checkPw=checkPw;
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initPw);}
+  else{initPw();}
 })();
 </script>
 

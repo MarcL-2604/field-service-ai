@@ -238,13 +238,13 @@ body{
     <div class="row"><span class="rl">Fälligkeit</span><span class="rv" style="color:#CC0000;font-weight:700">12 Tage überfällig <span class="badge b-red">KRITISCH</span></span></div>
     <div class="row"><span class="rl">Bündelung</span><span class="rv" style="color:#00857C">NIM4CM01 ebenfalls fällig → 1 Tour</span></div>
   </div>
-  <div style="text-align:center;font-size:.7rem;color:#666666">1.985 Vertragsgeräte · täglich geprüft · kein manuelles Nachschauen</div>
+  <div style="text-align:center;font-size:.7rem;color:#666666">6.569 Vertragsgeräte · täglich geprüft · kein manuelles Nachschauen</div>
 </div>
 
 <!-- F1 -->
 <div class="frame" id="f1">
   <div class="step-title">Schritt 2 — KI berechnet Techniker-Empfehlung</div>
-  <div class="info info-blue">Kompetenz 40% + Fahrzeit 35% + Auslastung 25% · 516 Tests grün</div>
+  <div class="info info-blue">Kompetenz 40% + Fahrzeit 35% + Auslastung 25% · 897 Tests grün</div>
   <div class="card">
     <div class="tech-r">
       <div class="t-av">T5</div>
@@ -398,7 +398,7 @@ body{
 
 </div><!-- /wrap -->
 
-<div class="footer">AI Assisted Field Service Assistant · Medtronic GmbH Service &amp; Repair · 516 Tests grün</div>
+<div class="footer">AI Assisted Field Service Assistant · Medtronic GmbH Service &amp; Repair · 897 Tests grün</div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const AT = {
@@ -406,16 +406,16 @@ de:{
   'brand':'Medtronic · Field Service AI',
   'step':'Schritt',
   'back':'← Home',
-  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · 516 Tests grün',
+  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · 897 Tests grün',
   'auto':'▶ Auto','pause':'⏸ Pause','auto-lbl':'Läuft automatisch','manual-lbl':'Manuell',
   'prev':'← Zurück','next-btn':'Weiter →','restart':'↺ Neu starten',
   'frames':[
     {title:'Schritt 1 — Fälligkeit automatisch erkannt',
      info:'System erkennt: EC300 Legend · UKB Bonn · 12 Tage überfällig!',
      card:'Work Order automatisch generiert',
-     sub:'1.985 Vertragsgeräte · täglich geprüft · kein manuelles Nachschauen'},
+     sub:'6.569 Vertragsgeräte · täglich geprüft · kein manuelles Nachschauen'},
     {title:'Schritt 2 — KI berechnet Techniker-Empfehlung',
-     info:'Kompetenz 40% + Fahrzeit 35% + Auslastung 25% · 516 Tests grün'},
+     info:'Kompetenz 40% + Fahrzeit 35% + Auslastung 25% · 897 Tests grün'},
     {title:'Schritt 3 — Disponent bestätigt (Copilot, kein Autopilot)',
      info:'KI empfiehlt · Mensch entscheidet · SMax Go bleibt Kernsystem',
      sub:'Tour-Empfehlung: EC300 + NIM4CM01 gebündelt · 1 Fahrt statt 2'},
@@ -441,16 +441,16 @@ en:{
   'brand':'Medtronic · Field Service AI',
   'step':'Step',
   'back':'← Home',
-  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · 516 Tests passed',
+  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · 897 Tests passed',
   'auto':'▶ Auto','pause':'⏸ Pause','auto-lbl':'Running automatically','manual-lbl':'Manual',
   'prev':'← Back','next-btn':'Next →','restart':'↺ Restart',
   'frames':[
     {title:'Step 1 — Due date automatically detected',
      info:'System detects: EC300 Legend · UKB Bonn · 12 days overdue!',
      card:'Work order automatically generated',
-     sub:'1,985 contract devices · checked daily · no manual lookup'},
+     sub:'6,569 contract devices · checked daily · no manual lookup'},
     {title:'Step 2 — AI calculates technician recommendation',
-     info:'Competency 40% + Travel 35% + Utilization 25% · 516 tests passed'},
+     info:'Competency 40% + Travel 35% + Utilization 25% · 897 tests passed'},
     {title:'Step 3 — Dispatcher confirms (copilot, not autopilot)',
      info:'AI recommends · Human decides · SMax Go remains core system',
      sub:'Tour recommendation: EC300 + NIM4CM01 bundled · 1 trip instead of 2'},
@@ -606,7 +606,7 @@ resetTimer();
   var K='fsa_auth';
   function initPw(){
     var ov=document.getElementById('pw-overlay');
-    if(sessionStorage.getItem(K)===H){ov.style.display='none';return;}
+    if(localStorage.getItem(K)===H){ov.style.display='none';return;}
     ov.style.display='flex';
     document.getElementById('pw-input').focus();
   }
@@ -615,10 +615,12 @@ resetTimer();
     var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));
     var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
     if(h===H){
-      sessionStorage.setItem(K,H);
+      localStorage.setItem(K,H);
       document.getElementById('pw-overlay').style.display='none';
     } else {
-
+      document.getElementById('pw-err').style.display='block';
+      document.getElementById('pw-input').value='';
+      document.getElementById('pw-input').focus();
     }
   }
   window.checkPw=checkPw;
