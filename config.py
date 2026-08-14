@@ -103,6 +103,25 @@ OPTIMIERUNG_AUSLASTUNGS_SCHWELLE = 15            # Mindest-Auslastungsdifferenz 
 OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN = 20    # max. akzeptierte Fahrzeit-Mehrbelastung (Minuten)
 ARBEITSWOCHEN_PRO_JAHR = 46                      # Kapazitaetsbasis fuer Auslastungs-Berechnung
 
+# ─── Hugo-Zusatzgebiet (optional, standardmaessig deaktiviert) ─────
+# Hugo-KA-Techniker mit wenigen Hugo-Systemen im Kerngebiet sind trotzdem stark
+# ausgelastet (Hugo ist reparaturanfaellig, bindet viel Kapazitaet). Fuer sie
+# kann im Dashboard optional ein erweitertes Gebiet fuer bestimmte
+# Small-Capital-Zusatzprodukte aktiviert werden -- dort gilt immer PM-only
+# (Repair=False), unabhaengig vom normalen Cluster-Mapping dieser Geraete.
+HUGO_ZUSATZGEBIET_MAX_FAHRZEIT_MIN = 95   # Mittelwert 90-100 Min., anpassbar
+HUGO_ZUSATZGEBIET_PRODUKTE = [
+    "MC-NIM4CM01",
+    "MC-NIM4CPB1",
+    "NIM3-Platzhalter (MC-Code fehlt noch)",
+    "MC-2090",
+    "MC-ACT200",
+    "MC-40-405-1",
+    "CVG-Platzhalter (MC-Code fehlt noch)",
+    "RTG-Platzhalter (MC-Code fehlt noch)",
+    "SI-Platzhalter (MC-Code fehlt noch)",
+]
+
 # ─── Trainingskosten (Platzhalter) ─────────────────
 TRAINING_SMALL_CAPITAL_EUR = 0        # intern
 TRAINING_HF_CHIRURGIE_EUR = 0         # STK/PM intern

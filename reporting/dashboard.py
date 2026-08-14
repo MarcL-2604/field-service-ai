@@ -45,9 +45,13 @@ from config import (  # noqa: E402
     OPTIMIERUNG_AUSLASTUNGS_SCHWELLE,
     OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN,
     ARBEITSWOCHEN_PRO_JAHR,
+    HUGO_ZUSATZGEBIET_MAX_FAHRZEIT_MIN,
+    HUGO_ZUSATZGEBIET_PRODUKTE,
 )
 from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
+from reporting.erklaerungen import generiere_erklaerung, FRAGE_TYPEN  # noqa: E402
+from reporting.hugo_zusatzgebiet import berechne_hugo_zusatzgebiete  # noqa: E402
 
 _DATA_DIR = _ROOT / "daten"
 _OUT_PATH = Path(__file__).parent / "dashboard.html"
@@ -1691,9 +1695,24 @@ def _topo_to_svg_paths() -> list[dict]:
     return result
 
 
+def _radius_px_at(lat: float, lon: float, radius_km: float) -> float:
+    """Wandelt einen Radius in km an einer Lat/Lon-Position in einen
+    SVG-Pixel-Radius um (lokale px/km-Rate ueber zwei projizierte Punkte,
+    da die Mercator-Projektion nicht global masstabsgetreu ist)."""
+    dlon = 0.05
+    x1, y1 = _project_mercator(lon, lat)
+    x2, y2 = _project_mercator(lon + dlon, lat)
+    px_dist = math.hypot(x2 - x1, y2 - y1)
+    km_dist = _haversine_km(lat, lon, lat, lon + dlon)
+    if km_dist <= 0:
+        return 0.0
+    return radius_km * (px_dist / km_dist)
+
+
 def _build_gebiets_svg(
     techniker: dict[str, dict],
     plz_abdeckung: list[dict] | None = None,
+    hugo_zusatzgebiete: list[dict] | None = None,
 ) -> str:
     """Baut statische SVG-Karte (100% offline, kein CDN, kein JavaScript noetig)."""
     paths = _topo_to_svg_paths()
@@ -1767,6 +1786,23 @@ def _build_gebiets_svg(
             f'text-anchor="middle" style="pointer-events:none">'
             f'\u2605</text>'
         )
+        svg_parts.append('</g>')
+
+    # 5. Hugo-Zusatzgebiete (optional, standardmaessig via Toggle ausgeblendet)
+    if hugo_zusatzgebiete:
+        svg_parts.append('<g id="hugo-zusatzgebiete" style="display:none">')
+        for hz in hugo_zusatzgebiete:
+            px, py = _project_mercator(hz["lon"], hz["lat"])
+            r_px = _radius_px_at(hz["lat"], hz["lon"], hz["radius_km"])
+            fc = _TECH_FARBEN.get(hz["id"], "#7B2D8E")
+            svg_parts.append(
+                f'<circle class="hugo-zg-kreis" cx="{px}" cy="{py}" r="{r_px:.1f}" '
+                f'fill="{fc}" fill-opacity="0.08" stroke="{fc}" stroke-width="2" '
+                f'stroke-dasharray="8,5">'
+                f'<title>{hz["id"]} ({hz["standort"]}): Hugo-Zusatzgebiet Small Capital, '
+                f'~{hz["radius_km"]:.0f} km Radius, {hz["hugo_systeme"]} Hugo-System(e) '
+                f'im Kerngebiet, nur PM</title></circle>'
+            )
         svg_parts.append('</g>')
 
     return "\n    ".join(svg_parts)
@@ -1998,6 +2034,19 @@ def _build_gebiets_script(
         "    btn.addEventListener('click',function(){\n"
         "      if(selected){ highlightState(selected); renderPunkte(selected); }\n"
         "    });\n"
+        "  });\n"
+        "})();\n"
+        "\n"
+        "/* ── Hugo-Zusatzgebiet: Toggle (default AUS, rein clientseitig) ── */\n"
+        "(function(){\n"
+        "  var toggle=document.getElementById('hugo-zg-toggle');\n"
+        "  var hint=document.getElementById('hugo-zg-hint');\n"
+        "  var svg=document.getElementById('germany-map-opt');\n"
+        "  if(!toggle||!svg) return;\n"
+        "  var layer=svg.querySelector('#hugo-zusatzgebiete');\n"
+        "  toggle.addEventListener('change',function(){\n"
+        "    if(layer) layer.style.display=toggle.checked?'block':'none';\n"
+        "    if(hint) hint.style.display=toggle.checked?'block':'none';\n"
         "  });\n"
         "})();\n"
     )
@@ -2966,6 +3015,32 @@ _CSS = """\
       stroke-width: 2.6px !important;
     }
 
+    /* ── Hugo-Zusatzgebiet (optional, Toggle default AUS) ── */
+    .hugo-zg-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: rgba(123,45,142,.05);
+      border: 1px solid rgba(123,45,142,.2);
+      border-radius: 10px;
+    }
+    .hugo-zg-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text);
+      cursor: pointer;
+      line-height: 1.4;
+    }
+    .hugo-zg-toggle input { cursor: pointer; accent-color: #7B2D8E; }
+    .hugo-zg-hint {
+      margin-top: 8px;
+      font-size: 10.5px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .gebiets-karte svg circle.hugo-zg-kreis { pointer-events: all; }
+
     tr[data-tech] { cursor: pointer; }
     tr[data-tech]:hover td { background: rgba(0,114,206,.08); }
     tr[data-tech].go-row-active td { background: rgba(0,81,149,.16) !important; }
@@ -3020,6 +3095,47 @@ _CSS = """\
       margin-right: 8px;
     }
     .chat-status.offline { background: var(--text-muted); }
+
+    /* ── Template-Erklaerungen (kein API-Key noetig) ── */
+    .erklaer-box {
+      padding: 16px;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(0,133,124,.04);
+    }
+    .erklaer-intro {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin: 0 0 10px;
+      line-height: 1.5;
+    }
+    .erklaer-select {
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 12px;
+    }
+    .erklaer-antwort {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      border: 1px solid rgba(0,133,124,.25);
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .erklaer-divider {
+      padding: 10px 16px;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: center;
+      border-bottom: 1px solid var(--card-border);
+    }
 
     /* ── Chat Setup ── */
     .chat-setup {
@@ -3392,10 +3508,37 @@ def _render_gebietsoptimierung(
     metriken_akt: list[dict],
     metriken_opt: list[dict],
     techniker: dict[str, dict],
+    hugo_zusatzgebiete: list[dict] | None = None,
 ) -> str:
     """Erzeugt den Gebietsoptimierung-Tab mit 3 klickbaren Ansicht-Buttons."""
     if not metriken_akt:
         return ""
+
+    # ── Hugo-Zusatzgebiet: optionale Regel, Toggle default AUS ──
+    hugo_zusatzgebiete = hugo_zusatzgebiete or []
+    if hugo_zusatzgebiete:
+        hugo_zg_liste = ", ".join(
+            f"{hz['id']} ({hz['hugo_systeme']} Hugo-System(e))" for hz in hugo_zusatzgebiete
+        )
+        hugo_zg_hint = (
+            f"Aktiv f&uuml;r {len(hugo_zusatzgebiete)} Techniker: {hugo_zg_liste} "
+            f"&mdash; Radius &#8776;{hugo_zusatzgebiete[0]['radius_km']:.0f} km "
+            f"(&#8776;{HUGO_ZUSATZGEBIET_MAX_FAHRZEIT_MIN} min Fahrzeit)."
+        )
+    else:
+        hugo_zg_hint = (
+            "Keine Hugo-KA-Techniker mit &le;2 Hugo-Systemen im aktuellen Datensatz gefunden."
+        )
+    hugo_zg_html = (
+        f'<div class="hugo-zg-box">'
+        f'<label class="hugo-zg-toggle">'
+        f'<input type="checkbox" id="hugo-zg-toggle">'
+        f'Hugo-Zusatzgebiet f&uuml;r Small Capital aktivieren '
+        f'(max. {HUGO_ZUSATZGEBIET_MAX_FAHRZEIT_MIN} Min. Radius, nur PM)'
+        f'</label>'
+        f'<div class="hugo-zg-hint" id="hugo-zg-hint" style="display:none">{hugo_zg_hint}</div>'
+        f'</div>'
+    )
 
     umweg_faktor_text = f"{HAVERSINE_UMWEG_FAKTOR:.2f}".replace(".", ",")
     info_aktuell = _go_info_box(
@@ -3598,6 +3741,7 @@ def _render_gebietsoptimierung(
           <span class="go-hint">Techniker anklicken, um sein Gebiet hervorzuheben</span>
           <button class="go-reset-btn" id="go-reset-btn" disabled>&#10005; Zur&uuml;cksetzen</button>
         </div>
+        {hugo_zg_html}
       </div>
       <div class="gebiets-metriken">
         <!-- Ansicht 1: Aktuelle Gebiete -->
@@ -3695,6 +3839,8 @@ def render_html(
     is_echtdaten: bool = False,
     ct_kennzahlen: dict | None = None,
     gebiets_punkte: list[dict] | None = None,
+    erklaerungen: dict[str, dict[str, str]] | None = None,
+    hugo_zusatzgebiete: list[dict] | None = None,
 ) -> str:
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten)
     stk_html      = _render_stk_tabelle(stk_rows)
@@ -3712,8 +3858,8 @@ def render_html(
     m_akt, m_opt  = gebiets_metriken or ([], [])
     plz_abd       = _berechne_plz_abdeckung(techniker)
     gebiets_html  = _render_gebietsplanung(m_akt, m_opt, plz_abd)
-    gebietsopt_html = _render_gebietsoptimierung(m_akt, m_opt, techniker)
-    gebiets_svg_content = _build_gebiets_svg(techniker, plz_abd)
+    gebietsopt_html = _render_gebietsoptimierung(m_akt, m_opt, techniker, hugo_zusatzgebiete)
+    gebiets_svg_content = _build_gebiets_svg(techniker, plz_abd, hugo_zusatzgebiete)
     gebiets_script = _build_gebiets_script(techniker, plz_abd, gebiets_punkte or [])
     tech_detail_json = _render_techniker_detail_data(
         techniker, demo_history or {})
@@ -3726,6 +3872,41 @@ def render_html(
     # System-Prompt fuer Chat
     system_prompt = _build_system_prompt(ct_rows or [], techniker, ampeln)
     system_prompt_js = json.dumps(system_prompt, ensure_ascii=False)
+    erklaerungen_json = json.dumps(erklaerungen or {}, ensure_ascii=False)
+    frage_typen_json = json.dumps(FRAGE_TYPEN, ensure_ascii=False)
+    erklaer_script = (
+        "/* ── Template-Erklaerungen: aus Berechnungsdaten, kein API-Aufruf ── */\n"
+        "(function(){\n"
+        "  var ERKL=" + erklaerungen_json + ";\n"
+        "  var FRAGEN=" + frage_typen_json + ";\n"
+        "  var frageSel=document.getElementById('erklaer-frage');\n"
+        "  var techSel=document.getElementById('erklaer-techniker');\n"
+        "  var btn=document.getElementById('erklaer-btn');\n"
+        "  var out=document.getElementById('erklaer-antwort');\n"
+        "  if(!frageSel||!techSel||!btn) return;\n"
+        "  Object.keys(FRAGEN).forEach(function(key){\n"
+        "    var opt=document.createElement('option');\n"
+        "    opt.value=key;\n"
+        "    opt.textContent=FRAGEN[key].replace('{tid}','[Techniker]');\n"
+        "    frageSel.appendChild(opt);\n"
+        "  });\n"
+        "  Object.keys(ERKL).sort().forEach(function(tid){\n"
+        "    var opt=document.createElement('option');\n"
+        "    opt.value=tid; opt.textContent=tid;\n"
+        "    techSel.appendChild(opt);\n"
+        "  });\n"
+        "  function render(){\n"
+        "    var tid=techSel.value, frage=frageSel.value;\n"
+        "    var text=(ERKL[tid]&&ERKL[tid][frage])?ERKL[tid][frage]:'Keine Erkl\\u00e4rung verf\\u00fcgbar.';\n"
+        "    out.textContent=text;\n"
+        "    out.style.display='block';\n"
+        "  }\n"
+        "  btn.addEventListener('click',render);\n"
+        "  techSel.addEventListener('change',render);\n"
+        "  frageSel.addEventListener('change',render);\n"
+        "  if(techSel.options.length&&frageSel.options.length) render();\n"
+        "})();\n"
+    )
 
     html = f"""<!DOCTYPE html>
 <html lang="de">
@@ -3924,6 +4105,16 @@ def render_html(
       <div class="chat-header-sub" data-i18n="chat.sub">Medtronic Field Service Assistent</div>
     </div>
   </div>
+
+  <!-- Template-Erklaerungen: direkt aus den Berechnungsdaten, kein API-Key noetig -->
+  <div class="erklaer-box" id="erklaer-box">
+    <p class="erklaer-intro">Frage direkt aus den Berechnungsdaten beantworten &mdash; kein API-Key n&ouml;tig:</p>
+    <select id="erklaer-frage" class="erklaer-select"></select>
+    <select id="erklaer-techniker" class="erklaer-select"></select>
+    <button class="chat-btn-primary" id="erklaer-btn">Erkl&auml;ren</button>
+    <div class="erklaer-antwort" id="erklaer-antwort" style="display:none"></div>
+  </div>
+  <div class="erklaer-divider">F&uuml;r freie Fragen: Claude API-Key verbinden (optional)</div>
 
   <!-- API-Key Setup -->
   <div class="chat-setup" id="chat-setup">
@@ -4215,6 +4406,8 @@ document.addEventListener('keydown', function(e) {{
 
 {gebiets_script}
 
+{erklaer_script}
+
 /* ══════════ Claude Chat ══════════ */
 (function() {{
   var SYSTEM_PROMPT = {system_prompt_js};
@@ -4498,6 +4691,10 @@ def _vollstaendigkeits_pruefung(html: str) -> list[tuple[str, bool]]:
          f'{TESTS_ANZAHL} Tests' in html),
         ("Passwortschutz (konsistent mit index.html/demo.html/...)",
          'id="pw-overlay"' in html and 'checkPw' in html),
+        ("KI-Erklaerungsfeld (Template-basiert, kein API-Key noetig)",
+         'id="erklaer-box"' in html and 'erklaer-antwort' in html),
+        ("Hugo-Zusatzgebiet-Toggle (optional, default AUS)",
+         'id="hugo-zg-toggle"' in html and 'hugo-zg-hint' in html),
     ]
     return checks
 
@@ -4516,6 +4713,7 @@ def main() -> None:
 
         # Ampel aus echten PM-Skill-Daten berechnen
         ct_kennzahlen: dict | None = None
+        hugo_systeme_pro_tech: dict[str, int] = {}
         try:
             from api.smax_cache import load_dashboard_data as _smax_load
             _smax = _smax_load()
@@ -4524,6 +4722,12 @@ def main() -> None:
             ct_kennzahlen = {
                 "stk_potenzial_gesamt": _smax.get("stk_potenzial_gesamt", 0),
                 "einsatz_median_min":   _smax.get("einsatz_median_min", 0),
+            }
+            # Hugo-Systeme je Techniker im Kerngebiet (fuer die optionale
+            # Hugo-Zusatzgebiet-Regel, siehe reporting/hugo_zusatzgebiet.py)
+            hugo_systeme_pro_tech = {
+                t["pseudonym_id"]: t.get("geraete_im_gebiet", {}).get("MC-HUGO", 0)
+                for t in _smax["techniker"]
             }
         except Exception:
             ampeln = _berechne_ampeln(ct_rows, techniker)
@@ -4577,6 +4781,7 @@ def main() -> None:
         print("  -> Demo-Modus: T1-T14 aus CSV")
         ampeln      = _berechne_ampeln(ct_rows, techniker)
         nrw_warnung = _berechne_nrw_warnung(ct_rows)
+        hugo_systeme_pro_tech = {}  # keine reale Geraetedichte im Demo-Modus
 
     print("Berechne Dringlichkeiten fuer naechste 10 STK-Auftraege...")
     auftraege = naechste_faellige_auftraege(n=10)
@@ -4699,6 +4904,26 @@ def main() -> None:
     print("Generiere Demo-Einsatzhistorie...")
     demo_history = _generate_demo_history(techniker, labor_zeiten)
 
+    print("Berechne Hugo-Zusatzgebiete (optionale Regel, Toggle default AUS)...")
+    hugo_zusatzgebiete = berechne_hugo_zusatzgebiete(
+        techniker, _HUGO_KA_IDS, hugo_systeme_pro_tech,
+        HUGO_ZUSATZGEBIET_MAX_FAHRZEIT_MIN, HAVERSINE_UMWEG_FAKTOR,
+    )
+    print(f"  {len(hugo_zusatzgebiete)} Techniker qualifizieren (<=2 Hugo-Systeme im Kerngebiet)")
+
+    print("Generiere Template-Erklaerungen (ohne KI-API)...")
+    erklaerungen = {
+        tid: {
+            frage_typ: generiere_erklaerung(
+                frage_typ, tid,
+                techniker=techniker, metriken_akt=m_akt, metriken_opt=m_opt,
+                ampeln=ampeln, umweg_faktor=HAVERSINE_UMWEG_FAKTOR,
+            )
+            for frage_typ in FRAGE_TYPEN
+        }
+        for tid in techniker
+    }
+
     print("Rendere HTML...")
     html = render_html(
         ampeln=ampeln,
@@ -4715,6 +4940,8 @@ def main() -> None:
         is_echtdaten=_ECHTDATEN,
         ct_kennzahlen=ct_kennzahlen if _ECHTDATEN else None,
         gebiets_punkte=gebiets_punkte,
+        erklaerungen=erklaerungen,
+        hugo_zusatzgebiete=hugo_zusatzgebiete,
     )
 
     _OUT_PATH.write_text(html, encoding="utf-8")

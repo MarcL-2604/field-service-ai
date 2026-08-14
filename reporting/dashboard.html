@@ -923,6 +923,32 @@
       stroke-width: 2.6px !important;
     }
 
+    /* ── Hugo-Zusatzgebiet (optional, Toggle default AUS) ── */
+    .hugo-zg-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: rgba(123,45,142,.05);
+      border: 1px solid rgba(123,45,142,.2);
+      border-radius: 10px;
+    }
+    .hugo-zg-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text);
+      cursor: pointer;
+      line-height: 1.4;
+    }
+    .hugo-zg-toggle input { cursor: pointer; accent-color: #7B2D8E; }
+    .hugo-zg-hint {
+      margin-top: 8px;
+      font-size: 10.5px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .gebiets-karte svg circle.hugo-zg-kreis { pointer-events: all; }
+
     tr[data-tech] { cursor: pointer; }
     tr[data-tech]:hover td { background: rgba(0,114,206,.08); }
     tr[data-tech].go-row-active td { background: rgba(0,81,149,.16) !important; }
@@ -977,6 +1003,47 @@
       margin-right: 8px;
     }
     .chat-status.offline { background: var(--text-muted); }
+
+    /* ── Template-Erklaerungen (kein API-Key noetig) ── */
+    .erklaer-box {
+      padding: 16px;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(0,133,124,.04);
+    }
+    .erklaer-intro {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin: 0 0 10px;
+      line-height: 1.5;
+    }
+    .erklaer-select {
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 12px;
+    }
+    .erklaer-antwort {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      border: 1px solid rgba(0,133,124,.25);
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .erklaer-divider {
+      padding: 10px 16px;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: center;
+      border-bottom: 1px solid var(--card-border);
+    }
 
     /* ── Chat Setup ── */
     .chat-setup {
@@ -1375,7 +1442,7 @@
   <span><span class="dot dot-gruen"></span> <span data-i18n="summary.green">Gr&uuml;n</span>: <strong>0</strong> (&ge;60&thinsp;% L3)</span>
   <span><span class="dot dot-gelb"></span> <span data-i18n="summary.yellow">Gelb</span>: <strong>4</strong> (30&ndash;59&thinsp;%)</span>
   <span><span class="dot dot-rot"></span> <span data-i18n="summary.red">Rot</span>: <strong>20</strong> (&lt;30&thinsp;%)</span>
-  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 14.08.2026 08:21 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
+  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 14.08.2026 08:49 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
 </div>
 
 <main>
@@ -2820,11 +2887,11 @@
         </tr>
       </thead>
       <tbody>
-      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>14.08. 01:21</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>13.08. 01:21</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>12.08. 06:21</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>13.08. 12:21</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
-      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>12.08. 20:21</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
+      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>14.08. 01:49</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>13.08. 01:49</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>12.08. 06:49</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>13.08. 12:49</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
+      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>12.08. 20:49</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
       </tbody>
     </table>
   </section>
@@ -3142,12 +3209,16 @@
     <g class="einst-marker" data-idx="3" style="cursor:pointer">
     <circle cx="132.2" cy="430.8" r="10" fill="#CC0000" stroke="#fff" stroke-width="2"><title>Mannheim: 6 Kliniken</title></circle>
     <text x="132.2" y="435.8" font-size="13px" fill="#fff" text-anchor="middle" style="pointer-events:none">★</text>
+    </g>
+    <g id="hugo-zusatzgebiete" style="display:none">
+    <circle class="hugo-zg-kreis" cx="154.1" cy="380.6" r="92.0" fill="#0072CE" fill-opacity="0.08" stroke="#0072CE" stroke-width="2" stroke-dasharray="8,5"><title>Ahmed A. (Obertshausen): Hugo-Zusatzgebiet Small Capital, ~117 km Radius, 0 Hugo-System(e) im Kerngebiet, nur PM</title></circle>
     </g></svg>
         <div class="gebiets-legende" id="gebiets-legende-opt"></div>
         <div class="gebiets-karte-tools">
           <span class="go-hint">Techniker anklicken, um sein Gebiet hervorzuheben</span>
           <button class="go-reset-btn" id="go-reset-btn" disabled>&#10005; Zur&uuml;cksetzen</button>
         </div>
+        <div class="hugo-zg-box"><label class="hugo-zg-toggle"><input type="checkbox" id="hugo-zg-toggle">Hugo-Zusatzgebiet f&uuml;r Small Capital aktivieren (max. 95 Min. Radius, nur PM)</label><div class="hugo-zg-hint" id="hugo-zg-hint" style="display:none">Aktiv f&uuml;r 1 Techniker: Ahmed A. (0 Hugo-System(e)) &mdash; Radius &#8776;117 km (&#8776;95 min Fahrzeit).</div></div>
       </div>
       <div class="gebiets-metriken">
         <!-- Ansicht 1: Aktuelle Gebiete -->
@@ -3425,6 +3496,9 @@
     <g class="einst-marker" data-idx="3" style="cursor:pointer">
     <circle cx="132.2" cy="430.8" r="10" fill="#CC0000" stroke="#fff" stroke-width="2"><title>Mannheim: 6 Kliniken</title></circle>
     <text x="132.2" y="435.8" font-size="13px" fill="#fff" text-anchor="middle" style="pointer-events:none">★</text>
+    </g>
+    <g id="hugo-zusatzgebiete" style="display:none">
+    <circle class="hugo-zg-kreis" cx="154.1" cy="380.6" r="92.0" fill="#0072CE" fill-opacity="0.08" stroke="#0072CE" stroke-width="2" stroke-dasharray="8,5"><title>Ahmed A. (Obertshausen): Hugo-Zusatzgebiet Small Capital, ~117 km Radius, 0 Hugo-System(e) im Kerngebiet, nur PM</title></circle>
     </g></svg>
       </div>
       <div class="einst-liste">
@@ -3481,6 +3555,16 @@
       <div class="chat-header-sub" data-i18n="chat.sub">Medtronic Field Service Assistent</div>
     </div>
   </div>
+
+  <!-- Template-Erklaerungen: direkt aus den Berechnungsdaten, kein API-Key noetig -->
+  <div class="erklaer-box" id="erklaer-box">
+    <p class="erklaer-intro">Frage direkt aus den Berechnungsdaten beantworten &mdash; kein API-Key n&ouml;tig:</p>
+    <select id="erklaer-frage" class="erklaer-select"></select>
+    <select id="erklaer-techniker" class="erklaer-select"></select>
+    <button class="chat-btn-primary" id="erklaer-btn">Erkl&auml;ren</button>
+    <div class="erklaer-antwort" id="erklaer-antwort" style="display:none"></div>
+  </div>
+  <div class="erklaer-divider">F&uuml;r freie Fragen: Claude API-Key verbinden (optional)</div>
 
   <!-- API-Key Setup -->
   <div class="chat-setup" id="chat-setup">
@@ -4020,6 +4104,52 @@ document.addEventListener('keydown', function(e) {
       if(selected){ highlightState(selected); renderPunkte(selected); }
     });
   });
+})();
+
+/* ── Hugo-Zusatzgebiet: Toggle (default AUS, rein clientseitig) ── */
+(function(){
+  var toggle=document.getElementById('hugo-zg-toggle');
+  var hint=document.getElementById('hugo-zg-hint');
+  var svg=document.getElementById('germany-map-opt');
+  if(!toggle||!svg) return;
+  var layer=svg.querySelector('#hugo-zusatzgebiete');
+  toggle.addEventListener('change',function(){
+    if(layer) layer.style.display=toggle.checked?'block':'none';
+    if(hint) hint.style.display=toggle.checked?'block':'none';
+  });
+})();
+
+
+/* ── Template-Erklaerungen: aus Berechnungsdaten, kein API-Aufruf ── */
+(function(){
+  var ERKL={"Ahmed A.": {"warum_gebiet": "Ahmed A. (Obertshausen) betreut aktuell 19 Kliniken mit einer Ø Fahrzeit von 33 min (max. 74 min) und einer Auslastungs-Ratio von 2.9 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Mohammad H. (Frankfurt am Main, ~14 km entfernt).", "warum_auslastung": "Ahmed A. (Obertshausen): 19 Kliniken im Gebiet, 25 Fahrtstunden/Jahr + 72 Vor-Ort-Stunden/Jahr (Ratio 2.9). Qualifikations-Abdeckung: 35/365 Produktfamilien (10%), 330 Lücken, +105 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 35 PM-Qualifikationen von 365 Modellcodes (9.6% PM-Quote).", "warum_verschoben": "Ahmed A. (Obertshausen): 77 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). Auslastungs-Ratio 2.9 → 1.91, Δ Fahrtstunden/Jahr: +280 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Andrej F.": {"warum_gebiet": "Andrej F. (Neubiberg) betreut aktuell 72 Kliniken mit einer Ø Fahrzeit von 36 min (max. 129 min) und einer Auslastungs-Ratio von 2.33 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Eduard S. (Wildenberg, ~87 km entfernt).", "warum_auslastung": "Andrej F. (Neubiberg): 72 Kliniken im Gebiet, 140 Fahrtstunden/Jahr + 326 Vor-Ort-Stunden/Jahr (Ratio 2.33). Qualifikations-Abdeckung: 0/365 Produktfamilien (0%), 365 Lücken, +290 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 0 PM-Qualifikationen von 365 Modellcodes (0.0% PM-Quote).", "warum_verschoben": "Bei Andrej F. (Neubiberg) wurden keine Kliniken verschoben — alle Kliniken liegen bereits innerhalb der Schwellwerte beim nächstgelegenen Techniker."}, "Artur D.": {"warum_gebiet": "Artur D. (Wehingen) betreut aktuell 33 Kliniken mit einer Ø Fahrzeit von 64 min (max. 120 min) und einer Auslastungs-Ratio von 1.04 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Marc L. (Balingen, ~19 km entfernt).", "warum_auslastung": "Artur D. (Wehingen): 33 Kliniken im Gebiet, 174 Fahrtstunden/Jahr + 181 Vor-Ort-Stunden/Jahr (Ratio 1.04). Qualifikations-Abdeckung: 120/365 Produktfamilien (33%), 245 Lücken, +267 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 120 PM-Qualifikationen von 365 Modellcodes (32.9% PM-Quote).", "warum_verschoben": "Bei Artur D. (Wehingen) wurden keine Kliniken verschoben — alle Kliniken liegen bereits innerhalb der Schwellwerte beim nächstgelegenen Techniker."}, "Christoph T.": {"warum_gebiet": "Christoph T. (Weimar) betreut aktuell 109 Kliniken mit einer Ø Fahrzeit von 56 min (max. 115 min) und einer Auslastungs-Ratio von 1.36 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Christopher K. (Erlangen, ~156 km entfernt).", "warum_auslastung": "Christoph T. (Weimar): 109 Kliniken im Gebiet, 519 Fahrtstunden/Jahr + 705 Vor-Ort-Stunden/Jahr (Ratio 1.36). Qualifikations-Abdeckung: 124/365 Produktfamilien (34%), 241 Lücken, +65 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 124 PM-Qualifikationen von 365 Modellcodes (34.0% PM-Quote).", "warum_verschoben": "Christoph T. (Weimar): 7 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). 11 Klinik(en) abgegeben (an einen weniger ausgelasteten, ähnlich nahen Techniker). Auslastungs-Ratio 1.36 → 1.43, Δ Fahrtstunden/Jahr: -69 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Christopher K.": {"warum_gebiet": "Christopher K. (Erlangen) betreut aktuell 55 Kliniken mit einer Ø Fahrzeit von 43 min (max. 83 min) und einer Auslastungs-Ratio von 2.38 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Eduard S. (Wildenberg, ~108 km entfernt).", "warum_auslastung": "Christopher K. (Erlangen): 55 Kliniken im Gebiet, 142 Fahrtstunden/Jahr + 339 Vor-Ort-Stunden/Jahr (Ratio 2.38). Qualifikations-Abdeckung: 32/365 Produktfamilien (9%), 333 Lücken, +53 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 32 PM-Qualifikationen von 365 Modellcodes (8.8% PM-Quote).", "warum_verschoben": "Christopher K. (Erlangen): 4 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). 9 Klinik(en) abgegeben (an einen weniger ausgelasteten, ähnlich nahen Techniker). Auslastungs-Ratio 2.38 → 2.73, Δ Fahrtstunden/Jahr: -35 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Dirk G.": {"warum_gebiet": "Dirk G. (Oberhausen) betreut aktuell 87 Kliniken mit einer Ø Fahrzeit von 16 min (max. 66 min) und einer Auslastungs-Ratio von 5.21 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Lisa K. (Essen, ~11 km entfernt).", "warum_auslastung": "Dirk G. (Oberhausen): 87 Kliniken im Gebiet, 66 Fahrtstunden/Jahr + 345 Vor-Ort-Stunden/Jahr (Ratio 5.21). Qualifikations-Abdeckung: 182/365 Produktfamilien (50%), 183 Lücken, +505 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 182 PM-Qualifikationen von 365 Modellcodes (49.9% PM-Quote).", "warum_verschoben": "Dirk G. (Oberhausen): 130 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). 3 Klinik(en) abgegeben (an einen weniger ausgelasteten, ähnlich nahen Techniker). Auslastungs-Ratio 5.21 → 3.07, Δ Fahrtstunden/Jahr: +248 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Dirk H.": {"warum_gebiet": "Dirk H. (Schenefeld) betreut aktuell 80 Kliniken mit einer Ø Fahrzeit von 58 min (max. 137 min) und einer Auslastungs-Ratio von 1.33 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Hector C. (Hamburg, ~12 km entfernt).", "warum_auslastung": "Dirk H. (Schenefeld): 80 Kliniken im Gebiet, 247 Fahrtstunden/Jahr + 329 Vor-Ort-Stunden/Jahr (Ratio 1.33). Qualifikations-Abdeckung: 49/365 Produktfamilien (13%), 316 Lücken, +61 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 49 PM-Qualifikationen von 365 Modellcodes (13.4% PM-Quote).", "warum_verschoben": "Dirk H. (Schenefeld): 76 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). Auslastungs-Ratio 1.33 → 2.05, Δ Fahrtstunden/Jahr: +276 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Eduard S.": {"warum_gebiet": "Eduard S. (Wildenberg) betreut aktuell 33 Kliniken mit einer Ø Fahrzeit von 45 min (max. 93 min) und einer Auslastungs-Ratio von 1.89 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Andrej F. (Neubiberg, ~87 km entfernt).", "warum_auslastung": "Eduard S. (Wildenberg): 33 Kliniken im Gebiet, 140 Fahrtstunden/Jahr + 265 Vor-Ort-Stunden/Jahr (Ratio 1.89). Qualifikations-Abdeckung: 27/365 Produktfamilien (7%), 338 Lücken, +192 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 27 PM-Qualifikationen von 365 Modellcodes (7.4% PM-Quote).", "warum_verschoben": "Bei Eduard S. (Wildenberg) wurden keine Kliniken verschoben — alle Kliniken liegen bereits innerhalb der Schwellwerte beim nächstgelegenen Techniker."}, "Florian Z.": {"warum_gebiet": "Florian Z. (Hennef) betreut aktuell 23 Kliniken mit einer Ø Fahrzeit von 39 min (max. 66 min) und einer Auslastungs-Ratio von 2.11 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Matthias B. (Siegburg, ~6 km entfernt).", "warum_auslastung": "Florian Z. (Hennef): 23 Kliniken im Gebiet, 34 Fahrtstunden/Jahr + 72 Vor-Ort-Stunden/Jahr (Ratio 2.11). Qualifikations-Abdeckung: 49/365 Produktfamilien (13%), 316 Lücken, +558 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 49 PM-Qualifikationen von 365 Modellcodes (13.4% PM-Quote).", "warum_verschoben": "Florian Z. (Hennef): 3 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). Auslastungs-Ratio 2.11 → 2.05, Δ Fahrtstunden/Jahr: +4 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Hector C.": {"warum_gebiet": "Hector C. (Hamburg) betreut aktuell 78 Kliniken mit einer Ø Fahrzeit von 56 min (max. 198 min) und einer Auslastungs-Ratio von 3.28 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Dirk H. (Schenefeld, ~12 km entfernt).", "warum_auslastung": "Hector C. (Hamburg): 78 Kliniken im Gebiet, 228 Fahrtstunden/Jahr + 748 Vor-Ort-Stunden/Jahr (Ratio 3.28). Qualifikations-Abdeckung: 12/365 Produktfamilien (3%), 353 Lücken, +358 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 12 PM-Qualifikationen von 365 Modellcodes (3.3% PM-Quote).", "warum_verschoben": "Hector C. (Hamburg): 1 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). 78 Klinik(en) abgegeben (an einen weniger ausgelasteten, ähnlich nahen Techniker). Auslastungs-Ratio 3.28 → 0.38, Δ Fahrtstunden/Jahr: -220 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Heiko B.": {"warum_gebiet": "Heiko B. (MALSCHWITZ) betreut aktuell 167 Kliniken mit einer Ø Fahrzeit von 79 min (max. 198 min) und einer Auslastungs-Ratio von 0.93 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Christoph T. (Weimar, ~214 km entfernt).", "warum_auslastung": "Heiko B. (MALSCHWITZ): 167 Kliniken im Gebiet, 902 Fahrtstunden/Jahr + 843 Vor-Ort-Stunden/Jahr (Ratio 0.93). Qualifikations-Abdeckung: 0/365 Produktfamilien (0%), 365 Lücken, +117 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 0 PM-Qualifikationen von 365 Modellcodes (0.0% PM-Quote).", "warum_verschoben": "Heiko B. (MALSCHWITZ): 8 Klinik(en) abgegeben (an einen weniger ausgelasteten, ähnlich nahen Techniker). Auslastungs-Ratio 0.93 → 0.94, Δ Fahrtstunden/Jahr: -31 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Lisa K.": {"warum_gebiet": "Lisa K. (Essen) betreut aktuell 133 Kliniken mit einer Ø Fahrzeit von 25 min (max. 108 min) und einer Auslastungs-Ratio von 2.98 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Dirk G. (Oberhausen, ~11 km entfernt).", "warum_auslastung": "Lisa K. (Essen): 133 Kliniken im Gebiet, 214 Fahrtstunden/Jahr + 637 Vor-Ort-Stunden/Jahr (Ratio 2.98). Qualifikations-Abdeckung: 0/365 Produktfamilien (0%), 365 Lücken, +511 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 0 PM-Qualifikationen von 365 Modellcodes (0.0% PM-Quote).", "warum_verschoben": "Lisa K. (Essen): 133 Klinik(en) abgegeben (an einen weniger ausgelasteten, ähnlich nahen Techniker). Auslastungs-Ratio 2.98 → 0.0, Δ Fahrtstunden/Jahr: -214 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Marc L.": {"warum_gebiet": "Marc L. (Balingen) betreut aktuell 31 Kliniken mit einer Ø Fahrzeit von 54 min (max. 125 min) und einer Auslastungs-Ratio von 1.16 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Artur D. (Wehingen, ~19 km entfernt).", "warum_auslastung": "Marc L. (Balingen): 31 Kliniken im Gebiet, 246 Fahrtstunden/Jahr + 286 Vor-Ort-Stunden/Jahr (Ratio 1.16). Qualifikations-Abdeckung: 192/365 Produktfamilien (53%), 173 Lücken, +221 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 192 PM-Qualifikationen von 365 Modellcodes (52.6% PM-Quote).", "warum_verschoben": "Bei Marc L. (Balingen) wurden keine Kliniken verschoben — alle Kliniken liegen bereits innerhalb der Schwellwerte beim nächstgelegenen Techniker."}, "Marco C.": {"warum_gebiet": "Marco C. (Linden) betreut aktuell 51 Kliniken mit einer Ø Fahrzeit von 42 min (max. 133 min) und einer Auslastungs-Ratio von 2.3 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Markus N. (Linden, ~0 km entfernt).", "warum_auslastung": "Marco C. (Linden): 51 Kliniken im Gebiet, 145 Fahrtstunden/Jahr + 334 Vor-Ort-Stunden/Jahr (Ratio 2.3). Qualifikations-Abdeckung: 0/365 Produktfamilien (0%), 365 Lücken, +234 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 0 PM-Qualifikationen von 365 Modellcodes (0.0% PM-Quote).", "warum_verschoben": "Marco C. (Linden): 9 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). 51 Klinik(en) abgegeben (an einen weniger ausgelasteten, ähnlich nahen Techniker). Auslastungs-Ratio 2.3 → 0.82, Δ Fahrtstunden/Jahr: -57 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Markus N.": {"warum_gebiet": "Markus N. (Linden) hat aktuell keine zugewiesenen Kliniken in der Gebietsberechnung — entweder liegt kein gültiger Standort vor oder es wurden keine Kliniken in erreichbarer Nähe gefunden.", "warum_auslastung": "Markus N. (Linden): 0 Kliniken im Gebiet, 0 Fahrtstunden/Jahr + 0 Vor-Ort-Stunden/Jahr (Ratio 0.0). Qualifikations-Abdeckung: 0/365 Produktfamilien (0%), 365 Lücken, +234 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 0 PM-Qualifikationen von 365 Modellcodes (0.0% PM-Quote).", "warum_verschoben": "Markus N. (Linden): 51 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). Auslastungs-Ratio 0.0 → 2.3, Δ Fahrtstunden/Jahr: +145 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Matthias B.": {"warum_gebiet": "Matthias B. (Siegburg) betreut aktuell 49 Kliniken mit einer Ø Fahrzeit von 13 min (max. 26 min) und einer Auslastungs-Ratio von 6.36 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Florian Z. (Hennef, ~6 km entfernt).", "warum_auslastung": "Matthias B. (Siegburg): 49 Kliniken im Gebiet, 31 Fahrtstunden/Jahr + 199 Vor-Ort-Stunden/Jahr (Ratio 6.36). Qualifikations-Abdeckung: 0/365 Produktfamilien (0%), 365 Lücken, +571 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 0 PM-Qualifikationen von 365 Modellcodes (0.0% PM-Quote).", "warum_verschoben": "Matthias B. (Siegburg): 1 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). Auslastungs-Ratio 6.36 → 6.33, Δ Fahrtstunden/Jahr: +1 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Matthias W.": {"warum_gebiet": "Matthias W. (Linden) hat aktuell keine zugewiesenen Kliniken in der Gebietsberechnung — entweder liegt kein gültiger Standort vor oder es wurden keine Kliniken in erreichbarer Nähe gefunden.", "warum_auslastung": "Matthias W. (Linden): 0 Kliniken im Gebiet, 0 Fahrtstunden/Jahr + 0 Vor-Ort-Stunden/Jahr (Ratio 0.0). Qualifikations-Abdeckung: 0/365 Produktfamilien (0%), 365 Lücken, +234 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 0 PM-Qualifikationen von 365 Modellcodes (0.0% PM-Quote).", "warum_verschoben": "Bei Matthias W. (Linden) wurden keine Kliniken verschoben — alle Kliniken liegen bereits innerhalb der Schwellwerte beim nächstgelegenen Techniker."}, "Michael G.": {"warum_gebiet": "Michael G. (Gangelt) betreut aktuell 19 Kliniken mit einer Ø Fahrzeit von 20 min (max. 26 min) und einer Auslastungs-Ratio von 4.23 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Dirk G. (Oberhausen, ~78 km entfernt).", "warum_auslastung": "Michael G. (Gangelt): 19 Kliniken im Gebiet, 22 Fahrtstunden/Jahr + 91 Vor-Ort-Stunden/Jahr (Ratio 4.23). Qualifikations-Abdeckung: 25/365 Produktfamilien (7%), 340 Lücken, +199 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 25 PM-Qualifikationen von 365 Modellcodes (6.8% PM-Quote).", "warum_verschoben": "Michael G. (Gangelt): 3 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). Auslastungs-Ratio 4.23 → 4.1, Δ Fahrtstunden/Jahr: +2 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Michael L.": {"warum_gebiet": "Michael L. (Saarbrücken) betreut aktuell 32 Kliniken mit einer Ø Fahrzeit von 32 min (max. 60 min) und einer Auslastungs-Ratio von 2.51 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Peter S. (Darmstadt, ~139 km entfernt).", "warum_auslastung": "Michael L. (Saarbrücken): 32 Kliniken im Gebiet, 100 Fahrtstunden/Jahr + 251 Vor-Ort-Stunden/Jahr (Ratio 2.51). Qualifikations-Abdeckung: 0/365 Produktfamilien (0%), 365 Lücken, +305 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 0 PM-Qualifikationen von 365 Modellcodes (0.0% PM-Quote).", "warum_verschoben": "Michael L. (Saarbrücken): 2 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). Auslastungs-Ratio 2.51 → 2.28, Δ Fahrtstunden/Jahr: +22 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Mohammad H.": {"warum_gebiet": "Mohammad H. (Frankfurt am Main) betreut aktuell 46 Kliniken mit einer Ø Fahrzeit von 20 min (max. 61 min) und einer Auslastungs-Ratio von 4.39 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Ahmed A. (Obertshausen, ~14 km entfernt).", "warum_auslastung": "Mohammad H. (Frankfurt am Main): 46 Kliniken im Gebiet, 64 Fahrtstunden/Jahr + 280 Vor-Ort-Stunden/Jahr (Ratio 4.39). Qualifikations-Abdeckung: 68/365 Produktfamilien (19%), 297 Lücken, +140 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 68 PM-Qualifikationen von 365 Modellcodes (18.6% PM-Quote).", "warum_verschoben": "Mohammad H. (Frankfurt am Main): 23 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). 39 Klinik(en) abgegeben (an einen weniger ausgelasteten, ähnlich nahen Techniker). Auslastungs-Ratio 4.39 → 2.53, Δ Fahrtstunden/Jahr: +33 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Mousa A.": {"warum_gebiet": "Mousa A. (Meckenheim) betreut aktuell 30 Kliniken mit einer Ø Fahrzeit von 29 min (max. 64 min) und einer Auslastungs-Ratio von 2.33 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Matthias B. (Siegburg, ~23 km entfernt).", "warum_auslastung": "Mousa A. (Meckenheim): 30 Kliniken im Gebiet, 61 Fahrtstunden/Jahr + 142 Vor-Ort-Stunden/Jahr (Ratio 2.33). Qualifikations-Abdeckung: 5/365 Produktfamilien (1%), 360 Lücken, +457 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 5 PM-Qualifikationen von 365 Modellcodes (1.4% PM-Quote).", "warum_verschoben": "Bei Mousa A. (Meckenheim) wurden keine Kliniken verschoben — alle Kliniken liegen bereits innerhalb der Schwellwerte beim nächstgelegenen Techniker."}, "Peter S.": {"warum_gebiet": "Peter S. (Darmstadt) betreut aktuell 67 Kliniken mit einer Ø Fahrzeit von 35 min (max. 76 min) und einer Auslastungs-Ratio von 2.47 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Mohammad H. (Frankfurt am Main, ~27 km entfernt).", "warum_auslastung": "Peter S. (Darmstadt): 67 Kliniken im Gebiet, 245 Fahrtstunden/Jahr + 604 Vor-Ort-Stunden/Jahr (Ratio 2.47). Qualifikations-Abdeckung: 4/365 Produktfamilien (1%), 361 Lücken, +449 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 4 PM-Qualifikationen von 365 Modellcodes (1.1% PM-Quote).", "warum_verschoben": "Peter S. (Darmstadt): 58 Klinik(en) abgegeben (an einen weniger ausgelasteten, ähnlich nahen Techniker). Auslastungs-Ratio 2.47 → 3.27, Δ Fahrtstunden/Jahr: -198 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Roland K.": {"warum_gebiet": "Roland K. (Waldachtal) betreut aktuell 50 Kliniken mit einer Ø Fahrzeit von 44 min (max. 88 min) und einer Auslastungs-Ratio von 1.64 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Marc L. (Balingen, ~30 km entfernt).", "warum_auslastung": "Roland K. (Waldachtal): 50 Kliniken im Gebiet, 162 Fahrtstunden/Jahr + 266 Vor-Ort-Stunden/Jahr (Ratio 1.64). Qualifikations-Abdeckung: 41/365 Produktfamilien (11%), 324 Lücken, +31 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 41 PM-Qualifikationen von 365 Modellcodes (11.2% PM-Quote).", "warum_verschoben": "Roland K. (Waldachtal): 3 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). Auslastungs-Ratio 1.64 → 1.61, Δ Fahrtstunden/Jahr: +9 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}, "Ulrich W.": {"warum_gebiet": "Ulrich W. (Brakel) betreut aktuell 73 Kliniken mit einer Ø Fahrzeit von 48 min (max. 80 min) und einer Auslastungs-Ratio von 1.58 (Vor-Ort-Stunden je Fahrtstunde). Die Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + Auslastung 25%, Fahrzeit = Haversine-Distanz × 1.35 Straßenfaktor): jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker. Geografisch nächstgelegener Alternativtechniker: Marco C. (Linden, ~85 km entfernt).", "warum_auslastung": "Ulrich W. (Brakel): 73 Kliniken im Gebiet, 206 Fahrtstunden/Jahr + 325 Vor-Ort-Stunden/Jahr (Ratio 1.58). Qualifikations-Abdeckung: 40/365 Produktfamilien (11%), 325 Lücken, +40 STK/Jahr ungenutztes Crosstraining-Potenzial im Gebiet. 40 PM-Qualifikationen von 365 Modellcodes (11.0% PM-Quote).", "warum_verschoben": "Ulrich W. (Brakel): 2 Klinik(en) neu hinzugekommen (von weniger ausgelasteten Nachbartechnikern übernommen). 2 Klinik(en) abgegeben (an einen weniger ausgelasteten, ähnlich nahen Techniker). Auslastungs-Ratio 1.58 → 1.6, Δ Fahrtstunden/Jahr: -5 h. Kriterium: Eine Klinik wechselt zum 2.-nächstgelegenen Techniker, wenn dessen Auslastung deutlich niedriger ist und die Fahrzeit-Mehrbelastung dabei vertretbar bleibt."}};
+  var FRAGEN={"warum_gebiet": "Warum hat {tid} dieses Gebiet?", "warum_auslastung": "Warum ist {tid} ausgelastet?", "warum_verschoben": "Warum wurden bei {tid} Kliniken verschoben?"};
+  var frageSel=document.getElementById('erklaer-frage');
+  var techSel=document.getElementById('erklaer-techniker');
+  var btn=document.getElementById('erklaer-btn');
+  var out=document.getElementById('erklaer-antwort');
+  if(!frageSel||!techSel||!btn) return;
+  Object.keys(FRAGEN).forEach(function(key){
+    var opt=document.createElement('option');
+    opt.value=key;
+    opt.textContent=FRAGEN[key].replace('{tid}','[Techniker]');
+    frageSel.appendChild(opt);
+  });
+  Object.keys(ERKL).sort().forEach(function(tid){
+    var opt=document.createElement('option');
+    opt.value=tid; opt.textContent=tid;
+    techSel.appendChild(opt);
+  });
+  function render(){
+    var tid=techSel.value, frage=frageSel.value;
+    var text=(ERKL[tid]&&ERKL[tid][frage])?ERKL[tid][frage]:'Keine Erkl\u00e4rung verf\u00fcgbar.';
+    out.textContent=text;
+    out.style.display='block';
+  }
+  btn.addEventListener('click',render);
+  techSel.addEventListener('change',render);
+  frageSel.addEventListener('change',render);
+  if(techSel.options.length&&frageSel.options.length) render();
 })();
 
 
