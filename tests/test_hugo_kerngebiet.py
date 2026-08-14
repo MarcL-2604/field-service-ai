@@ -11,6 +11,11 @@ from reporting.hugo_kerngebiet import (
     hugo_standort_marker,
     hugo_techniker_namen,
 )
+from reporting.dashboard import (
+    _build_gebiets_script,
+    _build_gebiets_svg,
+    _render_gebietsoptimierung,
+)
 
 
 # Techniker-Dict im Echtdaten-Kurzform-Schema ("Vorname N.") -- wie
@@ -172,3 +177,106 @@ class TestConfigHugoStandorte:
             if "Marc Liebhardt" in d["haupt_techniker"]
         ]
         assert set(marc_standorte) == {"Ulm", "Mannheim", "Heidelberg"}
+
+
+# ---------------------------------------------------------------------------
+# Toggle-Rendering (Hugo-Kerngebiet ist wieder ein optionales Ein/Aus-Feature,
+# Standard AUS -- kein permanentes Overlay mehr).
+# ---------------------------------------------------------------------------
+
+_M_AKT = [{"id": "T1", "standort": "Hamburg", "kliniken": 12, "avg_fahrzeit": 45,
+           "max_fahrzeit": 90, "fahrtstunden_jahr": 200, "onsite_stunden": 400, "ratio": 2.0}]
+_M_OPT = [{"id": "T1", "standort": "Hamburg", "kliniken": 12, "avg_fahrzeit": 45,
+           "max_fahrzeit": 90, "fahrtstunden_jahr": 200, "onsite_stunden": 400, "ratio": 2.0,
+           "verschoben": 0, "verschoben_gewonnen": 0, "verschoben_abgegeben": 0}]
+_TOGGLE_TECHNIKER = {"T1": {"standort": "Hamburg", "lat": 53.55, "lon": 9.99}}
+_TOGGLE_HUGO_KERNGEBIETE = berechne_hugo_kerngebiete(
+    {"Marc Liebhardt": {"standort": "Balingen", "lat": 48.27, "lon": 8.85}},
+    {"Ulm": {"anzahl_systeme": 1, "haupt_techniker": ["Marc Liebhardt"], "lat": 48.40, "lon": 9.99}},
+    "", HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN, umweg_faktor=1.35,
+)
+_TOGGLE_HUGO_STANDORTE_MARKER = hugo_standort_marker(
+    {"Ulm": {"anzahl_systeme": 1, "haupt_techniker": ["Marc Liebhardt"], "lat": 48.40, "lon": 9.99}},
+    {"Marc Liebhardt": {"standort": "Balingen", "lat": 48.27, "lon": 8.85}},
+)
+
+
+class TestHugoKerngebietToggleBox:
+    def test_toggle_checkbox_vorhanden(self):
+        html = _render_gebietsoptimierung(
+            _M_AKT, _M_OPT, _TOGGLE_TECHNIKER,
+            hugo_kerngebiete=_TOGGLE_HUGO_KERNGEBIETE,
+        )
+        assert 'id="hugo-kg-toggle"' in html
+        assert 'type="checkbox"' in html
+
+    def test_toggle_ist_standardmaessig_nicht_angehakt(self):
+        """Kein 'checked'-Attribut auf der Checkbox -- Default AUS."""
+        html = _render_gebietsoptimierung(
+            _M_AKT, _M_OPT, _TOGGLE_TECHNIKER,
+            hugo_kerngebiete=_TOGGLE_HUGO_KERNGEBIETE,
+        )
+        toggle_start = html.index('id="hugo-kg-toggle"')
+        toggle_tag = html[max(0, toggle_start - 60):toggle_start + 60]
+        assert "checked" not in toggle_tag
+
+    def test_hint_box_ist_initial_versteckt(self):
+        html = _render_gebietsoptimierung(
+            _M_AKT, _M_OPT, _TOGGLE_TECHNIKER,
+            hugo_kerngebiete=_TOGGLE_HUGO_KERNGEBIETE,
+        )
+        assert 'id="hugo-kg-hint" style="display:none"' in html
+
+    def test_hint_enthaelt_team_groesse_und_springer_info(self):
+        html = _render_gebietsoptimierung(
+            _M_AKT, _M_OPT, _TOGGLE_TECHNIKER,
+            hugo_kerngebiete=_TOGGLE_HUGO_KERNGEBIETE,
+        )
+        assert "Team-Gr" in html
+        assert "Springer" in html
+
+    def test_label_nennt_90_minuten_und_wohnort(self):
+        html = _render_gebietsoptimierung(
+            _M_AKT, _M_OPT, _TOGGLE_TECHNIKER,
+            hugo_kerngebiete=_TOGGLE_HUGO_KERNGEBIETE,
+        )
+        assert f"{HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN} Min." in html
+        assert "Wohnort" in html
+
+
+class TestHugoKerngebietSvgDefaultVersteckt:
+    def test_kerngebiet_layer_default_versteckt(self):
+        svg = _build_gebiets_svg(
+            _TOGGLE_TECHNIKER, plz_abdeckung=[],
+            hugo_kerngebiete=_TOGGLE_HUGO_KERNGEBIETE,
+            hugo_standorte_marker=_TOGGLE_HUGO_STANDORTE_MARKER,
+        )
+        assert '<g id="hugo-kerngebiete" style="display:none">' in svg
+
+    def test_hugo_standorte_layer_default_versteckt(self):
+        svg = _build_gebiets_svg(
+            _TOGGLE_TECHNIKER, plz_abdeckung=[],
+            hugo_kerngebiete=_TOGGLE_HUGO_KERNGEBIETE,
+            hugo_standorte_marker=_TOGGLE_HUGO_STANDORTE_MARKER,
+        )
+        assert '<g id="hugo-standorte" style="display:none">' in svg
+
+    def test_ohne_daten_werden_keine_hugo_layer_gerendert(self):
+        svg = _build_gebiets_svg(_TOGGLE_TECHNIKER, plz_abdeckung=[])
+        assert 'id="hugo-kerngebiete"' not in svg
+        assert 'id="hugo-standorte"' not in svg
+
+
+class TestHugoKerngebietToggleJavascript:
+    def test_script_verdrahtet_toggle_checkbox(self):
+        script = _build_gebiets_script(_TOGGLE_TECHNIKER, plz_abdeckung=[], gebiets_punkte=[])
+        assert "hugo-kg-toggle" in script
+
+    def test_script_schaltet_beide_layer_gemeinsam(self):
+        script = _build_gebiets_script(_TOGGLE_TECHNIKER, plz_abdeckung=[], gebiets_punkte=[])
+        assert "#hugo-kerngebiete" in script
+        assert "#hugo-standorte" in script
+
+    def test_script_schaltet_hint_box_mit(self):
+        script = _build_gebiets_script(_TOGGLE_TECHNIKER, plz_abdeckung=[], gebiets_punkte=[])
+        assert "hugo-kg-hint" in script

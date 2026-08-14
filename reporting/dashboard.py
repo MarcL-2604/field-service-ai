@@ -1899,10 +1899,10 @@ def _build_gebiets_svg(
         )
         svg_parts.append('</g>')
 
-    # 5. Hugo-Kerngebiete: Standard-Darstellung (kein Toggle) fuer alle
-    # Hugo-Techniker -- durchgezogener Kreis um deren WOHNORT.
+    # 5. Hugo-Kerngebiete: optionale Regel, Toggle default AUS -- durchgezogener
+    # Kreis um den WOHNORT der Hugo-Techniker (siehe reporting/hugo_kerngebiet.py).
     if hugo_kerngebiete:
-        svg_parts.append('<g id="hugo-kerngebiete">')
+        svg_parts.append('<g id="hugo-kerngebiete" style="display:none">')
         for hk in hugo_kerngebiete:
             px, py = _project_mercator(hk["lon"], hk["lat"])
             r_px = _radius_px_at(hk["lat"], hk["lon"], hk["radius_km"])
@@ -1919,8 +1919,9 @@ def _build_gebiets_svg(
 
     # 6. Hugo-Standorte: eigene Marker (unabhaengig von der Entfernung zum
     # Techniker-Wohnort) mit Verbindungslinie zum zustaendigen Techniker.
+    # Teil desselben Toggles wie die Kerngebiete (Punkt 5) -- default AUS.
     if hugo_standorte_marker:
-        svg_parts.append('<g id="hugo-standorte">')
+        svg_parts.append('<g id="hugo-standorte" style="display:none">')
         for hs in hugo_standorte_marker:
             hx, hy = _project_mercator(hs["lon"], hs["lat"])
             for tid in hs["zustaendige_ids"]:
@@ -2177,6 +2178,22 @@ def _build_gebiets_script(
         "    btn.addEventListener('click',function(){\n"
         "      if(selected){ highlightState(selected); renderPunkte(selected); }\n"
         "    });\n"
+        "  });\n"
+        "})();\n"
+        "\n"
+        "/* ── Hugo-Kerngebiet: Toggle (default AUS, rein clientseitig) ── */\n"
+        "(function(){\n"
+        "  var toggle=document.getElementById('hugo-kg-toggle');\n"
+        "  var hint=document.getElementById('hugo-kg-hint');\n"
+        "  var svg=document.getElementById('germany-map-opt');\n"
+        "  if(!toggle||!svg) return;\n"
+        "  var kgLayer=svg.querySelector('#hugo-kerngebiete');\n"
+        "  var standorteLayer=svg.querySelector('#hugo-standorte');\n"
+        "  toggle.addEventListener('change',function(){\n"
+        "    var anzeigen=toggle.checked?'block':'none';\n"
+        "    if(kgLayer) kgLayer.style.display=anzeigen;\n"
+        "    if(standorteLayer) standorteLayer.style.display=anzeigen;\n"
+        "    if(hint) hint.style.display=toggle.checked?'block':'none';\n"
         "  });\n"
         "})();\n"
     )
@@ -3200,20 +3217,26 @@ _CSS = """\
       stroke-width: 2.6px !important;
     }
 
-    /* ── Hugo-Kerngebiet (Standard-Darstellung, kein Toggle) ── */
+    /* ── Hugo-Kerngebiet (optional, Toggle default AUS) ── */
     .hugo-kg-box {
       margin-top: 10px;
       padding: 10px 12px;
       background: rgba(123,45,142,.05);
       border: 1px solid rgba(123,45,142,.2);
       border-radius: 10px;
+    }
+    .hugo-kg-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-size: 11px;
       color: var(--text);
-      line-height: 1.5;
+      cursor: pointer;
+      line-height: 1.4;
     }
-    .hugo-kg-box strong { color: #7B2D8E; }
+    .hugo-kg-toggle input { cursor: pointer; accent-color: #7B2D8E; }
     .hugo-kg-hint {
-      margin-top: 6px;
+      margin-top: 8px;
       font-size: 10.5px;
       color: var(--text-dim);
       line-height: 1.5;
@@ -3778,7 +3801,7 @@ def _render_gebietsoptimierung(
     if not metriken_akt:
         return ""
 
-    # ── Hugo-Kerngebiet: Standard-Darstellung fuer alle Hugo-Techniker ──
+    # ── Hugo-Kerngebiet: optionale Regel, Toggle default AUS ──
     hugo_kerngebiete = hugo_kerngebiete or []
     if hugo_kerngebiete:
         hugo_kg_liste = ", ".join(
@@ -3786,7 +3809,7 @@ def _render_gebietsoptimierung(
             for hk in hugo_kerngebiete
         )
         hugo_kg_hint = (
-            f"Kerngebiet f&uuml;r {len(hugo_kerngebiete)} Hugo-Techniker: {hugo_kg_liste} "
+            f"Aktiv f&uuml;r {len(hugo_kerngebiete)} Hugo-Techniker: {hugo_kg_liste} "
             f"&mdash; Radius &#8776;{hugo_kerngebiete[0]['radius_km']:.0f} km "
             f"(&#8776;{HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN} min Fahrzeit um den Wohnort). "
             f"Team-Gr&ouml;&szlig;e: {HUGO_TEAM_GROESSE['PM']} Techniker f&uuml;r PM/STK, "
@@ -3801,12 +3824,12 @@ def _render_gebietsoptimierung(
         )
     hugo_kg_html = (
         f'<div class="hugo-kg-box">'
-        f'<strong>Small-Capital-Kerngebiet (Tagestouren)</strong> &mdash; '
-        f'max. {HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN} Min. Fahrzeit-Radius um den Wohnort '
-        f'des Hugo-Technikers (durchgezogener Kreis auf der Karte). Hugo-Standorte '
-        f'(quadratische Marker, gestrichelte Verbindungslinie) k&ouml;nnen davon '
-        f'unabh&auml;ngig beliebig weit entfernt liegen.'
-        f'<div class="hugo-kg-hint">{hugo_kg_hint}</div>'
+        f'<label class="hugo-kg-toggle">'
+        f'<input type="checkbox" id="hugo-kg-toggle">'
+        f'Small-Capital-Kerngebiet anzeigen '
+        f'(max. {HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN} Min. Radius um Wohnort)'
+        f'</label>'
+        f'<div class="hugo-kg-hint" id="hugo-kg-hint" style="display:none">{hugo_kg_hint}</div>'
         f'</div>'
     )
 
@@ -5046,8 +5069,8 @@ def _vollstaendigkeits_pruefung(html: str) -> list[tuple[str, bool]]:
          'id="pw-overlay"' in html and 'checkPw' in html),
         ("KI-Erklaerungsfeld (Template-basiert, kein API-Key noetig)",
          'id="erklaer-box"' in html and 'erklaer-antwort' in html),
-        ("Hugo-Kerngebiet (Standard-Darstellung, Wohnort-Radius)",
-         'hugo-kg-box' in html and 'hugo-kg-hint' in html),
+        ("Hugo-Kerngebiet-Toggle (optional, default AUS)",
+         'id="hugo-kg-toggle"' in html and 'hugo-kg-hint' in html),
     ]
     return checks
 
@@ -5249,7 +5272,7 @@ def main() -> None:
     print("Generiere Demo-Einsatzhistorie...")
     demo_history = _generate_demo_history(techniker, labor_zeiten)
 
-    print("Berechne Hugo-Kerngebiete (Wohnort-Radius, Standard-Darstellung)...")
+    print("Berechne Hugo-Kerngebiete (Wohnort-Radius, optionale Regel via Toggle)...")
     hugo_kerngebiete = berechne_hugo_kerngebiete(
         techniker, HUGO_STANDORTE, HUGO_SPRINGER,
         HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN, HAVERSINE_UMWEG_FAKTOR,

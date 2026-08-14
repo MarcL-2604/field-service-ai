@@ -978,20 +978,26 @@
       stroke-width: 2.6px !important;
     }
 
-    /* ── Hugo-Kerngebiet (Standard-Darstellung, kein Toggle) ── */
+    /* ── Hugo-Kerngebiet (optional, Toggle default AUS) ── */
     .hugo-kg-box {
       margin-top: 10px;
       padding: 10px 12px;
       background: rgba(123,45,142,.05);
       border: 1px solid rgba(123,45,142,.2);
       border-radius: 10px;
+    }
+    .hugo-kg-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-size: 11px;
       color: var(--text);
-      line-height: 1.5;
+      cursor: pointer;
+      line-height: 1.4;
     }
-    .hugo-kg-box strong { color: #7B2D8E; }
+    .hugo-kg-toggle input { cursor: pointer; accent-color: #7B2D8E; }
     .hugo-kg-hint {
-      margin-top: 6px;
+      margin-top: 8px;
       font-size: 10.5px;
       color: var(--text-dim);
       line-height: 1.5;
@@ -1492,7 +1498,7 @@
   <span><span class="dot dot-gruen"></span> <span data-i18n="summary.green">Gr&uuml;n</span>: <strong>0</strong> (&ge;60&thinsp;% L3)</span>
   <span><span class="dot dot-gelb"></span> <span data-i18n="summary.yellow">Gelb</span>: <strong>4</strong> (30&ndash;59&thinsp;%)</span>
   <span><span class="dot dot-rot"></span> <span data-i18n="summary.red">Rot</span>: <strong>20</strong> (&lt;30&thinsp;%)</span>
-  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 14.08.2026 15:55 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
+  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 14.08.2026 16:05 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
 </div>
 
 <main>
@@ -2936,11 +2942,11 @@
         </tr>
       </thead>
       <tbody>
-      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>14.08. 08:55</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>13.08. 08:55</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>12.08. 13:55</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>13.08. 19:55</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
-      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>13.08. 03:55</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
+      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>14.08. 09:05</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>13.08. 09:05</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>12.08. 14:05</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>13.08. 20:05</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
+      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>13.08. 04:05</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
       </tbody>
     </table>
   </section>
@@ -3259,14 +3265,14 @@
     <circle cx="132.2" cy="430.8" r="10" fill="#CC0000" stroke="#fff" stroke-width="2"><title>Mannheim: 6 Kliniken</title></circle>
     <text x="132.2" y="435.8" font-size="13px" fill="#fff" text-anchor="middle" style="pointer-events:none">★</text>
     </g>
-    <g id="hugo-kerngebiete">
+    <g id="hugo-kerngebiete" style="display:none">
     <circle class="hugo-kg-kreis" cx="154.1" cy="380.6" r="87.2" fill="#0072CE" fill-opacity="0.08" stroke="#0072CE" stroke-width="2.2"><title>Ahmed A. (Obertshausen): Small-Capital-Kerngebiet (Tagestouren), ~111 km Radius um den Wohnort · Springer (deutschlandweit)</title></circle>
     <circle class="hugo-kg-kreis" cx="208.4" cy="61.3" r="94.3" fill="#CC0000" fill-opacity="0.08" stroke="#CC0000" stroke-width="2.2"><title>Dirk H. (Schenefeld): Small-Capital-Kerngebiet (Tagestouren), ~111 km Radius um den Wohnort</title></circle>
     <circle class="hugo-kg-kreis" cx="217.3" cy="66.0" r="94.2" fill="#B22222" fill-opacity="0.08" stroke="#B22222" stroke-width="2.2"><title>Hector C. (Hamburg): Small-Capital-Kerngebiet (Tagestouren), ~111 km Radius um den Wohnort</title></circle>
     <circle class="hugo-kg-kreis" cx="153.6" cy="534.0" r="81.1" fill="#D2691E" fill-opacity="0.08" stroke="#D2691E" stroke-width="2.2"><title>Marc L. (Balingen): Small-Capital-Kerngebiet (Tagestouren), ~111 km Radius um den Wohnort</title></circle>
     <circle class="hugo-kg-kreis" cx="-5.6" cy="298.2" r="88.9" fill="#DAA520" fill-opacity="0.08" stroke="#DAA520" stroke-width="2.2"><title>Michael G. (Gangelt): Small-Capital-Kerngebiet (Tagestouren), ~111 km Radius um den Wohnort</title></circle>
     </g>
-    <g id="hugo-standorte">
+    <g id="hugo-standorte" style="display:none">
     <line class="hugo-standort-linie" x1="62.2" y1="255.9" x2="-5.6" y2="298.2" stroke="#DAA520" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.6"/>
     <line class="hugo-standort-linie" x1="62.2" y1="255.9" x2="154.1" y2="380.6" stroke="#0072CE" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.6"/>
     <rect class="hugo-standort-marker" x="57.2" y="250.9" width="10" height="10" fill="#7B2D8E" stroke="#fff" stroke-width="1.5"><title>Hugo-Standort Bochum: 1 System(e), zuständig: Michael Gehlen, Ahmed Awadallah</title></rect>
@@ -3296,7 +3302,7 @@
           <span class="go-hint">Techniker anklicken, um sein Gebiet hervorzuheben</span>
           <button class="go-reset-btn" id="go-reset-btn" disabled>&#10005; Zur&uuml;cksetzen</button>
         </div>
-        <div class="hugo-kg-box"><strong>Small-Capital-Kerngebiet (Tagestouren)</strong> &mdash; max. 90 Min. Fahrzeit-Radius um den Wohnort des Hugo-Technikers (durchgezogener Kreis auf der Karte). Hugo-Standorte (quadratische Marker, gestrichelte Verbindungslinie) k&ouml;nnen davon unabh&auml;ngig beliebig weit entfernt liegen.<div class="hugo-kg-hint">Kerngebiet f&uuml;r 5 Hugo-Techniker: Ahmed A. (Springer), Dirk H., Hector C., Marc L., Michael G. &mdash; Radius &#8776;111 km (&#8776;90 min Fahrzeit um den Wohnort). Team-Gr&ouml;&szlig;e: 2 Techniker f&uuml;r PM/STK, 1 f&uuml;r Repair (90% der F&auml;lle). Ahmed Awadallah ist zus&auml;tzlich deutschlandweit als Springer f&uuml;r alle Hugo-Systeme verf&uuml;gbar (inkl. alleiniger Zust&auml;ndigkeit Dresden).</div></div>
+        <div class="hugo-kg-box"><label class="hugo-kg-toggle"><input type="checkbox" id="hugo-kg-toggle">Small-Capital-Kerngebiet anzeigen (max. 90 Min. Radius um Wohnort)</label><div class="hugo-kg-hint" id="hugo-kg-hint" style="display:none">Aktiv f&uuml;r 5 Hugo-Techniker: Ahmed A. (Springer), Dirk H., Hector C., Marc L., Michael G. &mdash; Radius &#8776;111 km (&#8776;90 min Fahrzeit um den Wohnort). Team-Gr&ouml;&szlig;e: 2 Techniker f&uuml;r PM/STK, 1 f&uuml;r Repair (90% der F&auml;lle). Ahmed Awadallah ist zus&auml;tzlich deutschlandweit als Springer f&uuml;r alle Hugo-Systeme verf&uuml;gbar (inkl. alleiniger Zust&auml;ndigkeit Dresden).</div></div>
       </div>
       <div class="gebiets-metriken">
         <!-- Ansicht 1: Aktuelle Gebiete -->
@@ -3575,14 +3581,14 @@
     <circle cx="132.2" cy="430.8" r="10" fill="#CC0000" stroke="#fff" stroke-width="2"><title>Mannheim: 6 Kliniken</title></circle>
     <text x="132.2" y="435.8" font-size="13px" fill="#fff" text-anchor="middle" style="pointer-events:none">★</text>
     </g>
-    <g id="hugo-kerngebiete">
+    <g id="hugo-kerngebiete" style="display:none">
     <circle class="hugo-kg-kreis" cx="154.1" cy="380.6" r="87.2" fill="#0072CE" fill-opacity="0.08" stroke="#0072CE" stroke-width="2.2"><title>Ahmed A. (Obertshausen): Small-Capital-Kerngebiet (Tagestouren), ~111 km Radius um den Wohnort · Springer (deutschlandweit)</title></circle>
     <circle class="hugo-kg-kreis" cx="208.4" cy="61.3" r="94.3" fill="#CC0000" fill-opacity="0.08" stroke="#CC0000" stroke-width="2.2"><title>Dirk H. (Schenefeld): Small-Capital-Kerngebiet (Tagestouren), ~111 km Radius um den Wohnort</title></circle>
     <circle class="hugo-kg-kreis" cx="217.3" cy="66.0" r="94.2" fill="#B22222" fill-opacity="0.08" stroke="#B22222" stroke-width="2.2"><title>Hector C. (Hamburg): Small-Capital-Kerngebiet (Tagestouren), ~111 km Radius um den Wohnort</title></circle>
     <circle class="hugo-kg-kreis" cx="153.6" cy="534.0" r="81.1" fill="#D2691E" fill-opacity="0.08" stroke="#D2691E" stroke-width="2.2"><title>Marc L. (Balingen): Small-Capital-Kerngebiet (Tagestouren), ~111 km Radius um den Wohnort</title></circle>
     <circle class="hugo-kg-kreis" cx="-5.6" cy="298.2" r="88.9" fill="#DAA520" fill-opacity="0.08" stroke="#DAA520" stroke-width="2.2"><title>Michael G. (Gangelt): Small-Capital-Kerngebiet (Tagestouren), ~111 km Radius um den Wohnort</title></circle>
     </g>
-    <g id="hugo-standorte">
+    <g id="hugo-standorte" style="display:none">
     <line class="hugo-standort-linie" x1="62.2" y1="255.9" x2="-5.6" y2="298.2" stroke="#DAA520" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.6"/>
     <line class="hugo-standort-linie" x1="62.2" y1="255.9" x2="154.1" y2="380.6" stroke="#0072CE" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.6"/>
     <rect class="hugo-standort-marker" x="57.2" y="250.9" width="10" height="10" fill="#7B2D8E" stroke="#fff" stroke-width="1.5"><title>Hugo-Standort Bochum: 1 System(e), zuständig: Michael Gehlen, Ahmed Awadallah</title></rect>
@@ -3646,7 +3652,7 @@
   Field Service AI &nbsp;|&nbsp;
   Medtronic GmbH Service &amp; Repair &nbsp;|&nbsp;
   <span data-i18n="footer.copilot">Vollautomatisiert &middot; Copilot &mdash; kein Autopilot</span> &nbsp;|&nbsp;
-  983 Tests gr&uuml;n
+  994 Tests gr&uuml;n
 </footer>
 
 </div><!-- /dashboard-panel -->
@@ -4220,6 +4226,22 @@ document.addEventListener('keydown', function(e) {
     btn.addEventListener('click',function(){
       if(selected){ highlightState(selected); renderPunkte(selected); }
     });
+  });
+})();
+
+/* ── Hugo-Kerngebiet: Toggle (default AUS, rein clientseitig) ── */
+(function(){
+  var toggle=document.getElementById('hugo-kg-toggle');
+  var hint=document.getElementById('hugo-kg-hint');
+  var svg=document.getElementById('germany-map-opt');
+  if(!toggle||!svg) return;
+  var kgLayer=svg.querySelector('#hugo-kerngebiete');
+  var standorteLayer=svg.querySelector('#hugo-standorte');
+  toggle.addEventListener('change',function(){
+    var anzeigen=toggle.checked?'block':'none';
+    if(kgLayer) kgLayer.style.display=anzeigen;
+    if(standorteLayer) standorteLayer.style.display=anzeigen;
+    if(hint) hint.style.display=toggle.checked?'block':'none';
   });
 })();
 
