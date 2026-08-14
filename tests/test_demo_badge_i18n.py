@@ -9,7 +9,7 @@ DE/EN-Wertepaar, das render_html() fuer BEIDE Stellen (initialer Render +
 i18n-Dict) verwendet -- keine zweite, unabhaengig gepflegte Quelle mehr.
 """
 
-from reporting.dashboard import _demo_badge_texte, _demo_hint_texte
+from reporting.dashboard import _demo_badge_texte, _demo_hint_texte, _overview_hint_texte
 
 
 class TestDemoBadgeTexte:
@@ -68,6 +68,29 @@ class TestDemoHintTexte:
         assert "Stand" not in en
 
 
+class TestOverviewHintTexte:
+    """hint.overview (Tab-1-Untertitel) zeigte immer '24 Techniker' fest
+    verdrahtet, auch im Demo-Modus (14 Techniker) -- gleiches Muster wie
+    header.demo/hint.demo, hier aber ohne Modus-Text, nur die Anzahl."""
+
+    def test_echtdaten_anzahl_24(self):
+        de, en = _overview_hint_texte(24)
+        assert "24 Techniker" in de
+        assert "24 technicians" in en
+
+    def test_demo_anzahl_14_nicht_hartcodierte_24(self):
+        de, en = _overview_hint_texte(14)
+        assert "14 Techniker" in de
+        assert "14 technicians" in en
+        assert "24" not in de
+        assert "24" not in en
+
+    def test_ampel_schwellwerte_bleiben_in_beiden_sprachen_erhalten(self):
+        de, en = _overview_hint_texte(14)
+        assert "60%" in de and "30-59%" in de and "<30%" in de
+        assert "60%" in en and "30-59%" in en and "<30%" in en
+
+
 class TestDemoBadgeImGerenderetenHtml:
     """Stellt sicher, dass das gerenderte Dashboard-HTML den echten Datenmodus
     im Badge UND im i18n-Dict konsistent widerspiegelt (nicht nur im
@@ -98,3 +121,16 @@ class TestDemoBadgeImGerenderetenHtml:
         html = self._render(is_echtdaten=False)
         assert "1 Techniker" in html
         assert "1 technicians" in html
+
+    def test_hint_overview_nutzt_echte_technikeranzahl_nicht_hartcodierte_24(self):
+        """Testfixture hat nur 1 Techniker -- der hint.overview-Text (Tab-1-
+        Untertitel) darf trotzdem nicht die frueher hartcodierte '24
+        Techniker' zeigen. Prueft den vollen berechneten Satz statt nur
+        '1 Techniker' zu suchen, um keine False Negatives durch andere,
+        unabhaengige Stellen der Seite zu riskieren (z.B. die fixe
+        Beispielformel im Business-Case-Tab, die bewusst immer '24
+        Techniker' als Rechenbeispiel zeigt)."""
+        html = self._render(is_echtdaten=False)
+        de, en = _overview_hint_texte(1)
+        assert de in html
+        assert en in html

@@ -3717,6 +3717,26 @@ def _demo_hint_texte(is_echtdaten: bool, technikeranzahl: int, stand_datum: str)
     return de, en
 
 
+def _overview_hint_texte(technikeranzahl: int) -> tuple[str, str]:
+    """DE/EN-Text fuer den Tab-1-Untertitel (.section-hint, hint.overview).
+
+    Gleiches Prinzip wie _demo_badge_texte/_demo_hint_texte: EIN Wertepaar
+    speist sowohl den initialen Render als auch den i18n-Dict-Eintrag, damit
+    die Technikeranzahl (24 Echtdaten / 14 Demo) bei jedem Sprachwechsel
+    korrekt bleibt statt auf einen hartcodierten Wert ("24") zurueckzufallen,
+    der im Demo-Modus (14 Techniker) falsch war.
+    """
+    de = (
+        f"L3-Abdeckung in der Region · {technikeranzahl} Techniker · "
+        f"Grün ≥60% · Gelb 30-59% · Rot <30%"
+    )
+    en = (
+        f"L3 coverage by region · {technikeranzahl} technicians · "
+        f"Green ≥60% · Yellow 30-59% · Red <30%"
+    )
+    return de, en
+
+
 def _repair_sla_tooltip_text() -> str:
     """SLA-Status-Tooltip-Text (Tab Auftraege): unterscheidet klar zwischen
     der 48h-Erstkontakt-Pflicht (REPAIR_SLA_STUNDEN) und den davon
@@ -4233,6 +4253,7 @@ def render_html(
     demo_badge_text_de, demo_badge_text_en = _demo_badge_texte(is_echtdaten, PSEUDONYMISIERUNG_AKTIV)
     demo_hint_text_de, demo_hint_text_en = _demo_hint_texte(
         is_echtdaten, len(techniker), erstellt_am.strftime("%d.%m.%Y"))
+    overview_hint_text_de, overview_hint_text_en = _overview_hint_texte(len(techniker))
 
     html = f"""<!DOCTYPE html>
 <html lang="de">
@@ -4296,8 +4317,7 @@ def render_html(
   <section>
     <h2 data-i18n="h.overview">&Uuml;bersicht &mdash; Qualifikations-Ampel</h2>
     <p class="section-hint" data-i18n="hint.overview">
-      L3-Abdeckung in der Region &middot; 24 Techniker &middot;
-      Gr&uuml;n &ge;60% &middot; Gelb 30-59% &middot; Rot &lt;30%
+      {overview_hint_text_de}
     </p>
     <div class="ampel-sort-controls">
       <label for="ampel-sort-select" data-i18n="sort.label">Sortierung:</label>
@@ -4506,7 +4526,7 @@ var _I18N = {{
     'summary.asOf': 'Stand',
     'summary.monThu': 'Mo\u2013Do',
     'h.overview': '\u00dcbersicht \u2014 Qualifikations-Ampel',
-    'hint.overview': 'L3-Abdeckung in der Region \u00b7 24 Techniker \u00b7 Gr\u00fcn \u226560% \u00b7 Gelb 30-59% \u00b7 Rot <30%',
+    'hint.overview': {json.dumps(overview_hint_text_de, ensure_ascii=False)},
     'sort.label': 'Sortierung:',
     'sort.standard': 'Standard (Gr\u00fcn / Gelb / Rot)',
     'sort.ct': 'Crosstraining-Bedarf (meiste L\u00fccken zuerst)',
@@ -4586,7 +4606,7 @@ var _I18N = {{
     'summary.asOf': 'As of',
     'summary.monThu': 'Mon\u2013Thu',
     'h.overview': 'Overview \u2014 Qualification Traffic Light',
-    'hint.overview': 'L3 coverage by region \u00b7 24 technicians \u00b7 Green \u226560% \u00b7 Yellow 30-59% \u00b7 Red <30%',
+    'hint.overview': {json.dumps(overview_hint_text_en, ensure_ascii=False)},
     'sort.label': 'Sort by:',
     'sort.standard': 'Default (Green / Yellow / Red)',
     'sort.ct': 'Cross-training need (most gaps first)',
