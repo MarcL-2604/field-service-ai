@@ -389,6 +389,12 @@ _DRINGLICHKEIT_CSS = {
 
 def _render_ampel_karten(ampeln: list[dict], labor_zeiten: list[dict] | None = None) -> str:
     _AMPEL_ORDER = {"ampel-gruen": 0, "ampel-gelb": 1, "ampel-rot": 2}
+    l3_tip = _info_tip(
+        "Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die "
+        "der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; "
+        "L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen "
+        "erfahreneren Kollegen)."
+    )
 
     karten = []
     for idx, a in enumerate(ampeln):
@@ -435,7 +441,7 @@ def _render_ampel_karten(ampeln: list[dict], labor_zeiten: list[dict] | None = N
 
         <div class="metric-box metric-standard">
           <div class="metric-num">{a['abdeckung_pct']}&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span>{l3_tip}</div>
           <div class="metric-sub">{a['qualifiziert']}&thinsp;/&thinsp;{a['regional']} <span data-i18n="card.fam">Fam.</span> &middot; {a['fehlend_count']} <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: {kapazitaet}h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -1658,6 +1664,14 @@ def _render_gebietsplanung(
             f'<td>~{emp["kliniken_geschaetzt"]}</td>'
             f'<td class="fehlend-liste">{emp["begruendung"]}</td></tr>')
     einst_html = "\n".join(einst_rows)
+    abdeckung_tip = _info_tip(
+        "Anzahl 2-stelliger PLZ-Bereiche, die durch eine Neueinstellung an "
+        "diesem Standort besser abgedeckt w&uuml;rden (nicht zu verwechseln "
+        "mit der Gr&uuml;n/Gelb/Rot-Fahrzeit-Abdeckung oben)."
+    )
+    kliniken_geschaetzt_tip = _info_tip(
+        "Gesch&auml;tzte Anzahl Kliniken im Einzugsgebiet dieses Standorts."
+    )
 
     return f"""
   <section>
@@ -1692,8 +1706,8 @@ def _render_gebietsplanung(
         <tr>
           <th>Standort</th>
           <th>Region</th>
-          <th>Abdeckung</th>
-          <th>Kliniken</th>
+          <th>Abdeckung{abdeckung_tip}</th>
+          <th>Kliniken{kliniken_geschaetzt_tip}</th>
           <th>Begr&uuml;ndung</th>
         </tr>
       </thead>
@@ -2907,6 +2921,61 @@ _CSS = """\
     }
     .go-info-text { font-size: 12.5px; color: var(--text); line-height: 1.55; }
 
+    /* ── Info-Tooltip: Kennzahlen-Erklaerung direkt am Ort der Verwirrung ── */
+    .info-tip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      margin-left: 5px;
+      border-radius: 50%;
+      background: rgba(0,81,149,.14);
+      color: #005195;
+      font-size: 11px;
+      line-height: 1;
+      cursor: help;
+      position: relative;
+      vertical-align: middle;
+      text-transform: none;
+      letter-spacing: normal;
+      font-weight: 400;
+    }
+    .info-tip:hover, .info-tip:focus {
+      background: rgba(0,81,149,.26);
+      outline: none;
+    }
+    .info-tip-bubble {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      z-index: 60;
+      top: calc(100% + 7px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: 250px;
+      background: #1A2B3C;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.55;
+      text-align: left;
+      text-transform: none;
+      letter-spacing: normal;
+      padding: 9px 11px;
+      border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.28);
+      transition: opacity .15s ease;
+      pointer-events: none;
+    }
+    .info-tip:hover .info-tip-bubble,
+    .info-tip:focus .info-tip-bubble {
+      visibility: visible;
+      opacity: 1;
+    }
+    th .info-tip { margin-left: 4px; }
+
     /* ── Crosstraining: Mehrwert-Begruendung / Ausschluss-Hinweis ── */
     .ct-mehrwert {
       margin-top: 6px;
@@ -3598,6 +3667,17 @@ def _go_info_box(icon: str, titel: str, text: str) -> str:
     )
 
 
+def _info_tip(text: str) -> str:
+    """Kleines Hover/Focus-Tooltip-Icon (ⓘ) fuer Kennzahlen-Erklaerungen
+    direkt am Ort der Verwirrung (z.B. Tabellen-Spaltenkopf) -- barrierefrei
+    per CSS :hover/:focus, kein JavaScript noetig. Text darf bereits
+    HTML-Entities enthalten (wird nicht weiter escaped)."""
+    return (
+        f'<span class="info-tip" tabindex="0">&#9432;'
+        f'<span class="info-tip-bubble">{text}</span></span>'
+    )
+
+
 def _render_gebietsoptimierung(
     metriken_akt: list[dict],
     metriken_opt: list[dict],
@@ -3636,12 +3716,38 @@ def _render_gebietsoptimierung(
     )
 
     umweg_faktor_text = f"{HAVERSINE_UMWEG_FAKTOR:.2f}".replace(".", ",")
+
+    # ── Tooltips fuer Kennzahlen-Spalten (direkt am Ort der Verwirrung) ──
+    ratio_tip = _info_tip(
+        "Vor-Ort-Stunden &divide; Fahrtstunden pro Jahr. Gr&uuml;n &ge;3,0 "
+        "(effizient) &middot; Gelb 2,0&ndash;3,0 &middot; Rot &lt;2,0 "
+        "(zu viel Fahrzeit im Verh&auml;ltnis zur Servicezeit)."
+    )
+    delta_fahrzeit_tip = _info_tip(
+        "Ver&auml;nderung der j&auml;hrlichen Fahrtstunden durch die "
+        "Gebietsoptimierung &mdash; nicht die Fahrzeit eines einzelnen "
+        "Termins. Negativ (gr&uuml;n) = Entlastung, positiv (rot) = "
+        "Mehrbelastung."
+    )
+    luecken_status_tip = _info_tip(
+        f"L&uuml;cke: &Oslash; Fahrzeit zum n&auml;chsten Techniker im "
+        f"Bundesland &uuml;ber {LUECKE_FAHRZEIT_SCHWELLE_MIN} Minuten. "
+        f"&Uuml;berschneidung: bei mindestens "
+        f"{round(UEBERSCHNEIDUNG_ANTEIL_SCHWELLE * 100)}% der Kliniken liegt "
+        f"der 2.-n&auml;chste Techniker h&ouml;chstens "
+        f"{UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN} Minuten hinter dem "
+        f"1.-n&auml;chsten (Gebiet kontestiert). Optimal: weder noch."
+    )
+
     info_aktuell = _go_info_box(
         "&#128506;",
         "Was zeigt diese Ansicht?",
         "Zeigt die IST-Gebietsaufteilung basierend auf den aktuellen "
         "Techniker-Wohnorten und den ihnen historisch zugeordneten "
-        "Klinik-PLZ-Gebieten. Jede Farbe entspricht einem Techniker-Gebiet.",
+        "Klinik-PLZ-Gebieten. Jede Farbe entspricht einem Techniker-Gebiet. "
+        "Ratio = Vor-Ort-Stunden &divide; Fahrtstunden pro Jahr &mdash; "
+        "Gr&uuml;n &ge;3,0 (effizient), Gelb 2,0&ndash;3,0, Rot &lt;2,0 "
+        "(zu viel Fahrzeit im Verh&auml;ltnis zur Servicezeit).",
     )
     zeitraum_hinweis = ""
     if _ECHTDATEN:
@@ -3670,7 +3776,12 @@ def _render_gebietsoptimierung(
         "Klinik zu ihm. Ziel: gleichm&auml;&szlig;igere Auslastung bei "
         "vertretbaren Anfahrtswegen &mdash; unabh&auml;ngig von "
         "Techniker-Anzahl oder -Bezeichnung."
-        f"{zeitraum_hinweis}",
+        f"{zeitraum_hinweis} Ratio vorher/nachher = Vor-Ort-Stunden "
+        "&divide; Fahrtstunden pro Jahr vor bzw. nach der Optimierung "
+        "(siehe &bdquo;Aktuelle Gebiete&ldquo; f&uuml;r die Farbskala). "
+        "&Delta; Fahrzeit zeigt die Ver&auml;nderung der j&auml;hrlichen "
+        "Fahrtstunden &mdash; negativ (gr&uuml;n) = Entlastung, positiv "
+        "(rot) = Mehrbelastung.",
     )
     info_luecken = _go_info_box(
         "&#9888;",
@@ -3849,7 +3960,7 @@ def _render_gebietsoptimierung(
                 <th>Standort</th>
                 <th>Kliniken</th>
                 <th>&Oslash; Fahrzeit</th>
-                <th>Ratio</th>
+                <th>Ratio{ratio_tip}</th>
               </tr>
             </thead>
             <tbody>
@@ -3870,9 +3981,9 @@ def _render_gebietsoptimierung(
               <tr>
                 <th>Techniker</th>
                 <th>Standort</th>
-                <th>Ratio vorher</th>
-                <th>Ratio nachher</th>
-                <th>&Delta; Fahrzeit</th>
+                <th>Ratio vorher{ratio_tip}</th>
+                <th>Ratio nachher{ratio_tip}</th>
+                <th>&Delta; Fahrzeit{delta_fahrzeit_tip}</th>
                 <th>Verschobene Kliniken</th>
               </tr>
             </thead>
@@ -3891,7 +4002,7 @@ def _render_gebietsoptimierung(
             <thead>
               <tr>
                 <th>Gebiet</th>
-                <th>Status</th>
+                <th>Status{luecken_status_tip}</th>
                 <th>Techniker</th>
                 <th>Empfehlung</th>
               </tr>
@@ -4005,6 +4116,28 @@ def render_html(
         "})();\n"
     )
 
+    # ── Tooltips fuer Kennzahlen-Spalten (Tab 2/3, direkt am Ort der Verwirrung) ──
+    dringlichkeit_tip = _info_tip(
+        "Zeitliche Kritikalit&auml;t bis zur F&auml;lligkeit: &Uuml;berf&auml;llig "
+        "(&lt;0 Tage) &middot; Kritisch (&le;14 Tage) &middot; Hoch (15&ndash;30 Tage) "
+        "&middot; Normal (&gt;30 Tage)."
+    )
+    sla_status_tip = _info_tip(
+        "Zeit seit Auftragseingang im Verh&auml;ltnis zur 48h-SLA-Frist f&uuml;r "
+        "den Erstkontakt beim Kunden. Gr&uuml;n &lt;24h &middot; Gelb 24&ndash;40h "
+        "&middot; Rot 40&ndash;48h &middot; Kritisch = SLA verletzt (&ge;48h ohne "
+        "Kontakt)."
+    )
+    ct_luecken_tip = _info_tip(
+        "Anzahl Produktfamilien mit Ger&auml;ten im Gebiet dieses Technikers, "
+        "f&uuml;r die er aktuell nicht qualifiziert ist."
+    )
+    ct_stk_jahr_tip = _info_tip(
+        "Gesch&auml;tztes zus&auml;tzliches Servicevolumen pro Jahr, das durch "
+        "Crosstraining auf die wirtschaftlich attraktivste fehlende "
+        "Produktfamilie erschlossen werden k&ouml;nnte."
+    )
+
     html = f"""<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -4101,7 +4234,7 @@ def render_html(
           <th data-i18n="th.productFamily">Produktfamilie</th>
           <th data-i18n="th.dueDate">F&auml;lligkeit</th>
           <th data-i18n="th.suggestedDates">Vorgeschlagene Termine</th>
-          <th data-i18n="th.urgency">Dringlichkeit</th>
+          <th><span data-i18n="th.urgency">Dringlichkeit</span>{dringlichkeit_tip}</th>
           <th data-i18n="th.days">Tage</th>
         </tr>
       </thead>
@@ -4120,7 +4253,7 @@ def render_html(
           <th data-i18n="th.clinic">Klinik</th>
           <th data-i18n="th.device">Ger&auml;t</th>
           <th data-i18n="th.received">Eingang</th>
-          <th data-i18n="th.slaStatus">SLA-Status</th>
+          <th><span data-i18n="th.slaStatus">SLA-Status</span>{sla_status_tip}</th>
           <th data-i18n="th.phase">Phase</th>
           <th data-i18n="th.sparePart">Ersatzteil</th>
         </tr>
@@ -4144,8 +4277,8 @@ def render_html(
       <thead>
         <tr>
           <th data-i18n="th.technician">Techniker</th>
-          <th data-i18n="th.gaps">L&uuml;cken</th>
-          <th data-i18n="th.stkYear">+STK/Jahr</th>
+          <th><span data-i18n="th.gaps">L&uuml;cken</span>{ct_luecken_tip}</th>
+          <th><span data-i18n="th.stkYear">+STK/Jahr</span>{ct_stk_jahr_tip}</th>
           <th data-i18n="th.missingFamilies">Fehlende Produktfamilien</th>
           <th data-i18n="th.recPartner">Empf. Partner</th>
         </tr>

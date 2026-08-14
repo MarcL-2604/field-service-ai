@@ -721,6 +721,61 @@
     }
     .go-info-text { font-size: 12.5px; color: var(--text); line-height: 1.55; }
 
+    /* ── Info-Tooltip: Kennzahlen-Erklaerung direkt am Ort der Verwirrung ── */
+    .info-tip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      margin-left: 5px;
+      border-radius: 50%;
+      background: rgba(0,81,149,.14);
+      color: #005195;
+      font-size: 11px;
+      line-height: 1;
+      cursor: help;
+      position: relative;
+      vertical-align: middle;
+      text-transform: none;
+      letter-spacing: normal;
+      font-weight: 400;
+    }
+    .info-tip:hover, .info-tip:focus {
+      background: rgba(0,81,149,.26);
+      outline: none;
+    }
+    .info-tip-bubble {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      z-index: 60;
+      top: calc(100% + 7px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: 250px;
+      background: #1A2B3C;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.55;
+      text-align: left;
+      text-transform: none;
+      letter-spacing: normal;
+      padding: 9px 11px;
+      border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.28);
+      transition: opacity .15s ease;
+      pointer-events: none;
+    }
+    .info-tip:hover .info-tip-bubble,
+    .info-tip:focus .info-tip-bubble {
+      visibility: visible;
+      opacity: 1;
+    }
+    th .info-tip { margin-left: 4px; }
+
     /* ── Crosstraining: Mehrwert-Begruendung / Ausschluss-Hinweis ── */
     .ct-mehrwert {
       margin-top: 6px;
@@ -1442,7 +1497,7 @@
   <span><span class="dot dot-gruen"></span> <span data-i18n="summary.green">Gr&uuml;n</span>: <strong>0</strong> (&ge;60&thinsp;% L3)</span>
   <span><span class="dot dot-gelb"></span> <span data-i18n="summary.yellow">Gelb</span>: <strong>4</strong> (30&ndash;59&thinsp;%)</span>
   <span><span class="dot dot-rot"></span> <span data-i18n="summary.red">Rot</span>: <strong>20</strong> (&lt;30&thinsp;%)</span>
-  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 14.08.2026 09:09 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
+  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 14.08.2026 09:55 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
 </div>
 
 <main>
@@ -1487,7 +1542,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">10&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">35&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 330 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -1544,7 +1599,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">0&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">0&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 365 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -1601,7 +1656,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">33&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">120&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 245 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -1658,7 +1713,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">34&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">124&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 241 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -1715,7 +1770,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">9&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">32&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 333 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -1772,7 +1827,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">50&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">182&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 183 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -1829,7 +1884,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">13&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">49&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 316 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -1886,7 +1941,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">7&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">27&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 338 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -1943,7 +1998,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">13&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">49&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 316 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2000,7 +2055,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">3&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">12&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 353 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2057,7 +2112,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">0&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">0&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 365 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2114,7 +2169,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">0&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">0&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 365 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2171,7 +2226,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">53&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">192&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 173 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2228,7 +2283,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">0&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">0&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 365 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2285,7 +2340,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">0&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">0&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 365 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2342,7 +2397,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">0&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">0&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 365 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2399,7 +2454,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">0&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">0&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 365 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2456,7 +2511,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">7&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">25&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 340 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 25.6h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2513,7 +2568,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">0&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">0&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 365 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2570,7 +2625,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">19&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">68&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 297 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2627,7 +2682,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">1&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">5&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 360 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2684,7 +2739,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">1&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">4&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 361 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2741,7 +2796,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">11&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">41&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 324 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2798,7 +2853,7 @@
 
         <div class="metric-box metric-standard">
           <div class="metric-num">11&thinsp;%</div>
-          <div class="metric-lbl" data-i18n="card.l3coverage">L3-Abdeckung</div>
+          <div class="metric-lbl"><span data-i18n="card.l3coverage">L3-Abdeckung</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; L3 = selbstst&auml;ndig einsetzbar (ohne Begleitung durch einen erfahreneren Kollegen).</span></span></div>
           <div class="metric-sub">40&thinsp;/&thinsp;365 <span data-i18n="card.fam">Fam.</span> &middot; 325 <span data-i18n="card.gaps">L&uuml;cken</span></div>
           <div class="metric-sub"><span data-i18n="card.capacity">Kapazit&auml;t</span>: 32.0h/<span data-i18n="card.week">Woche</span></div>
         </div>
@@ -2853,7 +2908,7 @@
           <th data-i18n="th.productFamily">Produktfamilie</th>
           <th data-i18n="th.dueDate">F&auml;lligkeit</th>
           <th data-i18n="th.suggestedDates">Vorgeschlagene Termine</th>
-          <th data-i18n="th.urgency">Dringlichkeit</th>
+          <th><span data-i18n="th.urgency">Dringlichkeit</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Zeitliche Kritikalit&auml;t bis zur F&auml;lligkeit: &Uuml;berf&auml;llig (&lt;0 Tage) &middot; Kritisch (&le;14 Tage) &middot; Hoch (15&ndash;30 Tage) &middot; Normal (&gt;30 Tage).</span></span></th>
           <th data-i18n="th.days">Tage</th>
         </tr>
       </thead>
@@ -2881,17 +2936,17 @@
           <th data-i18n="th.clinic">Klinik</th>
           <th data-i18n="th.device">Ger&auml;t</th>
           <th data-i18n="th.received">Eingang</th>
-          <th data-i18n="th.slaStatus">SLA-Status</th>
+          <th><span data-i18n="th.slaStatus">SLA-Status</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Zeit seit Auftragseingang im Verh&auml;ltnis zur 48h-SLA-Frist f&uuml;r den Erstkontakt beim Kunden. Gr&uuml;n &lt;24h &middot; Gelb 24&ndash;40h &middot; Rot 40&ndash;48h &middot; Kritisch = SLA verletzt (&ge;48h ohne Kontakt).</span></span></th>
           <th data-i18n="th.phase">Phase</th>
           <th data-i18n="th.sparePart">Ersatzteil</th>
         </tr>
       </thead>
       <tbody>
-      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>14.08. 02:09</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>13.08. 02:09</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>12.08. 07:09</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>13.08. 13:09</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
-      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>12.08. 21:09</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
+      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>14.08. 02:55</td><td><span class='badge badge-normal'>SLA: noch 41h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>13.08. 02:55</td><td><span class='badge badge-hoch'>SLA: noch 17h</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>12.08. 07:55</td><td><span class='badge badge-kritisch puls-animation'>SLA VERLETZT</span></td><td>Kontakt ausstehend</td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>13.08. 13:55</td><td><span class='badge badge-normal'>&#10003; Kontakt</span></td><td>Kontakt hergestellt</td><td>Im Fahrzeug</td></tr>
+      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>12.08. 21:55</td><td><span class='badge badge-blau'>&#10003; Kontakt</span></td><td>Ersatzteil bestellt</td><td>Bestellt (3-5 Tage)</td></tr>
       </tbody>
     </table>
   </section>
@@ -2909,8 +2964,8 @@
       <thead>
         <tr>
           <th data-i18n="th.technician">Techniker</th>
-          <th data-i18n="th.gaps">L&uuml;cken</th>
-          <th data-i18n="th.stkYear">+STK/Jahr</th>
+          <th><span data-i18n="th.gaps">L&uuml;cken</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anzahl Produktfamilien mit Ger&auml;ten im Gebiet dieses Technikers, f&uuml;r die er aktuell nicht qualifiziert ist.</span></span></th>
+          <th><span data-i18n="th.stkYear">+STK/Jahr</span><span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Gesch&auml;tztes zus&auml;tzliches Servicevolumen pro Jahr, das durch Crosstraining auf die wirtschaftlich attraktivste fehlende Produktfamilie erschlossen werden k&ouml;nnte.</span></span></th>
           <th data-i18n="th.missingFamilies">Fehlende Produktfamilien</th>
           <th data-i18n="th.recPartner">Empf. Partner</th>
         </tr>
@@ -3223,7 +3278,7 @@
       <div class="gebiets-metriken">
         <!-- Ansicht 1: Aktuelle Gebiete -->
         <div class="go-view-content active" id="go-view-aktuell">
-          <div class="go-info-box"><div class="go-info-icon">&#128506;</div><div class="go-info-body"><div class="go-info-title">Was zeigt diese Ansicht?</div><div class="go-info-text">Zeigt die IST-Gebietsaufteilung basierend auf den aktuellen Techniker-Wohnorten und den ihnen historisch zugeordneten Klinik-PLZ-Gebieten. Jede Farbe entspricht einem Techniker-Gebiet.</div></div></div>
+          <div class="go-info-box"><div class="go-info-icon">&#128506;</div><div class="go-info-body"><div class="go-info-title">Was zeigt diese Ansicht?</div><div class="go-info-text">Zeigt die IST-Gebietsaufteilung basierend auf den aktuellen Techniker-Wohnorten und den ihnen historisch zugeordneten Klinik-PLZ-Gebieten. Jede Farbe entspricht einem Techniker-Gebiet. Ratio = Vor-Ort-Stunden &divide; Fahrtstunden pro Jahr &mdash; Gr&uuml;n &ge;3,0 (effizient), Gelb 2,0&ndash;3,0, Rot &lt;2,0 (zu viel Fahrzeit im Verh&auml;ltnis zur Servicezeit).</div></div></div>
           <table>
             <thead>
               <tr>
@@ -3231,7 +3286,7 @@
                 <th>Standort</th>
                 <th>Kliniken</th>
                 <th>&Oslash; Fahrzeit</th>
-                <th>Ratio</th>
+                <th>Ratio<span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Vor-Ort-Stunden &divide; Fahrtstunden pro Jahr. Gr&uuml;n &ge;3,0 (effizient) &middot; Gelb 2,0&ndash;3,0 &middot; Rot &lt;2,0 (zu viel Fahrzeit im Verh&auml;ltnis zur Servicezeit).</span></span></th>
               </tr>
             </thead>
             <tbody>
@@ -3241,7 +3296,7 @@
         </div>
         <!-- Ansicht 2: Optimierte Gebiete -->
         <div class="go-view-content" id="go-view-optimiert">
-          <div class="go-info-box"><div class="go-info-icon">&#129504;</div><div class="go-info-body"><div class="go-info-title">Wie und warum wird optimiert?</div><div class="go-info-text">F&uuml;r jede Klinik werden der 1.- und 2.-n&auml;chstgelegene Techniker (Fahrzeit, Haversine-Distanz &times; 1,35 Stra&szlig;enfaktor) verglichen. Ist der 2.-n&auml;chste um mehr als 15 Prozentpunkte weniger ausgelastet und betr&auml;gt die Fahrzeit-Mehrbelastung h&ouml;chstens 20 Minuten, wandert die Klinik zu ihm. Ziel: gleichm&auml;&szlig;igere Auslastung bei vertretbaren Anfahrtswegen &mdash; unabh&auml;ngig von Techniker-Anzahl oder -Bezeichnung. Auslastung basiert auf der &Oslash; j&auml;hrlichen Auftragsrate aus 2.8 Jahren Historie (Closed Jobs) zzgl. aktuellem Auftragsr&uuml;ckstand (Open Jobs).</div></div></div>
+          <div class="go-info-box"><div class="go-info-icon">&#129504;</div><div class="go-info-body"><div class="go-info-title">Wie und warum wird optimiert?</div><div class="go-info-text">F&uuml;r jede Klinik werden der 1.- und 2.-n&auml;chstgelegene Techniker (Fahrzeit, Haversine-Distanz &times; 1,35 Stra&szlig;enfaktor) verglichen. Ist der 2.-n&auml;chste um mehr als 15 Prozentpunkte weniger ausgelastet und betr&auml;gt die Fahrzeit-Mehrbelastung h&ouml;chstens 20 Minuten, wandert die Klinik zu ihm. Ziel: gleichm&auml;&szlig;igere Auslastung bei vertretbaren Anfahrtswegen &mdash; unabh&auml;ngig von Techniker-Anzahl oder -Bezeichnung. Auslastung basiert auf der &Oslash; j&auml;hrlichen Auftragsrate aus 2.8 Jahren Historie (Closed Jobs) zzgl. aktuellem Auftragsr&uuml;ckstand (Open Jobs). Ratio vorher/nachher = Vor-Ort-Stunden &divide; Fahrtstunden pro Jahr vor bzw. nach der Optimierung (siehe &bdquo;Aktuelle Gebiete&ldquo; f&uuml;r die Farbskala). &Delta; Fahrzeit zeigt die Ver&auml;nderung der j&auml;hrlichen Fahrtstunden &mdash; negativ (gr&uuml;n) = Entlastung, positiv (rot) = Mehrbelastung.</div></div></div>
           <div class="bc-gold-hint" style="margin-bottom:14px">
             &#9733; Algorithmus: Klinik wechselt zum 2.-n&auml;chsten Techniker, wenn dessen
             Auslastung &ge;15 Prozentpunkte niedriger ist und
@@ -3252,9 +3307,9 @@
               <tr>
                 <th>Techniker</th>
                 <th>Standort</th>
-                <th>Ratio vorher</th>
-                <th>Ratio nachher</th>
-                <th>&Delta; Fahrzeit</th>
+                <th>Ratio vorher<span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Vor-Ort-Stunden &divide; Fahrtstunden pro Jahr. Gr&uuml;n &ge;3,0 (effizient) &middot; Gelb 2,0&ndash;3,0 &middot; Rot &lt;2,0 (zu viel Fahrzeit im Verh&auml;ltnis zur Servicezeit).</span></span></th>
+                <th>Ratio nachher<span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Vor-Ort-Stunden &divide; Fahrtstunden pro Jahr. Gr&uuml;n &ge;3,0 (effizient) &middot; Gelb 2,0&ndash;3,0 &middot; Rot &lt;2,0 (zu viel Fahrzeit im Verh&auml;ltnis zur Servicezeit).</span></span></th>
+                <th>&Delta; Fahrzeit<span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Ver&auml;nderung der j&auml;hrlichen Fahrtstunden durch die Gebietsoptimierung &mdash; nicht die Fahrzeit eines einzelnen Termins. Negativ (gr&uuml;n) = Entlastung, positiv (rot) = Mehrbelastung.</span></span></th>
                 <th>Verschobene Kliniken</th>
               </tr>
             </thead>
@@ -3275,7 +3330,7 @@
             <thead>
               <tr>
                 <th>Gebiet</th>
-                <th>Status</th>
+                <th>Status<span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">L&uuml;cke: &Oslash; Fahrzeit zum n&auml;chsten Techniker im Bundesland &uuml;ber 90 Minuten. &Uuml;berschneidung: bei mindestens 30% der Kliniken liegt der 2.-n&auml;chste Techniker h&ouml;chstens 20 Minuten hinter dem 1.-n&auml;chsten (Gebiet kontestiert). Optimal: weder noch.</span></span></th>
                 <th>Techniker</th>
                 <th>Empfehlung</th>
               </tr>
@@ -3518,8 +3573,8 @@
         <tr>
           <th>Standort</th>
           <th>Region</th>
-          <th>Abdeckung</th>
-          <th>Kliniken</th>
+          <th>Abdeckung<span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Anzahl 2-stelliger PLZ-Bereiche, die durch eine Neueinstellung an diesem Standort besser abgedeckt w&uuml;rden (nicht zu verwechseln mit der Gr&uuml;n/Gelb/Rot-Fahrzeit-Abdeckung oben).</span></span></th>
+          <th>Kliniken<span class="info-tip" tabindex="0">&#9432;<span class="info-tip-bubble">Gesch&auml;tzte Anzahl Kliniken im Einzugsgebiet dieses Standorts.</span></span></th>
           <th>Begr&uuml;ndung</th>
         </tr>
       </thead>
