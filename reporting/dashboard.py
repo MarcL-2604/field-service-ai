@@ -3684,6 +3684,39 @@ def _go_info_box(icon: str, titel: str, text: str) -> str:
     )
 
 
+def _demo_badge_texte(is_echtdaten: bool, pseudonymisiert: bool) -> tuple[str, str]:
+    """DE/EN-Text fuer den Header-Badge (Echtdaten/Demo-Daten).
+
+    EIN Wertepaar ist die einzige Quelle fuer sowohl den initialen
+    Server-Render als auch den i18n-Dict-Eintrag (siehe render_html). Vorher
+    getrennt gepflegt -- der JS-Sprachwechsel (setLang) ueberschrieb den
+    korrekt aus is_echtdaten/pseudonymisiert berechneten Text mit einem
+    statischen, vom tatsaechlichen Datenmodus unabhaengigen EN-Wert, der
+    IMMER "Demo Data" behauptete.
+    """
+    if is_echtdaten and pseudonymisiert:
+        return "Echtdaten · Pseudonymisiert", "Real Data · Pseudonymized"
+    if is_echtdaten:
+        return "Echtdaten", "Real Data"
+    return "Demo-Daten · Konfigurierbar", "Demo Data · Configurable"
+
+
+def _demo_hint_texte(is_echtdaten: bool, technikeranzahl: int, stand_datum: str) -> tuple[str, str]:
+    """DE/EN-Text fuer den Techniker-Anzahl-Hinweis (Tab 1, .demo-hint).
+
+    Gleiches Prinzip wie _demo_badge_texte: der urspruengliche Code hatte
+    Datenmodus ("Echtdaten") und Technikeranzahl (24) fest verdrahtet und
+    verlor zusaetzlich das eingebettete Datum komplett bei jedem
+    Sprachwechsel, weil der i18n-Dict-Eintrag nur den statischen Text ohne
+    Datum enthielt.
+    """
+    modus_de = "Echtdaten" if is_echtdaten else "Demo-Daten"
+    modus_en = "Real Data" if is_echtdaten else "Demo Data"
+    de = f"{modus_de} · {technikeranzahl} Techniker · Stand: {stand_datum}"
+    en = f"{modus_en} · {technikeranzahl} technicians · As of: {stand_datum}"
+    return de, en
+
+
 def _repair_sla_tooltip_text() -> str:
     """SLA-Status-Tooltip-Text (Tab Auftraege): unterscheidet klar zwischen
     der 48h-Erstkontakt-Pflicht (REPAIR_SLA_STUNDEN) und den davon
@@ -4194,6 +4227,13 @@ def render_html(
         "Produktfamilie erschlossen werden k&ouml;nnte."
     )
 
+    # ── Datenmodus-Texte (Header-Badge + Tab-1-Hinweis): je EIN DE/EN-Paar,
+    # das sowohl den initialen Render als auch den i18n-Dict-Eintrag speist
+    # (siehe _demo_badge_texte/_demo_hint_texte-Docstring) ──
+    demo_badge_text_de, demo_badge_text_en = _demo_badge_texte(is_echtdaten, PSEUDONYMISIERUNG_AKTIV)
+    demo_hint_text_de, demo_hint_text_en = _demo_hint_texte(
+        is_echtdaten, len(techniker), erstellt_am.strftime("%d.%m.%Y"))
+
     html = f"""<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -4226,7 +4266,7 @@ def render_html(
   </div>
   <div class="header-right">
     <a href="workflow_demo.html" class="lang-toggle" style="text-decoration:none">Workflow Demo</a>
-    <span class="demo-badge" data-i18n="header.demo">{"Echtdaten &middot; Pseudonymisiert" if (is_echtdaten and PSEUDONYMISIERUNG_AKTIV) else ("Echtdaten" if is_echtdaten else "Demo-Daten &middot; Konfigurierbar")}</span>
+    <span class="demo-badge" data-i18n="header.demo">{demo_badge_text_de}</span>
     <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleLang()">EN</button>
     <button class="api-key-btn" onclick="document.getElementById('chat-setup').style.display='block';document.getElementById('api-key-input').focus()">API-Key &#128273;</button>
   </div>
@@ -4268,7 +4308,7 @@ def render_html(
         <option value="portfolio" data-i18n="sort.portfolio">Ger&auml;te-Portfolio (meiste L3-Familien zuerst)</option>
         <option value="potential" data-i18n="sort.area">Gebietsgr&ouml;&szlig;e</option>
       </select>
-      <span class="demo-hint" data-i18n="hint.demo">Echtdaten &middot; 24 Techniker &middot; Stand: {erstellt_am.strftime('%d.%m.%Y')}</span>
+      <span class="demo-hint" data-i18n="hint.demo">{demo_hint_text_de}</span>
     </div>
     <div class="ampel-grid" id="ampel-grid">
 {ampel_html}
@@ -4452,7 +4492,7 @@ def render_html(
 /* ── i18n Translation ── */
 var _I18N = {{
   DE: {{
-    'header.demo': 'Demo-Daten \u00b7 Konfigurierbar',
+    'header.demo': {json.dumps(demo_badge_text_de, ensure_ascii=False)},
     'tab.overview': '\u00dcbersicht',
     'tab.orders': 'Auftr\u00e4ge',
     'tab.crosstraining': 'Cross-Training',
@@ -4473,7 +4513,7 @@ var _I18N = {{
     'sort.util': 'Auslastung (Stunden)',
     'sort.portfolio': 'Ger\u00e4te-Portfolio (meiste L3-Familien zuerst)',
     'sort.area': 'Gebietsgr\u00f6\u00dfe',
-    'hint.demo': 'Echtdaten \u00b7 24 Techniker',
+    'hint.demo': {json.dumps(demo_hint_text_de, ensure_ascii=False)},
     'h.stk': 'STK-Auftr\u00e4ge (Top 10)',
     'hint.stk': 'Quelle: daten/geraete.csv \u00b7 Aufsteigend nach F\u00e4lligkeitsdatum',
     'th.orderId': 'Auftrag-ID',
@@ -4532,7 +4572,7 @@ var _I18N = {{
     'erklaer.divider': 'F\u00fcr freie Fragen: Claude API-Key verbinden (optional)'
   }},
   EN: {{
-    'header.demo': 'Demo Data \u00b7 Configurable',
+    'header.demo': {json.dumps(demo_badge_text_en, ensure_ascii=False)},
     'tab.overview': 'Overview',
     'tab.orders': 'Orders',
     'tab.crosstraining': 'Cross-Training',
@@ -4553,7 +4593,7 @@ var _I18N = {{
     'sort.util': 'Utilization (hours)',
     'sort.portfolio': 'Device portfolio (most L3 families first)',
     'sort.area': 'Territory size',
-    'hint.demo': 'Real data \u00b7 24 technicians',
+    'hint.demo': {json.dumps(demo_hint_text_en, ensure_ascii=False)},
     'h.stk': 'Safety Checks (Top 10)',
     'hint.stk': 'Source: daten/geraete.csv \u00b7 Ascending by due date',
     'th.orderId': 'Order ID',
