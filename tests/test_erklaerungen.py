@@ -106,3 +106,84 @@ class TestGeneriereErklaerung:
                 )
                 assert isinstance(text, str) and len(text) > 10
                 assert "Platzhalter" not in text
+
+
+class TestGeneriereErklaerungEnglisch:
+    """Sprache=en liefert englische Formulierungen, identische Zahlen/Fakten (i18n-Fix)."""
+
+    def test_warum_gebiet_englisch_enthaelt_gleiche_zahlen(self):
+        text = generiere_erklaerung(
+            "warum_gebiet", "T1",
+            techniker=TECHNIKER, metriken_akt=METRIKEN_AKT, metriken_opt=METRIKEN_OPT,
+            ampeln=AMPELN, umweg_faktor=1.35, sprache="en",
+        )
+        assert "12 clinics" in text
+        assert "45 min" in text
+        assert "2.0" in text
+        assert "40%" in text and "35%" in text and "25%" in text
+        assert "T2" in text
+        # keine deutschen Woerter aus der DE-Formulierung
+        assert "Kliniken" not in text and "Fahrzeit" not in text
+
+    def test_warum_auslastung_englisch(self):
+        text = generiere_erklaerung(
+            "warum_auslastung", "T1",
+            techniker=TECHNIKER, metriken_akt=METRIKEN_AKT, metriken_opt=METRIKEN_OPT,
+            ampeln=AMPELN, sprache="en",
+        )
+        assert "12 clinics" in text
+        assert "200 travel hours" in text
+        assert "75%" in text
+        assert "+55 STK/year" in text
+        assert "40 PM qualifications" in text
+
+    def test_warum_verschoben_englisch(self):
+        text = generiere_erklaerung(
+            "warum_verschoben", "T1",
+            techniker=TECHNIKER, metriken_akt=METRIKEN_AKT, metriken_opt=METRIKEN_OPT,
+            ampeln=AMPELN, sprache="en",
+        )
+        assert "3 clinic(s) newly added" in text
+        assert "1 clinic(s) given up" in text
+        assert "2.0" in text and "1.83" in text
+
+    def test_warum_verschoben_ohne_verschiebung_englisch(self):
+        text = generiere_erklaerung(
+            "warum_verschoben", "T2",
+            techniker=TECHNIKER, metriken_akt=METRIKEN_AKT, metriken_opt=METRIKEN_OPT,
+            ampeln=AMPELN, sprache="en",
+        )
+        assert "no clinics were moved" in text
+
+    def test_unbekannter_techniker_englisch(self):
+        text = generiere_erklaerung(
+            "warum_gebiet", "T99", techniker=TECHNIKER, metriken_akt=METRIKEN_AKT,
+            sprache="en",
+        )
+        assert "T99" in text and "No technician found" in text
+
+    def test_unbekannter_fragetyp_englisch(self):
+        text = generiere_erklaerung(
+            "quatsch", "T1", techniker=TECHNIKER, metriken_akt=METRIKEN_AKT, sprache="en",
+        )
+        assert "Unknown question type" in text
+
+    def test_default_bleibt_deutsch(self):
+        """Ohne sprache-Argument bleibt das Verhalten unveraendert (DE)."""
+        text = generiere_erklaerung(
+            "warum_gebiet", "T1",
+            techniker=TECHNIKER, metriken_akt=METRIKEN_AKT, metriken_opt=METRIKEN_OPT,
+            ampeln=AMPELN,
+        )
+        assert "12 Kliniken" in text
+
+    def test_alle_fragetypen_alle_techniker_englisch_liefern_text(self):
+        for tid in TECHNIKER:
+            for frage_typ in FRAGE_TYPEN:
+                text = generiere_erklaerung(
+                    frage_typ, tid,
+                    techniker=TECHNIKER, metriken_akt=METRIKEN_AKT,
+                    metriken_opt=METRIKEN_OPT, ampeln=AMPELN, sprache="en",
+                )
+                assert isinstance(text, str) and len(text) > 10
+                assert "Platzhalter" not in text

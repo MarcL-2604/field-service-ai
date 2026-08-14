@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from config import PSEUDONYMISIERUNG_AKTIV
+from config import CROSSTRAINING_AUSGESCHLOSSENE_CLUSTER_PRAEFIXE, PSEUDONYMISIERUNG_AKTIV
 
 _ROOT         = Path(__file__).resolve().parent.parent
 _XLSX         = _ROOT / "data" / "KI_gestuetzte_Planung.xlsx"
@@ -95,6 +95,18 @@ _STADT_REGION: dict[str, tuple[str, str]] = {
     "waldachtal":        ("BaWü-Süd",             "Baden-Württemberg"),
     "brakel":            ("NRW-Ost",              "Nordrhein-Westfalen"),
 }
+
+
+def _crosstraining_ausgeschlossen(familie: str) -> bool:
+    """True wenn 'familie' (laengster passender MC-Praefix aus
+    finde_repair_familie) auf config.CROSSTRAINING_AUSGESCHLOSSENE_CLUSTER_PRAEFIXE
+    matcht -- diese Produktgruppen duerfen nie als Crosstraining-Luecke
+    empfohlen werden (Schulung zu kostenintensiv/aufwendig), unabhaengig von
+    der Wirtschaftlichkeit."""
+    return any(
+        familie.upper().startswith(p.upper())
+        for p in CROSSTRAINING_AUSGESCHLOSSENE_CLUSTER_PRAEFIXE
+    )
 
 
 def _pseudonym_id(name: str) -> str:
@@ -339,11 +351,15 @@ def build_dashboard_data() -> dict:
                 dist = _haversine_km(lat, lon, jlat, jlon)
                 if dist <= _CT_LUFTLINIE_KM:
                     geraete_im_gebiet[familie] = geraete_im_gebiet.get(familie, 0) + 1
-                    if familie not in tech_repair_familien:
+                    if familie not in tech_repair_familien and not _crosstraining_ausgeschlossen(familie):
                         stk_potenzial += 1
 
+        # Ausgeschlossene Produktgruppen (config.CROSSTRAINING_AUSGESCHLOSSENE_
+        # CLUSTER_PRAEFIXE) duerfen nie als Luecken-Empfehlung erscheinen, auch
+        # wenn sie wirtschaftlich sinnvoll waeren (zu teures/aufwendiges Training).
         crosstraining_luecken = sorted(
-            f for f in geraete_im_gebiet if f not in tech_repair_familien
+            f for f in geraete_im_gebiet
+            if f not in tech_repair_familien and not _crosstraining_ausgeschlossen(f)
         )
 
         techniker_list.append({

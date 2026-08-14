@@ -20,11 +20,10 @@
       "repair_abdeckung_pct": 23.4,
       "crosstraining_luecken": [
         "MC-9735",
-        "MC-BI70",
         "MC-NITRON",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 105,
+      "stk_potenzial": 80,
       "geraete_im_gebiet": {
         "MC-8253": 62,
         "MC-LS10": 54,
@@ -60,15 +59,13 @@
         "MC-840",
         "MC-9735",
         "MC-ARGON4",
-        "MC-BI70",
         "MC-FT10",
-        "MC-HUGO",
         "MC-LS10",
         "MC-NITRON",
         "MC-PB",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 290,
+      "stk_potenzial": 281,
       "geraete_im_gebiet": {
         "MC-HUGO": 1,
         "MC-8253": 27,
@@ -105,15 +102,13 @@
         "MC-840",
         "MC-9735",
         "MC-ARGON4",
-        "MC-BI70",
         "MC-FT10",
-        "MC-HUGO",
         "MC-LS10",
         "MC-NITRON",
         "MC-PB",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 267,
+      "stk_potenzial": 255,
       "geraete_im_gebiet": {
         "MC-LS10": 19,
         "MC-8253": 25,
@@ -148,10 +143,9 @@
       "repair_abdeckung_pct": 77.7,
       "crosstraining_luecken": [
         "MC-9735",
-        "MC-BI70",
         "MC-NITRON"
       ],
-      "stk_potenzial": 65,
+      "stk_potenzial": 41,
       "geraete_im_gebiet": {
         "MC-FT10": 91,
         "MC-LS10": 59,
@@ -223,15 +217,13 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
-        "MC-HUGO",
         "MC-LS10",
         "MC-NITRON",
         "MC-PB",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 505,
+      "stk_potenzial": 444,
       "geraete_im_gebiet": {
         "MC-HUGO": 41,
         "MC-FT10": 143,
@@ -265,10 +257,9 @@
       "repair_abdeckung_pct": 24.5,
       "crosstraining_luecken": [
         "MC-9735",
-        "MC-BI70",
         "MC-NITRON"
       ],
-      "stk_potenzial": 61,
+      "stk_potenzial": 40,
       "geraete_im_gebiet": {
         "MC-PB": 61,
         "MC-8253": 21,
@@ -304,11 +295,9 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
-        "MC-HUGO",
         "MC-PB"
       ],
-      "stk_potenzial": 192,
+      "stk_potenzial": 184,
       "geraete_im_gebiet": {
         "MC-HUGO": 1,
         "MC-8253": 26,
@@ -345,14 +334,12 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
-        "MC-HUGO",
         "MC-LS10",
         "MC-PB",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 558,
+      "stk_potenzial": 485,
       "geraete_im_gebiet": {
         "MC-HUGO": 41,
         "MC-FT10": 159,
@@ -388,12 +375,11 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
         "MC-LS10",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 358,
+      "stk_potenzial": 339,
       "geraete_im_gebiet": {
         "MC-PB": 61,
         "MC-8253": 20,
@@ -428,14 +414,12 @@
       "crosstraining_luecken": [
         "MC-8253",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
-        "MC-HUGO",
         "MC-LS10",
         "MC-NITRON",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 117,
+      "stk_potenzial": 88,
       "geraete_im_gebiet": {
         "MC-8253": 30,
         "MC-HUGO": 13,
@@ -469,15 +453,13 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
-        "MC-HUGO",
         "MC-LS10",
         "MC-NITRON",
         "MC-PB",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 511,
+      "stk_potenzial": 450,
       "geraete_im_gebiet": {
         "MC-HUGO": 41,
         "MC-FT10": 147,
@@ -513,11 +495,10 @@
         "MC-840",
         "MC-9735",
         "MC-ARGON4",
-        "MC-BI70",
         "MC-NITRON",
         "MC-PB"
       ],
-      "stk_potenzial": 221,
+      "stk_potenzial": 215,
       "geraete_im_gebiet": {
         "MC-LS10": 22,
         "MC-8253": 30,
@@ -554,13 +535,12 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
         "MC-LS10",
         "MC-NITRON",
         "MC-PB"
       ],
-      "stk_potenzial": 234,
+      "stk_potenzial": 218,
       "geraete_im_gebiet": {
         "MC-FT10": 40,
         "MC-LS10": 63,
@@ -594,13 +574,12 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
         "MC-LS10",
         "MC-NITRON",
         "MC-PB"
       ],
-      "stk_potenzial": 234,
+      "stk_potenzial": 218,
       "geraete_im_gebiet": {
         "MC-FT10": 40,
         "MC-LS10": 63,
@@ -634,15 +613,13 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
-        "MC-HUGO",
         "MC-LS10",
         "MC-NITRON",
         "MC-PB",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 571,
+      "stk_potenzial": 498,
       "geraete_im_gebiet": {
         "MC-HUGO": 41,
         "MC-FT10": 153,
@@ -678,13 +655,12 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
         "MC-LS10",
         "MC-NITRON",
         "MC-PB"
       ],
-      "stk_potenzial": 234,
+      "stk_potenzial": 218,
       "geraete_im_gebiet": {
         "MC-FT10": 40,
         "MC-LS10": 63,
@@ -718,11 +694,10 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-NITRON",
         "MC-PB"
       ],
-      "stk_potenzial": 199,
+      "stk_potenzial": 179,
       "geraete_im_gebiet": {
         "MC-HUGO": 41,
         "MC-FT10": 125,
@@ -758,14 +733,13 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
         "MC-LS10",
         "MC-NITRON",
         "MC-PB",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 305,
+      "stk_potenzial": 298,
       "geraete_im_gebiet": {
         "MC-LS10": 24,
         "MC-FT10": 34,
@@ -799,10 +773,9 @@
       "crosstraining_luecken": [
         "MC-8253",
         "MC-9735",
-        "MC-BI70",
         "MC-NITRON"
       ],
-      "stk_potenzial": 140,
+      "stk_potenzial": 115,
       "geraete_im_gebiet": {
         "MC-8253": 57,
         "MC-LS10": 54,
@@ -837,13 +810,12 @@
         "MC-8253",
         "MC-840",
         "MC-FT10",
-        "MC-HUGO",
         "MC-LS10",
         "MC-NITRON",
         "MC-PB",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 457,
+      "stk_potenzial": 416,
       "geraete_im_gebiet": {
         "MC-HUGO": 41,
         "MC-FT10": 133,
@@ -879,12 +851,11 @@
         "MC-8253",
         "MC-840",
         "MC-9735",
-        "MC-BI70",
         "MC-FT10",
         "MC-LS10",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 449,
+      "stk_potenzial": 420,
       "geraete_im_gebiet": {
         "MC-8253": 62,
         "MC-LS10": 58,
@@ -918,11 +889,9 @@
       "crosstraining_luecken": [
         "MC-9735",
         "MC-ARGON4",
-        "MC-BI70",
-        "MC-HUGO",
         "MC-VLFX8"
       ],
-      "stk_potenzial": 31,
+      "stk_potenzial": 20,
       "geraete_im_gebiet": {
         "MC-LS10": 20,
         "MC-8253": 38,
@@ -957,10 +926,9 @@
       "repair_abdeckung_pct": 16.0,
       "crosstraining_luecken": [
         "MC-9735",
-        "MC-BI70",
         "MC-NITRON"
       ],
-      "stk_potenzial": 40,
+      "stk_potenzial": 35,
       "geraete_im_gebiet": {
         "MC-8253": 48,
         "MC-PB": 8,
@@ -980,7 +948,7 @@
   "pm_repair_skills_eintraege": 524,
   "closed_jobs": 9264,
   "open_jobs": 786,
-  "stk_potenzial_gesamt": 6197,
+  "stk_potenzial_gesamt": 5590,
   "einsatz_median_min": 157,
   "job_standorte": [
     {
@@ -13020,5 +12988,5 @@
   "jobs_plz_aufgeloest": 7062,
   "jobs_gesamt": 10050,
   "beobachtungszeitraum_jahre": 2.75,
-  "generated_at": "2026-08-14T09:09:20"
+  "generated_at": "2026-08-14T15:11:53"
 }

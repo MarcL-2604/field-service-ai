@@ -17,6 +17,12 @@ FRAGE_TYPEN: dict[str, str] = {
     "warum_verschoben": "Warum wurden bei {tid} Kliniken verschoben?",
 }
 
+FRAGE_TYPEN_EN: dict[str, str] = {
+    "warum_gebiet":     "Why does {tid} have this territory?",
+    "warum_auslastung": "Why is {tid} at capacity?",
+    "warum_verschoben": "Why were clinics moved for {tid}?",
+}
+
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     r = 6371.0
@@ -55,18 +61,44 @@ def erklaere_warum_gebiet(
     techniker: dict[str, dict],
     metriken_akt: list[dict],
     umweg_faktor: float = 1.35,
+    sprache: str = "de",
 ) -> str:
     td = techniker.get(tid)
     if td is None:
+        if sprache == "en":
+            return f"No technician found with ID {tid}."
         return f"Kein Techniker mit der ID {tid} gefunden."
     m = _find(metriken_akt, tid)
     if not m or not m.get("kliniken"):
+        if sprache == "en":
+            return (
+                f"{tid} ({td.get('standort', '–')}) currently has no clinics assigned "
+                f"in the territory calculation — either no valid location is available "
+                f"or no clinics were found within reachable distance."
+            )
         return (
             f"{tid} ({td.get('standort', '–')}) hat aktuell keine zugewiesenen Kliniken "
             f"in der Gebietsberechnung — entweder liegt kein gültiger Standort vor "
             f"oder es wurden keine Kliniken in erreichbarer Nähe gefunden."
         )
     alt = _nearest_alternativtechniker(tid, techniker)
+    if sprache == "en":
+        alt_txt = (
+            f" Geographically nearest alternative technician: {alt[0]} ({alt[1]}, "
+            f"~{alt[2]} km away)."
+            if alt
+            else ""
+        )
+        return (
+            f"{tid} ({td.get('standort', '–')}) currently covers {m['kliniken']} clinics with "
+            f"an avg. travel time of {m['avg_fahrzeit']} min (max. {m['max_fahrzeit']} min) and "
+            f"a utilization ratio of {m['ratio']} (on-site hours per travel hour). The "
+            f"territory assignment follows the existing scoring model (competency 40% + travel time 35% + "
+            f"utilization 25%, travel time = Haversine distance × {umweg_faktor} road factor): "
+            f"each clinic goes to the technician with the shortest effective travel time, as long "
+            f"as their utilization is not significantly higher than that of a closer technician."
+            f"{alt_txt}"
+        )
     alt_txt = (
         f" Geografisch nächstgelegener Alternativtechniker: {alt[0]} ({alt[1]}, "
         f"~{alt[2]} km entfernt)."
@@ -90,12 +122,37 @@ def erklaere_warum_auslastung(
     techniker: dict[str, dict],
     metriken_akt: list[dict],
     ampeln: list[dict],
+    sprache: str = "de",
 ) -> str:
     td = techniker.get(tid)
     if td is None:
+        if sprache == "en":
+            return f"No technician found with ID {tid}."
         return f"Kein Techniker mit der ID {tid} gefunden."
     m = _find(metriken_akt, tid)
     a = _find(ampeln, tid)
+    if sprache == "en":
+        teile = [f"{tid} ({td.get('standort', '–')}):"]
+        if m:
+            teile.append(
+                f"{m['kliniken']} clinics in territory, {m['fahrtstunden_jahr']} travel hours/year + "
+                f"{m['onsite_stunden']} on-site hours/year (ratio {m['ratio']})."
+            )
+        if a:
+            teile.append(
+                f"Qualification coverage: {a['qualifiziert']}/{a['regional']} product families "
+                f"({a['abdeckung_pct']}%), {a['fehlend_count']} gaps, "
+                f"+{a['zusatz_stk']:.0f} STK/year unused cross-training potential in this territory."
+            )
+        pm_count = td.get("pm_count")
+        if pm_count is not None:
+            teile.append(
+                f"{pm_count} PM qualifications out of {td.get('total_mc', '–')} model codes "
+                f"({td.get('pm_ratio_pct', '–')}% PM ratio)."
+            )
+        if len(teile) == 1:
+            teile.append("No utilization data available for this technician.")
+        return " ".join(teile)
     teile = [f"{tid} ({td.get('standort', '–')}):"]
     if m:
         teile.append(
@@ -124,25 +181,58 @@ def erklaere_warum_verschoben(
     techniker: dict[str, dict],
     metriken_akt: list[dict],
     metriken_opt: list[dict],
+    sprache: str = "de",
 ) -> str:
     td = techniker.get(tid)
     if td is None:
+        if sprache == "en":
+            return f"No technician found with ID {tid}."
         return f"Kein Techniker mit der ID {tid} gefunden."
     m_a = _find(metriken_akt, tid)
     m_o = _find(metriken_opt, tid)
     if not m_o:
+        if sprache == "en":
+            return f"No optimization data available for {tid}."
         return f"Für {tid} liegen keine Optimierungsdaten vor."
     gewonnen = m_o.get("verschoben_gewonnen", 0)
     abgegeben = m_o.get("verschoben_abgegeben", 0)
+    ratio_vorher = m_a["ratio"] if m_a else 0.0
+    ratio_nachher = m_o["ratio"]
+    delta_fz = (m_o["fahrtstunden_jahr"] - m_a["fahrtstunden_jahr"]) if m_a else 0
+    if sprache == "en":
+        if not gewonnen and not abgegeben:
+            return (
+                f"For {tid} ({td.get('standort', '–')}) no clinics were moved — "
+                f"all clinics are already within the thresholds at the nearest "
+                f"technician."
+            )
+        teile = [f"{tid} ({td.get('standort', '–')}):"]
+        if gewonnen:
+            teile.append(
+                f"{gewonnen} clinic(s) newly added (taken over from less utilized "
+                f"neighboring technicians)."
+            )
+        if abgegeben:
+            teile.append(
+                f"{abgegeben} clinic(s) given up (to a less utilized, "
+                f"similarly close technician)."
+            )
+        teile.append(
+            f"Utilization ratio {ratio_vorher} → {ratio_nachher}, "
+            f"Δ travel hours/year: {'+' if delta_fz >= 0 else ''}{delta_fz} h."
+        )
+        teile.append(
+            "Criterion: a clinic moves to the 2nd-nearest technician if their "
+            "utilization is significantly lower and the resulting travel time increase "
+            "remains acceptable."
+        )
+        return " ".join(teile)
     if not gewonnen and not abgegeben:
         return (
             f"Bei {tid} ({td.get('standort', '–')}) wurden keine Kliniken verschoben — "
             f"alle Kliniken liegen bereits innerhalb der Schwellwerte beim nächstgelegenen "
             f"Techniker."
         )
-    ratio_vorher = m_a["ratio"] if m_a else 0.0
-    ratio_nachher = m_o["ratio"]
-    delta_fz = (m_o["fahrtstunden_jahr"] - m_a["fahrtstunden_jahr"]) if m_a else 0
     teile = [f"{tid} ({td.get('standort', '–')}):"]
     if gewonnen:
         teile.append(
@@ -175,17 +265,22 @@ def generiere_erklaerung(
     metriken_opt: list[dict] | None = None,
     ampeln: list[dict] | None = None,
     umweg_faktor: float = 1.35,
+    sprache: str = "de",
 ) -> str:
     """Erzeugt eine nachvollziehbare Text-Erklaerung rein aus vorhandenen
     Berechnungsdaten (Gebietsmetriken, Ampeln, Scoring-Gewichtung) -- ohne
-    externen KI-API-Aufruf.
+    externen KI-API-Aufruf. `sprache` ("de"/"en") waehlt nur die Formulierung --
+    alle Zahlen/Fakten kommen unveraendert aus denselben Berechnungsdaten.
     """
+    sprache = "en" if sprache == "en" else "de"
     metriken_opt = metriken_opt or []
     ampeln = ampeln or []
     if frage_typ == "warum_gebiet":
-        return erklaere_warum_gebiet(techniker_id, techniker, metriken_akt, umweg_faktor)
+        return erklaere_warum_gebiet(techniker_id, techniker, metriken_akt, umweg_faktor, sprache)
     if frage_typ == "warum_auslastung":
-        return erklaere_warum_auslastung(techniker_id, techniker, metriken_akt, ampeln)
+        return erklaere_warum_auslastung(techniker_id, techniker, metriken_akt, ampeln, sprache)
     if frage_typ == "warum_verschoben":
-        return erklaere_warum_verschoben(techniker_id, techniker, metriken_akt, metriken_opt)
+        return erklaere_warum_verschoben(techniker_id, techniker, metriken_akt, metriken_opt, sprache)
+    if sprache == "en":
+        return f"Unknown question type: {frage_typ}"
     return f"Unbekannter Fragetyp: {frage_typ}"

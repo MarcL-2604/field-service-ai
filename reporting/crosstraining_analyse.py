@@ -43,6 +43,7 @@ from config import (  # noqa: E402
     HUGO_KA_IDS,
     MIN_GERAETE_FUER_CROSSTRAINING,
     MIN_STK_POTENZIAL_CROSSTRAINING,
+    CROSSTRAINING_AUSGESCHLOSSENE_CLUSTER_PRAEFIXE,
 )
 
 BASE = _ROOT / "daten"
@@ -72,6 +73,27 @@ GERAET_ZU_TRAINING = {
     "AEX":              "Kardiovaskulaer",
     "ACT":              "Kardiovaskulaer",
 }
+
+# ---------------------------------------------------------------------------
+# Crosstraining-Ausschlussliste (config.CROSSTRAINING_AUSGESCHLOSSENE_CLUSTER_
+# PRAEFIXE): zu teures/aufwendiges Training, darf nie als Luecke empfohlen
+# werden. Die Demo-/Trainingsmatrix-Daten kennen keine MC-Codes, nur
+# Produktfamilie-Namen -- daher hier ein Mapping auf den repraesentativen
+# MC-Praefix, um dieselbe zentrale Konfiguration wie im Echtdaten-Pfad
+# (api/smax_cache.py) anzuwenden. Familien ohne Eintrag (z.B. CAS, CryoConsole
+# -- aktuell nicht in den Demo-Daten vorhanden) matchen nie, bis sie ergaenzt
+# werden -- kein Absturz, einfach kein Treffer.
+PRODUKTFAMILIE_ZU_MC_PRAEFIX = {
+    "Hugo":       "MC-HUGO",
+    "Navigation": "MC-BI70",   # O-arm
+}
+
+
+def ist_crosstraining_ausgeschlossen(produktfamilie: str) -> bool:
+    """True wenn produktfamilie einer zentral (config.py) ausgeschlossenen
+    Crosstraining-Produktgruppe entspricht."""
+    praefix = PRODUKTFAMILIE_ZU_MC_PRAEFIX.get(produktfamilie)
+    return praefix in CROSSTRAINING_AUSGESCHLOSSENE_CLUSTER_PRAEFIXE if praefix else False
 
 # ---------------------------------------------------------------------------
 # Mapping: kliniken.csv region-Code -> Bundeslaender-Liste
@@ -553,9 +575,15 @@ def fehlende_familien(
     """
     Produktfamilien, die in der Region vorhanden sind,
     aber der Techniker (noch) nicht auf Level >= min_level qualifiziert ist.
+
+    Zentral ausgeschlossene Produktgruppen (config.CROSSTRAINING_
+    AUSGESCHLOSSENE_CLUSTER_PRAEFIXE, siehe PRODUKTFAMILIE_ZU_MC_PRAEFIX)
+    erscheinen nie als Luecke, auch wenn wirtschaftlich sinnvoll.
     """
     fehlend = []
     for pf in sorted(reg_volumen):
+        if ist_crosstraining_ausgeschlossen(pf):
+            continue
         level_str = qualifikationen.get(pf, "L0")
         level_num = int(level_str[1]) if re.match(r"L\d", level_str) else 0
         if level_num < min_level:

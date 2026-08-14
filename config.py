@@ -34,10 +34,16 @@ OP_KLINIK_MAX_WOCHENTAG = 3      # letzter erlaubter Wochentag (Do=3)
 OP_KLINIK_TAGE = [0, 1, 2, 3]   # Mo=0 bis Do=3 (Fr gesperrt)
 
 # ─── Repair SLA ────────────────────────────────────
-REPAIR_SLA_STUNDEN = 48          # Kundenkontakt Pflicht
+REPAIR_SLA_STUNDEN = 48          # Kundenkontakt Pflicht (Erstkontakt)
 REPAIR_ZIEL_STUNDEN = 24         # intern anstreben
 REPAIR_WARNUNG_STUNDEN = 40      # Gelb-Alert
 REPAIR_ESKALATION_STUNDEN = 48   # Rot-Alert + Disponent
+
+# Abschluss-Ziele (eigenstaendige Frist, unabhaengig vom 48h-Erstkontakt
+# oben): Zeit bis zum tatsaechlichen Auftragsabschluss, exkl. Wartezeit auf
+# Ersatzteilbestellung (siehe ERSATZTEIL_*_TAGE).
+REPAIR_SLA_VERTRAGSKUNDE_TAGE = 2.5
+REPAIR_SLA_NICHT_VERTRAGSKUNDE_TAGE = 3.5
 
 # ─── Ersatzteile ───────────────────────────────────
 ERSATZTEIL_SOFORT_TAGE = 2       # Im Fahrzeug vorhanden
@@ -95,6 +101,22 @@ PUFFER_MESSMITTEL_LADEN = 30     # Vortag (nicht in Einsatz)
 MIN_GERAETE_FUER_CROSSTRAINING = 5      # Mindestanzahl Repair-Geraete der fehlenden Produktfamilie im Gebiet
 MIN_STK_POTENZIAL_CROSSTRAINING = 15    # Mindest-STK/Jahr-Potenzial der fehlenden Produktfamilie
 
+# ─── Crosstraining Ausschlussliste ─────────────────
+# Produktgruppen, die NIEMALS als Crosstraining-Empfehlung erscheinen sollen --
+# Schulung ist zu kostenintensiv/aufwendig, teilweise nur in USA verfuegbar.
+# Praefixe matchen gegen die "familie"-Schluessel aus
+# api/cluster_mapping.py.finde_repair_familie() (laengster passender MC-Code-
+# Praefix, siehe api/smax_cache.py crosstraining_luecken). Werden auch dann
+# herausgefiltert, wenn sie wirtschaftlich sinnvoll erscheinen wuerden.
+# Platzhalter-Eintraege (noch ohne echten MC-Code) matchen nie ein echtes
+# Geraet -- kein Absturz, einfach kein Treffer, bis der echte Code ergaenzt wird.
+CROSSTRAINING_AUSGESCHLOSSENE_CLUSTER_PRAEFIXE = [
+    "MC-HUGO",                                # Hugo (Robotik)
+    "MC-BI70",                                # O-arm (intraoperative Bildgebung/Navigation)
+    "CAS-Platzhalter (MC-Code fehlt noch)",   # CAS (Cranial/Spine Navigation)
+    "CRYO-Platzhalter (MC-Code fehlt noch)",  # CryoConsole / Arctic Front
+]
+
 # ─── Gebietsoptimierung: Algorithmus ───────────────
 # Generische Heuristik (ID-unabhaengig): Klinik wandert zum 2.-naechsten
 # Techniker, wenn dieser deutlich weniger ausgelastet ist und die
@@ -110,24 +132,17 @@ LUECKE_FAHRZEIT_SCHWELLE_MIN = 90         # Oe Fahrzeit zum naechsten Techniker 
 UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN = 20    # 2.-naechster Techniker <= X min langsamer = kontestiert
 UEBERSCHNEIDUNG_ANTEIL_SCHWELLE = 0.30    # Anteil kontestierter Kliniken im Gebiet fuer "Ueberschneidung"
 
-# ─── Hugo-Zusatzgebiet (optional, standardmaessig deaktiviert) ─────
-# Hugo-KA-Techniker mit wenigen Hugo-Systemen im Kerngebiet sind trotzdem stark
-# ausgelastet (Hugo ist reparaturanfaellig, bindet viel Kapazitaet). Fuer sie
-# kann im Dashboard optional ein erweitertes Gebiet fuer bestimmte
-# Small-Capital-Zusatzprodukte aktiviert werden -- dort gilt immer PM-only
-# (Repair=False), unabhaengig vom normalen Cluster-Mapping dieser Geraete.
-HUGO_ZUSATZGEBIET_MAX_FAHRZEIT_MIN = 95   # Mittelwert 90-100 Min., anpassbar
-HUGO_ZUSATZGEBIET_PRODUKTE = [
-    "MC-NIM4CM01",
-    "MC-NIM4CPB1",
-    "NIM3-Platzhalter (MC-Code fehlt noch)",
-    "MC-2090",
-    "MC-ACT200",
-    "MC-40-405-1",
-    "CVG-Platzhalter (MC-Code fehlt noch)",
-    "RTG-Platzhalter (MC-Code fehlt noch)",
-    "SI-Platzhalter (MC-Code fehlt noch)",
-]
+# ─── Hugo-Kerngebiet ────────────────────────────────
+# Hugo-Systeme stehen an wenigen, teils weit vom Wohnort des zustaendigen
+# Techniker entfernten Standorten (z.B. Ulm/Mannheim ~2,5h von Balingen) --
+# diese Entfernung zum Hugo-SYSTEM ist normal und wird nicht begrenzt (siehe
+# config_hugo_standorte.HUGO_STANDORTE, manuell gepflegte Zuordnung).
+# Begrenzt wird stattdessen das Alltags-Kerngebiet (Small Capital, PM-only)
+# um den WOHNORT des Hugo-Technikers: eine Verfuegbarkeits-Garantie, damit er
+# taeglich nach Hause zurueckkehrt und bei einer Hugo-Stoerung sein Equipment
+# bereits zuhause hat -- keine Entfernungsbegrenzung zum Hugo-System selbst.
+# Siehe reporting/hugo_kerngebiet.py.
+HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN = 90
 
 # ─── Trainingskosten (Platzhalter) ─────────────────
 TRAINING_SMALL_CAPITAL_EUR = 0        # intern
@@ -155,7 +170,7 @@ KALENDER_INTEGRIERT = False       # Prototyp-Flag
 # ─── Test-Suite (Dashboard-Footer) ─────────────────
 # Manuell bei jedem pytest-Lauf/Release aktualisieren (`pytest --collect-only -q`).
 # Einzige Stelle im Code -- dashboard.py liest von hier, nicht hardcodiert.
-TESTS_ANZAHL = 927
+TESTS_ANZAHL = 967
 
 # ─── Projekt-Kennzahlen (Landingpage index.html) ───
 # Einzige Quelle fuer die auf index.html beworbenen Kennzahlen. Bei neuem

@@ -40,6 +40,8 @@ from config import (
     REPAIR_ZIEL_STUNDEN,
     REPAIR_WARNUNG_STUNDEN,
     REPAIR_ESKALATION_STUNDEN,
+    REPAIR_SLA_VERTRAGSKUNDE_TAGE,
+    REPAIR_SLA_NICHT_VERTRAGSKUNDE_TAGE,
     ERSATZTEIL_SOFORT_TAGE,
     ERSATZTEIL_LAGER_TAGE,
     ERSATZTEIL_BESTELL_TAGE,
@@ -159,6 +161,18 @@ class TestConfigWerte:
 
     def test_repair_eskalation(self):
         assert REPAIR_ESKALATION_STUNDEN == 48
+
+    def test_repair_sla_vertragskunde_abschluss_tage(self):
+        assert REPAIR_SLA_VERTRAGSKUNDE_TAGE == 2.5
+
+    def test_repair_sla_nicht_vertragskunde_abschluss_tage(self):
+        assert REPAIR_SLA_NICHT_VERTRAGSKUNDE_TAGE == 3.5
+
+    def test_repair_sla_abschluss_ziele_unterscheiden_sich_von_48h_kontaktfrist(self):
+        """Abschluss-Ziele (Tage) sind eine eigenstaendige Frist, getrennt von
+        der 48h-Kundenkontakt-Pflicht (REPAIR_SLA_STUNDEN)."""
+        assert REPAIR_SLA_VERTRAGSKUNDE_TAGE * 24 != REPAIR_SLA_STUNDEN
+        assert REPAIR_SLA_NICHT_VERTRAGSKUNDE_TAGE > REPAIR_SLA_VERTRAGSKUNDE_TAGE
 
     # ─── Ersatzteile ───────────────────────────────
     def test_ersatzteil_sofort(self):
