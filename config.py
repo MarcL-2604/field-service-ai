@@ -103,6 +103,13 @@ OPTIMIERUNG_AUSLASTUNGS_SCHWELLE = 15            # Mindest-Auslastungsdifferenz 
 OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN = 20    # max. akzeptierte Fahrzeit-Mehrbelastung (Minuten)
 ARBEITSWOCHEN_PRO_JAHR = 46                      # Kapazitaetsbasis fuer Auslastungs-Berechnung
 
+# ─── Gebietsoptimierung: Luecken & Ueberschneidungen (generisch) ───
+# Generische Heuristik (ID-unabhaengig, wie oben): pro Bundesland aus den
+# echten Klinik-Fahrzeiten abgeleitet statt aus einer festen Techniker-Liste.
+LUECKE_FAHRZEIT_SCHWELLE_MIN = 90         # Oe Fahrzeit zum naechsten Techniker > X min = Luecke
+UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN = 20    # 2.-naechster Techniker <= X min langsamer = kontestiert
+UEBERSCHNEIDUNG_ANTEIL_SCHWELLE = 0.30    # Anteil kontestierter Kliniken im Gebiet fuer "Ueberschneidung"
+
 # ─── Hugo-Zusatzgebiet (optional, standardmaessig deaktiviert) ─────
 # Hugo-KA-Techniker mit wenigen Hugo-Systemen im Kerngebiet sind trotzdem stark
 # ausgelastet (Hugo ist reparaturanfaellig, bindet viel Kapazitaet). Fuer sie
@@ -148,7 +155,7 @@ KALENDER_INTEGRIERT = False       # Prototyp-Flag
 # ─── Test-Suite (Dashboard-Footer) ─────────────────
 # Manuell bei jedem pytest-Lauf/Release aktualisieren (`pytest --collect-only -q`).
 # Einzige Stelle im Code -- dashboard.py liest von hier, nicht hardcodiert.
-TESTS_ANZAHL = 917
+TESTS_ANZAHL = 927
 
 # ─── Projekt-Kennzahlen (Landingpage index.html) ───
 # Einzige Quelle fuer die auf index.html beworbenen Kennzahlen. Bei neuem

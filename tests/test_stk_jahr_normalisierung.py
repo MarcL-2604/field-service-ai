@@ -150,7 +150,7 @@ class TestAlleTechnikerSichtbar:
     def test_reale_technikeranzahl_stimmt_in_beiden_tabellen_ueberein(self):
         """End-to-End mit echten Demo-Daten: Anzahl <strong>{id}</strong>-Treffer
         in Ansicht 1 und Ansicht 2 muss gleich der Technikeranzahl sein."""
-        metriken_akt, metriken_opt, _, _ = _berechne_gebietsmetriken(self.techniker)
+        metriken_akt, metriken_opt, _, _, _ = _berechne_gebietsmetriken(self.techniker)
         html = _render_gebietsoptimierung(metriken_akt, metriken_opt, self.techniker)
 
         aktuell_html = html.split("Ansicht 2:")[0]
@@ -244,7 +244,7 @@ class TestRealeDatenKonsistenz:
         alt = dash._ECHTDATEN
         dash._ECHTDATEN = True
         try:
-            metriken_akt, metriken_opt, _, _ = _berechne_gebietsmetriken(techniker)
+            metriken_akt, metriken_opt, _, _, _ = _berechne_gebietsmetriken(techniker)
         finally:
             dash._ECHTDATEN = alt
 

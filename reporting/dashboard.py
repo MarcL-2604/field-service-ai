@@ -47,6 +47,9 @@ from config import (  # noqa: E402
     ARBEITSWOCHEN_PRO_JAHR,
     HUGO_ZUSATZGEBIET_MAX_FAHRZEIT_MIN,
     HUGO_ZUSATZGEBIET_PRODUKTE,
+    LUECKE_FAHRZEIT_SCHWELLE_MIN,
+    UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN,
+    UEBERSCHNEIDUNG_ANTEIL_SCHWELLE,
 )
 from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
@@ -1157,6 +1160,87 @@ def _soll_klinik_verschieben(
     )
 
 
+def _klassifiziere_gebiete_luecken_ueberschneidungen(
+    kliniken: list[dict],
+    kandidaten: dict[str, list[tuple[str, float]]],
+    topo_paths: list[dict],
+) -> dict[str, dict]:
+    """Generische, ID-unabhaengige Klassifikation der Bundeslaender in
+    Luecke / Ueberschneidung / Optimal -- aus den echten Klinik-Fahrzeiten
+    zum 1.- und 2.-naechsten Techniker abgeleitet (kein festes T1-T14-Schema),
+    funktioniert fuer Demo- und Echtdaten-Techniker gleichermassen.
+
+    Luecke: Oe Fahrzeit zum naechsten Techniker im Bundesland liegt ueber
+    LUECKE_FAHRZEIT_SCHWELLE_MIN.
+    Ueberschneidung: bei mindestens UEBERSCHNEIDUNG_ANTEIL_SCHWELLE der
+    Kliniken im Bundesland liegt der 2.-naechste Techniker fahrzeitlich nah
+    am 1.-naechsten (Differenz <= UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN Minuten
+    -- die Klinik ist also zwischen zwei Technikern "kontestiert").
+    Optimal: weder Luecke noch Ueberschneidung.
+
+    Gibt {bundesland: {typ, techs, naechster?, fahrzeit_min?, anteil_pct?}}
+    zurueck -- nur fuer Bundeslaender mit mindestens einer zugeordneten
+    Klinik (kein Eintrag, wenn keine Daten vorliegen).
+    """
+    klinik_plz = {k["id"]: k.get("plz", "") for k in kliniken}
+    bl_kliniken: dict[str, list[str]] = {}
+    for k in kliniken:
+        px, py = _project_mercator(k["lon"], k["lat"])
+        bl = _bundesland_fuer_punkt(px, py, topo_paths)
+        if bl:
+            bl_kliniken.setdefault(bl, []).append(k["id"])
+
+    ergebnis: dict[str, dict] = {}
+    for bl, klinik_ids in bl_kliniken.items():
+        fahrzeiten: list[float] = []
+        kontestiert = 0
+        naechste_zaehler: dict[str, int] = {}
+        kontest_techs: set[str] = set()
+        for kid in klinik_ids:
+            dists = kandidaten.get(kid, [])
+            if not dists:
+                continue
+            eff_speed = 100.0 / _strassenfaktor(klinik_plz.get(kid, ""))
+            tid1, dist1 = dists[0]
+            fz1 = dist1 / eff_speed * 60
+            fahrzeiten.append(fz1)
+            naechste_zaehler[tid1] = naechste_zaehler.get(tid1, 0) + 1
+            if len(dists) >= 2:
+                tid2, dist2 = dists[1]
+                fz2 = dist2 / eff_speed * 60
+                if (fz2 - fz1) <= UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN:
+                    kontestiert += 1
+                    kontest_techs.add(tid1)
+                    kontest_techs.add(tid2)
+
+        if not fahrzeiten:
+            continue
+
+        avg_fz = sum(fahrzeiten) / len(fahrzeiten)
+        kontest_anteil = kontestiert / len(fahrzeiten)
+        haupttech = max(naechste_zaehler, key=lambda t: naechste_zaehler[t])
+
+        if avg_fz > LUECKE_FAHRZEIT_SCHWELLE_MIN:
+            ergebnis[bl] = {
+                "typ": "gap",
+                "techs": [haupttech],
+                "naechster": haupttech,
+                "fahrzeit_min": round(avg_fz),
+            }
+        elif kontest_anteil >= UEBERSCHNEIDUNG_ANTEIL_SCHWELLE:
+            ergebnis[bl] = {
+                "typ": "overlap",
+                "techs": sorted(kontest_techs),
+                "anteil_pct": round(kontest_anteil * 100),
+            }
+        else:
+            ergebnis[bl] = {
+                "typ": "optimal",
+                "techs": [haupttech],
+            }
+    return ergebnis
+
+
 _SVG_POINT_RE = re.compile(r'([ML])(-?\d+\.?\d*),(-?\d+\.?\d*)')
 
 
@@ -1288,7 +1372,7 @@ def _lade_kliniken_echtdaten() -> tuple[list[dict], dict[str, float], float]:
 
 def _berechne_gebietsmetriken(
     techniker: dict[str, dict],
-) -> tuple[list[dict], list[dict], dict[str, str], list[dict]]:
+) -> tuple[list[dict], list[dict], dict[str, str], list[dict], dict[str, dict]]:
     """Berechnet Fahrzeit-Metriken (aktuell + optimiert) pro Techniker.
 
     Optimierung: generische, ID-unabhaengige Heuristik -- funktioniert fuer
@@ -1311,6 +1395,8 @@ def _berechne_gebietsmetriken(
     punkte ist eine Liste je Klinik/Job-Standort ({id, plz, lat, lon, name,
     stk, jobs, akt, opt}) fuer die interaktive Techniker-Hervorhebung auf der
     Gebietskarte (Klick auf Techniker → nur dessen Punkte werden gerendert).
+    gebiete_status ist die generische Luecken-/Ueberschneidungs-Klassifikation
+    je Bundesland (siehe _klassifiziere_gebiete_luecken_ueberschneidungen).
     """
     if _ECHTDATEN:
         kliniken, stk_count, stunden_pro_einsatz = _lade_kliniken_echtdaten()
@@ -1318,10 +1404,10 @@ def _berechne_gebietsmetriken(
         try:
             kliniken, stk_count, stunden_pro_einsatz = _lade_kliniken_demo()
         except ImportError:
-            return [], [], {}, []
+            return [], [], {}, [], {}
 
     if not kliniken:
-        return [], [], {}, []
+        return [], [], {}, [], {}
 
     valid_tids = [tid for tid, td in techniker.items() if td.get("lat")]
 
@@ -1435,6 +1521,11 @@ def _berechne_gebietsmetriken(
         for bl, zaehler in bl_zaehler.items()
     }
 
+    # ── Luecken & Ueberschneidungen: generisch aus den Ist-Fahrzeiten ──
+    gebiete_status = _klassifiziere_gebiete_luecken_ueberschneidungen(
+        kliniken, kandidaten, topo_paths,
+    )
+
     # ── Punkte je Klinik/Job-Standort fuer die interaktive Kartenhervorhebung ──
     punkte: list[dict] = []
     for k in kliniken:
@@ -1454,7 +1545,7 @@ def _berechne_gebietsmetriken(
             "y":    py,
         })
 
-    return metriken_akt, metriken_opt, gebiet_optimiert, punkte
+    return metriken_akt, metriken_opt, gebiet_optimiert, punkte, gebiete_status
 
 
 def _berechne_plz_abdeckung(
@@ -2020,7 +2111,10 @@ def _build_gebiets_script(
         "\n"
         "  document.querySelectorAll('tr[data-tech]').forEach(function(tr){\n"
         "    tr.style.cursor='pointer';\n"
-        "    tr.addEventListener('click',function(){ selectTech(tr.getAttribute('data-tech')); });\n"
+        "    tr.addEventListener('click',function(e){\n"
+        "      if(e.target.closest('.go-tech-link')) return;\n"
+        "      selectTech(tr.getAttribute('data-tech'));\n"
+        "    });\n"
         "  });\n"
         "  document.body.addEventListener('click',function(e){\n"
         "    var link=e.target.closest('.go-tech-link');\n"
@@ -3509,6 +3603,7 @@ def _render_gebietsoptimierung(
     metriken_opt: list[dict],
     techniker: dict[str, dict],
     hugo_zusatzgebiete: list[dict] | None = None,
+    gebiete_status: dict[str, dict] | None = None,
 ) -> str:
     """Erzeugt den Gebietsoptimierung-Tab mit 3 klickbaren Ansicht-Buttons."""
     if not metriken_akt:
@@ -3646,49 +3741,49 @@ def _render_gebietsoptimierung(
         )
 
     # ── Ansicht 3: Lücken & Überschneidungen ──
-    # Identifiziere Problembereiche aus den Metriken
-    _UEBERSCHNEIDUNG_GEBIETE = {
-        "Nordrhein-Westfalen": {"techs": ["T5", "T8", "T11", "T13"], "typ": "overlap"},
-        "Bayern":              {"techs": ["T4", "T7"],               "typ": "overlap"},
-    }
-    _LUECKEN_GEBIETE = {
-        "Mecklenburg-Vorpommern": {"naechster": "T9", "fahrzeit": "180 min", "typ": "gap"},
-        "Brandenburg":            {"naechster": "T3", "fahrzeit": "165 min", "typ": "gap"},
-    }
+    # Generisch aus den echten Techniker-Standorten/Klinik-Fahrzeiten
+    # abgeleitet (siehe _klassifiziere_gebiete_luecken_ueberschneidungen) --
+    # kein festes T1-T14-Schema, funktioniert fuer Demo- und
+    # Echtdaten-Techniker gleichermassen.
+    gebiete_status = gebiete_status or {}
 
     rows_luecken = ""
-    for gebiet, info in _UEBERSCHNEIDUNG_GEBIETE.items():
-        techs = ", ".join(
-            f'<span class="go-tech-link" data-tech="{t}">{t}</span>' for t in info["techs"]
-        )
-        rows_luecken += (
-            f'<tr class="go-overlap">'
-            f'<td><span class="go-dot go-dot-orange"></span>{gebiet}</td>'
-            f'<td>&Uuml;berschneidung</td>'
-            f'<td>{techs}</td>'
-            f'<td>Gebiete konsolidieren &mdash; klare Zuordnung definieren</td>'
-            f'</tr>')
-    for gebiet, info in _LUECKEN_GEBIETE.items():
-        rows_luecken += (
-            f'<tr class="go-gap">'
-            f'<td><span class="go-dot go-dot-rot"></span>{gebiet}</td>'
-            f'<td>L&uuml;cke</td>'
-            f'<td><span class="go-tech-link" data-tech="{info["naechster"]}">{info["naechster"]}</span> '
-            f'({info["fahrzeit"]})</td>'
-            f'<td>Neueinstellung oder Gebiets-Erweiterung empfohlen</td>'
-            f'</tr>')
-    # Optimal abgedeckte Gebiete
-    _OPTIMAL = ["Hessen", "Schleswig-Holstein", "Baden-Württemberg", "Thüringen"]
-    for gebiet in _OPTIMAL:
-        tid = _GEBIET_AKTUELL.get(gebiet, "–")
-        tid_html = f'<span class="go-tech-link" data-tech="{tid}">{tid}</span>' if tid != "–" else tid
-        rows_luecken += (
-            f'<tr class="go-optimal">'
-            f'<td><span class="go-dot go-dot-gruen"></span>{gebiet}</td>'
-            f'<td>Optimal</td>'
-            f'<td>{tid_html}</td>'
-            f'<td>Keine Anpassung n&ouml;tig</td>'
-            f'</tr>')
+    for gebiet in sorted(gebiete_status):
+        info = gebiete_status[gebiet]
+        typ = info["typ"]
+        if typ == "overlap":
+            primaer = info["techs"][0]
+            techs_html = ", ".join(
+                f'<span class="go-tech-link" data-tech="{t}">{t}</span>' for t in info["techs"]
+            )
+            rows_luecken += (
+                f'<tr class="go-overlap" data-tech="{primaer}">'
+                f'<td><span class="go-dot go-dot-orange"></span>{gebiet}</td>'
+                f'<td>&Uuml;berschneidung</td>'
+                f'<td>{techs_html}</td>'
+                f'<td>{info["anteil_pct"]}% der Kliniken zwischen 1./2.-n&auml;chstem '
+                f'Techniker kontestiert (&le;{UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN} min '
+                f'Fahrzeit-Differenz) &mdash; Gebiete konsolidieren</td>'
+                f'</tr>')
+        elif typ == "gap":
+            tid = info["naechster"]
+            rows_luecken += (
+                f'<tr class="go-gap" data-tech="{tid}">'
+                f'<td><span class="go-dot go-dot-rot"></span>{gebiet}</td>'
+                f'<td>L&uuml;cke</td>'
+                f'<td><span class="go-tech-link" data-tech="{tid}">{tid}</span> '
+                f'(&#216; {info["fahrzeit_min"]} min)</td>'
+                f'<td>Neueinstellung oder Gebiets-Erweiterung empfohlen</td>'
+                f'</tr>')
+        else:
+            tid = info["techs"][0]
+            rows_luecken += (
+                f'<tr class="go-optimal" data-tech="{tid}">'
+                f'<td><span class="go-dot go-dot-gruen"></span>{gebiet}</td>'
+                f'<td>Optimal</td>'
+                f'<td><span class="go-tech-link" data-tech="{tid}">{tid}</span></td>'
+                f'<td>Keine Anpassung n&ouml;tig</td>'
+                f'</tr>')
 
     # Top-3 Empfehlungen
     top3 = []
@@ -3841,6 +3936,7 @@ def render_html(
     gebiets_punkte: list[dict] | None = None,
     erklaerungen: dict[str, dict[str, str]] | None = None,
     hugo_zusatzgebiete: list[dict] | None = None,
+    gebiete_status: dict[str, dict] | None = None,
 ) -> str:
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten)
     stk_html      = _render_stk_tabelle(stk_rows)
@@ -3858,7 +3954,8 @@ def render_html(
     m_akt, m_opt  = gebiets_metriken or ([], [])
     plz_abd       = _berechne_plz_abdeckung(techniker)
     gebiets_html  = _render_gebietsplanung(m_akt, m_opt, plz_abd)
-    gebietsopt_html = _render_gebietsoptimierung(m_akt, m_opt, techniker, hugo_zusatzgebiete)
+    gebietsopt_html = _render_gebietsoptimierung(
+        m_akt, m_opt, techniker, hugo_zusatzgebiete, gebiete_status)
     gebiets_svg_content = _build_gebiets_svg(techniker, plz_abd, hugo_zusatzgebiete)
     gebiets_script = _build_gebiets_script(techniker, plz_abd, gebiets_punkte or [])
     tech_detail_json = _render_techniker_detail_data(
@@ -4895,7 +4992,7 @@ def main() -> None:
     )
 
     print("Berechne Gebietsmetriken...")
-    m_akt, m_opt, gebiet_optimiert_neu, gebiets_punkte = _berechne_gebietsmetriken(techniker)
+    m_akt, m_opt, gebiet_optimiert_neu, gebiets_punkte, gebiete_status = _berechne_gebietsmetriken(techniker)
     gebiets_metriken = (m_akt, m_opt)
     _GEBIET_OPTIMIERT = {**_GEBIET_AKTUELL, **gebiet_optimiert_neu}
     verschoben_gesamt = sum(m.get("verschoben_gewonnen", 0) for m in m_opt)
@@ -4942,6 +5039,7 @@ def main() -> None:
         gebiets_punkte=gebiets_punkte,
         erklaerungen=erklaerungen,
         hugo_zusatzgebiete=hugo_zusatzgebiete,
+        gebiete_status=gebiete_status,
     )
 
     _OUT_PATH.write_text(html, encoding="utf-8")

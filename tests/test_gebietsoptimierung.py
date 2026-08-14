@@ -18,11 +18,16 @@ from config import (
     OPTIMIERUNG_AUSLASTUNGS_SCHWELLE,
     OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN,
     ARBEITSWOCHEN_PRO_JAHR,
+    LUECKE_FAHRZEIT_SCHWELLE_MIN,
+    UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN,
+    UEBERSCHNEIDUNG_ANTEIL_SCHWELLE,
 )
 import reporting.dashboard as dash
 from reporting.dashboard import (
     _soll_klinik_verschieben,
     _berechne_gebietsmetriken,
+    _klassifiziere_gebiete_luecken_ueberschneidungen,
+    _render_gebietsoptimierung,
     _lade_kliniken_demo,
     _lade_kliniken_echtdaten,
     _parse_svg_polygon,
@@ -118,6 +123,25 @@ class TestKeineHartcodiertenIds:
                 f"{verbotene_id} sollte nicht mehr in _berechne_gebietsmetriken vorkommen"
             )
 
+    def test_klassifizierung_ist_frei_von_demo_techniker_ids(self):
+        """Die neue generische Klassifikationsfunktion darf keine festen
+        Techniker-IDs referenzieren -- alle Werte kommen aus den Funktionsargumenten."""
+        quelle = inspect.getsource(_klassifiziere_gebiete_luecken_ueberschneidungen)
+        for verbotene_id in ('"T2"', '"T3"', '"T4"', '"T5"', '"T7"', '"T8"', '"T9"', '"T11"', '"T13"'):
+            assert verbotene_id.lower() not in quelle.lower(), (
+                f"{verbotene_id} sollte nicht in _klassifiziere_gebiete_luecken_ueberschneidungen vorkommen"
+            )
+
+    def test_alte_luecken_ueberschneidungen_sonderregel_entfernt(self):
+        """Die alte, feste Bundesland -> T5/T8/T9/T11/T13/T3/T4-Zuordnung
+        (_UEBERSCHNEIDUNG_GEBIETE / _LUECKEN_GEBIETE / _OPTIMAL-Liste) darf
+        nicht mehr im Rendering-Code vorkommen."""
+        quelle = inspect.getsource(_render_gebietsoptimierung)
+        for verboten in ("_ueberschneidung_gebiete", "_luecken_gebiete", "_optimal ="):
+            assert verboten not in quelle.lower(), (
+                f"{verboten!r} sollte nicht mehr in _render_gebietsoptimierung vorkommen"
+            )
+
 
 # ===================================================================
 # _berechne_gebietsmetriken(): End-to-End mit echten Klinik-/Geraetedaten
@@ -140,7 +164,9 @@ class TestBerechneGebietsmetrikenStruktur:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.techniker = _lade_demo_techniker()
-        self.akt, self.opt, self.gebiet_opt, self.punkte = _berechne_gebietsmetriken(self.techniker)
+        self.akt, self.opt, self.gebiet_opt, self.punkte, self.gebiete_status = (
+            _berechne_gebietsmetriken(self.techniker)
+        )
 
     def test_gibt_vierertupel_zurueck(self):
         assert isinstance(self.akt, list)
@@ -197,16 +223,16 @@ class TestIdUnabhaengigkeit:
         }
 
     def test_gleiche_anzahl_verschobener_kliniken_nach_umbenennung(self):
-        _, opt_orig, _, _ = _berechne_gebietsmetriken(self.original)
-        _, opt_neu, _, _ = _berechne_gebietsmetriken(self.umbenannt)
+        _, opt_orig, _, _, _ = _berechne_gebietsmetriken(self.original)
+        _, opt_neu, _, _, _ = _berechne_gebietsmetriken(self.umbenannt)
 
         gesamt_orig = sum(m["verschoben_gewonnen"] for m in opt_orig)
         gesamt_neu = sum(m["verschoben_gewonnen"] for m in opt_neu)
         assert gesamt_orig == gesamt_neu
 
     def test_gleiche_kliniken_anzahl_pro_umbenanntem_techniker(self):
-        _, opt_orig, _, _ = _berechne_gebietsmetriken(self.original)
-        _, opt_neu, _, _ = _berechne_gebietsmetriken(self.umbenannt)
+        _, opt_orig, _, _, _ = _berechne_gebietsmetriken(self.original)
+        _, opt_neu, _, _, _ = _berechne_gebietsmetriken(self.umbenannt)
 
         orig_by_id = {m["id"]: m["kliniken"] for m in opt_orig}
         neu_by_id = {m["id"]: m["kliniken"] for m in opt_neu}
@@ -216,16 +242,129 @@ class TestIdUnabhaengigkeit:
     def test_funktioniert_auch_mit_nur_zwei_technikern(self):
         """Kleinstes sinnvolles Set (1.- und 2.-naechster muss existieren)."""
         zwei = dict(list(self.umbenannt.items())[:2])
-        akt, opt, _, _ = _berechne_gebietsmetriken(zwei)
+        akt, opt, _, _, _ = _berechne_gebietsmetriken(zwei)
         assert len(akt) == 2
         assert len(opt) == 2
 
     def test_funktioniert_mit_einem_einzigen_techniker(self):
         """Ohne 2.-naechsten Techniker darf nichts verschoben werden (kein Crash)."""
         einer = dict(list(self.umbenannt.items())[:1])
-        akt, opt, _, _ = _berechne_gebietsmetriken(einer)
+        akt, opt, _, _, _ = _berechne_gebietsmetriken(einer)
         assert len(opt) == 1
         assert opt[0]["verschoben"] == 0
+
+
+# ===================================================================
+# _klassifiziere_gebiete_luecken_ueberschneidungen(): generische Luecken-/
+# Ueberschneidungs-Erkennung (ersetzt die alte feste Bundesland->ID-Liste)
+# ===================================================================
+
+# Reale Koordinaten (aus TestBundeslandFuerPunkt bereits verifiziert)
+_HAMBURG = (53.5505, 9.9937)
+_MUENCHEN = (48.1351, 11.5820)
+
+
+class TestKlassifiziereGebieteLueckenUeberschneidungen:
+    def setup_method(self):
+        self.topo_paths = _topo_to_svg_paths()
+
+    def _klinik(self, kid: str, koords: tuple[float, float]) -> dict:
+        lat, lon = koords
+        return {"id": kid, "plz": "00000", "lat": lat, "lon": lon}
+
+    def test_grosse_distanz_zum_naechsten_techniker_ergibt_luecke(self):
+        kliniken = [self._klinik("K1", _HAMBURG)]
+        kandidaten = {"K1": [("Weit-Weg-Techniker", 250.0)]}
+        ergebnis = _klassifiziere_gebiete_luecken_ueberschneidungen(
+            kliniken, kandidaten, self.topo_paths,
+        )
+        assert len(ergebnis) == 1
+        info = next(iter(ergebnis.values()))
+        assert info["typ"] == "gap"
+        assert info["naechster"] == "Weit-Weg-Techniker"
+        assert info["fahrzeit_min"] > LUECKE_FAHRZEIT_SCHWELLE_MIN
+
+    def test_naher_1_und_2_techniker_ergibt_ueberschneidung(self):
+        kliniken = [self._klinik(f"K{i}", _MUENCHEN) for i in range(3)]
+        kandidaten = {
+            f"K{i}": [("Techniker-A", 20.0), ("Techniker-B", 25.0)]
+            for i in range(3)
+        }
+        ergebnis = _klassifiziere_gebiete_luecken_ueberschneidungen(
+            kliniken, kandidaten, self.topo_paths,
+        )
+        assert len(ergebnis) == 1
+        info = next(iter(ergebnis.values()))
+        assert info["typ"] == "overlap"
+        assert set(info["techs"]) == {"Techniker-A", "Techniker-B"}
+        assert info["anteil_pct"] == 100
+
+    def test_klarer_naechster_techniker_ohne_konkurrenz_ergibt_optimal(self):
+        kliniken = [self._klinik("K1", _HAMBURG)]
+        kandidaten = {"K1": [("Techniker-A", 20.0), ("Techniker-B", 300.0)]}
+        ergebnis = _klassifiziere_gebiete_luecken_ueberschneidungen(
+            kliniken, kandidaten, self.topo_paths,
+        )
+        assert len(ergebnis) == 1
+        info = next(iter(ergebnis.values()))
+        assert info["typ"] == "optimal"
+        assert info["techs"] == ["Techniker-A"]
+
+    def test_keine_kliniken_ergibt_leeres_ergebnis_ohne_absturz(self):
+        assert _klassifiziere_gebiete_luecken_ueberschneidungen([], {}, self.topo_paths) == {}
+
+    def test_klinik_ohne_kandidaten_wird_uebersprungen(self):
+        kliniken = [self._klinik("K1", _HAMBURG)]
+        ergebnis = _klassifiziere_gebiete_luecken_ueberschneidungen(
+            kliniken, {}, self.topo_paths,
+        )
+        assert ergebnis == {}
+
+    def test_funktioniert_mit_demo_technikern_end_to_end(self):
+        """Regressionstest: reale Demo-Techniker (T1-T14) liefern ein
+        nicht-leeres, sinnvolles Ergebnis -- alte Darstellung bleibt inhaltlich
+        funktionsfaehig."""
+        techniker = _lade_demo_techniker()
+        _, _, _, _, gebiete_status = _berechne_gebietsmetriken(techniker)
+        assert gebiete_status, "Demo-Modus sollte klassifizierte Bundeslaender liefern"
+        for info in gebiete_status.values():
+            assert info["typ"] in ("gap", "overlap", "optimal")
+            assert info["techs"], "jede Klassifikation muss mindestens einen echten Techniker nennen"
+            for tid in info["techs"]:
+                assert tid in techniker
+
+    def test_funktioniert_mit_echtdaten_technikern_end_to_end(self):
+        """Dieselbe Klassifikation muss auch mit den 24 echten (namensbasierten)
+        Technikern funktionieren -- kein T1-T14-Schema noetig."""
+        from reporting.dashboard import _lade_techniker
+        alt = dash._ECHTDATEN
+        try:
+            techniker = _lade_techniker()
+            if not dash._ECHTDATEN:
+                pytest.skip("kein SMax-Cache vorhanden -- Echtdaten-Pfad nicht testbar")
+            _, _, _, _, gebiete_status = _berechne_gebietsmetriken(techniker)
+        finally:
+            dash._ECHTDATEN = alt
+        assert gebiete_status, "Echtdaten-Modus sollte klassifizierte Bundeslaender liefern"
+        for info in gebiete_status.values():
+            assert info["typ"] in ("gap", "overlap", "optimal")
+            for tid in info["techs"]:
+                assert tid in techniker
+                # Echtdaten-IDs sind Namen ("Vorname N."), kein T1-T14-Schema
+                assert not (tid.startswith("T") and tid[1:].isdigit())
+
+    def test_id_unabhaengigkeit_umbenennung_aendert_klassifikation_nicht(self):
+        """Gleiche Koordinaten unter anderen Namen muessen dieselbe
+        Anzahl/Art von Klassifikationen liefern -- nur die Labels aendern sich."""
+        original = _lade_demo_techniker()
+        umbenannt = {f"Person-{tid}": daten for tid, daten in original.items()}
+
+        _, _, _, _, status_orig = _berechne_gebietsmetriken(original)
+        _, _, _, _, status_neu = _berechne_gebietsmetriken(umbenannt)
+
+        assert set(status_orig.keys()) == set(status_neu.keys())
+        for bl in status_orig:
+            assert status_orig[bl]["typ"] == status_neu[bl]["typ"]
 
 
 # ===================================================================
@@ -329,7 +468,7 @@ class TestBerechneGebietsmetrikenDatenquelle:
     def test_echtdaten_modus_nutzt_reale_job_standorte(self):
         dash._ECHTDATEN = True
         techniker = _lade_demo_techniker()  # Koordinaten egal, nur Datenquelle testen
-        akt, opt, _, _ = _berechne_gebietsmetriken(techniker)
+        akt, opt, _, _, _ = _berechne_gebietsmetriken(techniker)
         # Reale Kliniken tragen "J"-IDs -- indirekt pruefbar ueber Nicht-Leere,
         # da IDs nicht im Rueckgabewert von _aggregiere() landen. Stattdessen:
         # direkter Vergleich der Ladefunktion.
@@ -340,7 +479,7 @@ class TestBerechneGebietsmetrikenDatenquelle:
     def test_demo_modus_nutzt_demo_kliniken(self):
         dash._ECHTDATEN = False
         techniker = _lade_demo_techniker()
-        akt, opt, _, _ = _berechne_gebietsmetriken(techniker)
+        akt, opt, _, _, _ = _berechne_gebietsmetriken(techniker)
         kliniken_demo, _, stunden = _lade_kliniken_demo()
         assert stunden == 2.0  # Demo-Kostenmodell (Konstante im Code)
         assert akt
