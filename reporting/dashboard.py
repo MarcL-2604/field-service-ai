@@ -128,6 +128,50 @@ def _lade_crosstraining() -> list[dict]:
     return rows
 
 
+def _baue_ct_rows_echtdaten(smax_techniker: list[dict]) -> list[dict]:
+    """Baut CT-Tabellenzeilen aus echten SMax-Daten (crosstraining_luecken,
+    geraete_im_gebiet, stk_potenzial aus smax_dashboard_data.json), im selben
+    Schema wie crosstraining_empfehlungen.csv (Demo), damit _render_ct_tabelle
+    und _render_ct_ausschluss_hint unveraendert beide Modi bedienen koennen.
+    """
+    rows = []
+    for t in smax_techniker:
+        luecken = t.get("crosstraining_luecken", []) or []
+        geraete = t.get("geraete_im_gebiet", {}) or {}
+        luecken_set = set(luecken)
+        regional = sorted(geraete.keys())
+        qualifiziert = [f for f in regional if f not in luecken_set]
+
+        if luecken:
+            top_familie = max(luecken, key=lambda f: geraete.get(f, 0))
+            top_stk = geraete.get(top_familie, 0)
+        else:
+            top_familie = ""
+            top_stk = 0
+
+        wirtschaftlich = (
+            top_stk >= MIN_GERAETE_FUER_CROSSTRAINING
+            and top_stk >= MIN_STK_POTENZIAL_CROSSTRAINING
+        )
+
+        rows.append({
+            "techniker_id": t["pseudonym_id"],
+            "anzahl_luecken": str(len(luecken)),
+            "fehlende_familien": ";".join(luecken),
+            "top_familie": top_familie,
+            "top_familie_stk_potenzial": str(top_stk),
+            "potentielles_zusatz_stk_pa": str(t.get("stk_potenzial", 0)),
+            "idealer_crosstraining_partner": "",
+            "top_schulung_typ": "",
+            "top_schulung_kosten": "",
+            "top_schulung_dauer": "",
+            "qualifizierte_familien_l3plus": ";".join(qualifiziert),
+            "regionale_produktfamilien": ";".join(regional),
+            "wirtschaftlich_sinnvoll": "Ja" if wirtschaftlich else "Nein",
+        })
+    return rows
+
+
 def _lade_labor_zeiten() -> list[dict]:
     """Liest labor_zeiten.csv und gibt alle Zeilen als Liste zurueck."""
     rows = []
@@ -527,7 +571,7 @@ def _render_ct_tabelle(
         # Cluster-Badges pro fehlender Familie
         cluster_badges = []
         for fam in fehlende_list:
-            css_cls, label = _CLUSTER_MAP.get(fam, ("cluster-small-capital", "–"))
+            css_cls, label = _CLUSTER_MAP.get(fam, ("cluster-small-capital", "Kosten: T&E anfragen *"))
             cluster_badges.append(
                 f"<span class='cluster-badge {css_cls}'>{fam}: {label}</span>"
             )
@@ -1171,7 +1215,7 @@ def _lade_kliniken_demo() -> tuple[list[dict], dict[str, float], float]:
             name_to_id[row["name"].strip().lower()] = kid
             if plz in _KLINIK_COORDS:
                 lat, lon = _KLINIK_COORDS[plz]
-                kliniken.append({"id": kid, "plz": plz, "lat": lat, "lon": lon})
+                kliniken.append({"id": kid, "plz": plz, "lat": lat, "lon": lon, "name": row["name"]})
 
     # geraete.csv nutzt klinik_name, nicht klinik_id → ueber Name matchen
     def _norm(s: str) -> str:
@@ -1225,7 +1269,11 @@ def _lade_kliniken_echtdaten() -> tuple[list[dict], dict[str, float], float]:
     stk_count: dict[str, float] = {}
     for i, s in enumerate(job_standorte):
         kid = f"J{i}"
-        kliniken.append({"id": kid, "plz": s["plz"], "lat": s["lat"], "lon": s["lon"]})
+        kliniken.append({
+            "id": kid, "plz": s["plz"], "lat": s["lat"], "lon": s["lon"],
+            "name": s.get("account", ""),
+            "jobs": int(s.get("closed_jobs", 0)) + int(s.get("open_jobs", 0)),
+        })
         stk_count[kid] = s["stk_jahr"]
 
     einsatz_median_min = smax.get("einsatz_median_min", 0)
@@ -1236,7 +1284,7 @@ def _lade_kliniken_echtdaten() -> tuple[list[dict], dict[str, float], float]:
 
 def _berechne_gebietsmetriken(
     techniker: dict[str, dict],
-) -> tuple[list[dict], list[dict], dict[str, str]]:
+) -> tuple[list[dict], list[dict], dict[str, str], list[dict]]:
     """Berechnet Fahrzeit-Metriken (aktuell + optimiert) pro Techniker.
 
     Optimierung: generische, ID-unabhaengige Heuristik -- funktioniert fuer
@@ -1252,10 +1300,13 @@ def _berechne_gebietsmetriken(
     SMax-Cache (_lade_kliniken_echtdaten, siehe api/smax_cache.py
     job_standorte), sonst die Demo-Kliniken (_lade_kliniken_demo).
 
-    Gibt (metriken_aktuell, metriken_optimiert, gebiet_optimiert) zurueck.
+    Gibt (metriken_aktuell, metriken_optimiert, gebiet_optimiert, punkte) zurueck.
     gebiet_optimiert ist ein {bundesland: techniker_id}-Dict, abgeleitet aus
     der tatsaechlichen optimierten Klinik-Zuweisung (fuer die Kartenfarben) --
     per Punkt-in-Polygon-Test gegen die echten Bundeslaender-Geodaten.
+    punkte ist eine Liste je Klinik/Job-Standort ({id, plz, lat, lon, name,
+    stk, jobs, akt, opt}) fuer die interaktive Techniker-Hervorhebung auf der
+    Gebietskarte (Klick auf Techniker → nur dessen Punkte werden gerendert).
     """
     if _ECHTDATEN:
         kliniken, stk_count, stunden_pro_einsatz = _lade_kliniken_echtdaten()
@@ -1263,10 +1314,10 @@ def _berechne_gebietsmetriken(
         try:
             kliniken, stk_count, stunden_pro_einsatz = _lade_kliniken_demo()
         except ImportError:
-            return [], [], {}
+            return [], [], {}, []
 
     if not kliniken:
-        return [], [], {}
+        return [], [], {}, []
 
     valid_tids = [tid for tid, td in techniker.items() if td.get("lat")]
 
@@ -1380,7 +1431,26 @@ def _berechne_gebietsmetriken(
         for bl, zaehler in bl_zaehler.items()
     }
 
-    return metriken_akt, metriken_opt, gebiet_optimiert
+    # ── Punkte je Klinik/Job-Standort fuer die interaktive Kartenhervorhebung ──
+    punkte: list[dict] = []
+    for k in kliniken:
+        akt_tid = zuweisung_akt.get(k["id"], "")
+        opt_tid = zuweisung_opt.get(k["id"], "")
+        if not akt_tid and not opt_tid:
+            continue
+        px, py = _project_mercator(k["lon"], k["lat"])
+        punkte.append({
+            "plz":  k.get("plz", ""),
+            "name": k.get("name", ""),
+            "stk":  round(stk_count.get(k["id"], 0), 1),
+            "jobs": k.get("jobs", 0),
+            "akt":  akt_tid,
+            "opt":  opt_tid,
+            "x":    px,
+            "y":    py,
+        })
+
+    return metriken_akt, metriken_opt, gebiet_optimiert, punkte
 
 
 def _berechne_plz_abdeckung(
@@ -1705,9 +1775,11 @@ def _build_gebiets_svg(
 def _build_gebiets_script(
     techniker: dict[str, dict],
     plz_abdeckung: list[dict] | None = None,
+    gebiets_punkte: list[dict] | None = None,
 ) -> str:
     """Baut minimales JS fuer Modus-Umschaltung (aktuell/optimiert)."""
     tc = json.dumps(_TECH_FARBEN, ensure_ascii=False)
+    pk = json.dumps(gebiets_punkte or [], ensure_ascii=False)
 
     return (
         "/* ── Gebietsoptimierung (offline, pre-rendered SVG) ── */\n"
@@ -1715,7 +1787,7 @@ def _build_gebiets_script(
         "  var C=" + tc + ";\n"
         "  var lg=document.getElementById('gebiets-legende-opt');\n"
         "  if(lg){Object.keys(C).sort().forEach(function(t){\n"
-        "    lg.innerHTML+='<span class=\"gebiets-legende-item\">'\n"
+        "    lg.innerHTML+='<span class=\"gebiets-legende-item\" data-tech=\"'+t+'\">'\n"
         "      +'<span class=\"gebiets-legende-dot\" style=\"background:'+C[t]+'\"></span>'\n"
         "      +t+'</span>';});\n"
         "  }\n"
@@ -1813,6 +1885,118 @@ def _build_gebiets_script(
         "          }\n"
         "        });\n"
         "      }\n"
+        "    });\n"
+        "  });\n"
+        "})();\n"
+        "\n"
+        "/* ── Gebietskarte: Techniker-Klick-Interaktion (Highlight + PLZ-Punkte) ── */\n"
+        "(function(){\n"
+        "  var PUNKTE=" + pk + ";\n"
+        "  var C=" + tc + ";\n"
+        "  var svg=document.getElementById('germany-map-opt');\n"
+        "  if(!svg||!PUNKTE.length) return;\n"
+        "  var NS='http://www.w3.org/2000/svg';\n"
+        "  var selected=null;\n"
+        "\n"
+        "  function currentMode(){\n"
+        "    var b=document.querySelector('.go-view-btn.active');\n"
+        "    return b?b.getAttribute('data-view'):'aktuell';\n"
+        "  }\n"
+        "  function clearPunkte(){\n"
+        "    var g=document.getElementById('gebiets-punkte-sel');\n"
+        "    if(g) g.remove();\n"
+        "  }\n"
+        "  function makeCircle(p,opts){\n"
+        "    var c=document.createElementNS(NS,'circle');\n"
+        "    c.setAttribute('cx',p.x); c.setAttribute('cy',p.y);\n"
+        "    c.setAttribute('r',opts.r||4);\n"
+        "    c.setAttribute('fill',opts.fill||'none');\n"
+        "    c.setAttribute('stroke',opts.stroke||'#fff');\n"
+        "    c.setAttribute('stroke-width',opts.strokeWidth||1.2);\n"
+        "    if(opts.dash) c.setAttribute('stroke-dasharray',opts.dash);\n"
+        "    var jobsTxt=p.jobs?(p.jobs+' Jobs \\u00b7 '):'';\n"
+        "    var nameTxt=p.name?(' \\u00b7 '+p.name):'';\n"
+        "    var t=document.createElementNS(NS,'title');\n"
+        "    t.textContent='PLZ '+p.plz+' \\u00b7 '+jobsTxt+p.stk+' STK/Jahr'+nameTxt;\n"
+        "    c.appendChild(t);\n"
+        "    return c;\n"
+        "  }\n"
+        "  function renderPunkte(tid){\n"
+        "    clearPunkte();\n"
+        "    var g=document.createElementNS(NS,'g');\n"
+        "    g.setAttribute('id','gebiets-punkte-sel');\n"
+        "    var mode=currentMode();\n"
+        "    var color=C[tid]||'#005195';\n"
+        "    if(mode==='optimiert'){\n"
+        "      PUNKTE.forEach(function(p){\n"
+        "        var wasAkt=p.akt===tid, isOpt=p.opt===tid;\n"
+        "        if(!wasAkt&&!isOpt) return;\n"
+        "        if(wasAkt&&isOpt){\n"
+        "          g.appendChild(makeCircle(p,{r:4,fill:color,stroke:'#fff',strokeWidth:1.2}));\n"
+        "        }else if(isOpt&&!wasAkt){\n"
+        "          g.appendChild(makeCircle(p,{r:5,fill:color,stroke:'#00A651',strokeWidth:2}));\n"
+        "        }else{\n"
+        "          g.appendChild(makeCircle(p,{r:4,fill:'none',stroke:color,strokeWidth:1.6,dash:'3,2'}));\n"
+        "        }\n"
+        "      });\n"
+        "    }else{\n"
+        "      PUNKTE.forEach(function(p){\n"
+        "        if(p.akt!==tid) return;\n"
+        "        g.appendChild(makeCircle(p,{r:4,fill:color,stroke:'#fff',strokeWidth:1.2}));\n"
+        "      });\n"
+        "    }\n"
+        "    svg.appendChild(g);\n"
+        "  }\n"
+        "  function highlightState(tid){\n"
+        "    var mode=currentMode();\n"
+        "    svg.querySelectorAll('path.st').forEach(function(p){\n"
+        "      p.classList.remove('go-dim','go-hl');\n"
+        "      if(!tid) return;\n"
+        "      var ownerColor=mode==='optimiert'?p.getAttribute('data-fill-optimiert'):p.getAttribute('data-fill-aktuell');\n"
+        "      if(ownerColor===C[tid]){ p.classList.add('go-hl'); }\n"
+        "      else{ p.classList.add('go-dim'); }\n"
+        "    });\n"
+        "  }\n"
+        "  function updateUiState(tid){\n"
+        "    document.querySelectorAll('tr[data-tech]').forEach(function(el){\n"
+        "      el.classList.toggle('go-row-active', el.getAttribute('data-tech')===tid);\n"
+        "    });\n"
+        "    document.querySelectorAll('.gebiets-legende-item, .go-tech-link').forEach(function(el){\n"
+        "      el.classList.toggle('go-active', el.getAttribute('data-tech')===tid);\n"
+        "    });\n"
+        "    var btn=document.getElementById('go-reset-btn');\n"
+        "    if(btn) btn.disabled=!tid;\n"
+        "  }\n"
+        "  function clearAll(){\n"
+        "    selected=null;\n"
+        "    svg.querySelectorAll('path.st').forEach(function(p){ p.classList.remove('go-dim','go-hl'); });\n"
+        "    clearPunkte();\n"
+        "    updateUiState(null);\n"
+        "  }\n"
+        "  function selectTech(tid){\n"
+        "    if(!tid) return;\n"
+        "    if(selected===tid){ clearAll(); return; }\n"
+        "    selected=tid;\n"
+        "    highlightState(tid);\n"
+        "    renderPunkte(tid);\n"
+        "    updateUiState(tid);\n"
+        "  }\n"
+        "\n"
+        "  document.querySelectorAll('tr[data-tech]').forEach(function(tr){\n"
+        "    tr.style.cursor='pointer';\n"
+        "    tr.addEventListener('click',function(){ selectTech(tr.getAttribute('data-tech')); });\n"
+        "  });\n"
+        "  document.body.addEventListener('click',function(e){\n"
+        "    var link=e.target.closest('.go-tech-link');\n"
+        "    if(link){ e.stopPropagation(); selectTech(link.getAttribute('data-tech')); return; }\n"
+        "    var item=e.target.closest('.gebiets-legende-item');\n"
+        "    if(item){ selectTech(item.getAttribute('data-tech')); }\n"
+        "  });\n"
+        "  var resetBtn=document.getElementById('go-reset-btn');\n"
+        "  if(resetBtn) resetBtn.addEventListener('click',clearAll);\n"
+        "  document.querySelectorAll('.go-view-btn').forEach(function(btn){\n"
+        "    btn.addEventListener('click',function(){\n"
+        "      if(selected){ highlightState(selected); renderPunkte(selected); }\n"
         "    });\n"
         "  });\n"
         "})();\n"
@@ -2732,6 +2916,16 @@ _CSS = """\
       display: flex;
       align-items: center;
       gap: 4px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: background .15s ease;
+    }
+    .gebiets-legende-item:hover { background: rgba(0,81,149,.08); }
+    .gebiets-legende-item.go-active {
+      background: rgba(0,81,149,.14);
+      font-weight: 700;
+      color: var(--text);
     }
     .gebiets-legende-dot {
       width: 10px;
@@ -2739,6 +2933,51 @@ _CSS = """\
       border-radius: 50%;
       border: 1px solid rgba(0,0,0,.15);
     }
+
+    /* ── Gebietskarte: Techniker-Highlight (Klick-Interaktion) ── */
+    .gebiets-karte-tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .go-hint { font-size: 10.5px; color: var(--text-muted); }
+    .go-reset-btn {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,81,149,.25);
+      background: #fff;
+      color: #005195;
+      cursor: pointer;
+      transition: all .15s ease;
+      white-space: nowrap;
+    }
+    .go-reset-btn:hover:not(:disabled) { background: rgba(0,81,149,.08); }
+    .go-reset-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    .gebiets-karte svg path.st.go-dim { opacity: .22 !important; }
+    .gebiets-karte svg path.st.go-hl {
+      opacity: 1 !important;
+      stroke: #1A1A1A !important;
+      stroke-width: 2.6px !important;
+    }
+
+    tr[data-tech] { cursor: pointer; }
+    tr[data-tech]:hover td { background: rgba(0,114,206,.08); }
+    tr[data-tech].go-row-active td { background: rgba(0,81,149,.16) !important; }
+
+    .go-tech-link {
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 2px;
+    }
+    .go-tech-link:hover { color: #005195; }
+    .go-tech-link.go-active { font-weight: 700; color: #005195; }
 
     /* ── Chat Panel ── */
     .chat-panel {
@@ -3210,7 +3449,7 @@ def _render_gebietsoptimierung(
     for m in metriken_akt:
         css = "go-gruen" if m["ratio"] >= 3.0 else ("go-gelb" if m["ratio"] >= 2.0 else "go-rot")
         rows_aktuell += (
-            f'<tr class="{css}">'
+            f'<tr class="{css}" data-tech="{m["id"]}">'
             f'<td><strong>{m["id"]}</strong></td>'
             f'<td>{m["standort"]}</td>'
             f'<td>{m["kliniken"]}</td>'
@@ -3235,7 +3474,7 @@ def _render_gebietsoptimierung(
             delta_css = "go-delta-neutral"
         verschoben = m_o.get("verschoben", 0)
         rows_optimiert += (
-            f'<tr>'
+            f'<tr data-tech="{m_o["id"]}">'
             f'<td><strong>{m_o["id"]}</strong></td>'
             f'<td>{m_o["standort"]}</td>'
             f'<td>{ratio_vorher}</td>'
@@ -3276,7 +3515,9 @@ def _render_gebietsoptimierung(
 
     rows_luecken = ""
     for gebiet, info in _UEBERSCHNEIDUNG_GEBIETE.items():
-        techs = ", ".join(info["techs"])
+        techs = ", ".join(
+            f'<span class="go-tech-link" data-tech="{t}">{t}</span>' for t in info["techs"]
+        )
         rows_luecken += (
             f'<tr class="go-overlap">'
             f'<td><span class="go-dot go-dot-orange"></span>{gebiet}</td>'
@@ -3289,18 +3530,20 @@ def _render_gebietsoptimierung(
             f'<tr class="go-gap">'
             f'<td><span class="go-dot go-dot-rot"></span>{gebiet}</td>'
             f'<td>L&uuml;cke</td>'
-            f'<td>{info["naechster"]} ({info["fahrzeit"]})</td>'
+            f'<td><span class="go-tech-link" data-tech="{info["naechster"]}">{info["naechster"]}</span> '
+            f'({info["fahrzeit"]})</td>'
             f'<td>Neueinstellung oder Gebiets-Erweiterung empfohlen</td>'
             f'</tr>')
     # Optimal abgedeckte Gebiete
     _OPTIMAL = ["Hessen", "Schleswig-Holstein", "Baden-Württemberg", "Thüringen"]
     for gebiet in _OPTIMAL:
         tid = _GEBIET_AKTUELL.get(gebiet, "–")
+        tid_html = f'<span class="go-tech-link" data-tech="{tid}">{tid}</span>' if tid != "–" else tid
         rows_luecken += (
             f'<tr class="go-optimal">'
             f'<td><span class="go-dot go-dot-gruen"></span>{gebiet}</td>'
             f'<td>Optimal</td>'
-            f'<td>{tid}</td>'
+            f'<td>{tid_html}</td>'
             f'<td>Keine Anpassung n&ouml;tig</td>'
             f'</tr>')
 
@@ -3351,6 +3594,10 @@ def _render_gebietsoptimierung(
       <div class="gebiets-karte">
         <svg id="germany-map-opt" width="480" height="580"><!-- filled by _build_gebiets_svg --></svg>
         <div class="gebiets-legende" id="gebiets-legende-opt"></div>
+        <div class="gebiets-karte-tools">
+          <span class="go-hint">Techniker anklicken, um sein Gebiet hervorzuheben</span>
+          <button class="go-reset-btn" id="go-reset-btn" disabled>&#10005; Zur&uuml;cksetzen</button>
+        </div>
       </div>
       <div class="gebiets-metriken">
         <!-- Ansicht 1: Aktuelle Gebiete -->
@@ -3447,6 +3694,7 @@ def render_html(
     repair_rows: list[dict] | None = None,
     is_echtdaten: bool = False,
     ct_kennzahlen: dict | None = None,
+    gebiets_punkte: list[dict] | None = None,
 ) -> str:
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten)
     stk_html      = _render_stk_tabelle(stk_rows)
@@ -3466,7 +3714,7 @@ def render_html(
     gebiets_html  = _render_gebietsplanung(m_akt, m_opt, plz_abd)
     gebietsopt_html = _render_gebietsoptimierung(m_akt, m_opt, techniker)
     gebiets_svg_content = _build_gebiets_svg(techniker, plz_abd)
-    gebiets_script = _build_gebiets_script(techniker, plz_abd)
+    gebiets_script = _build_gebiets_script(techniker, plz_abd, gebiets_punkte or [])
     tech_detail_json = _render_techniker_detail_data(
         techniker, demo_history or {})
     ts = erstellt_am.strftime("%d.%m.%Y %H:%M")
@@ -4272,6 +4520,7 @@ def main() -> None:
             from api.smax_cache import load_dashboard_data as _smax_load
             _smax = _smax_load()
             ampeln = _berechne_ampeln_aus_smax(_smax["techniker"])
+            ct_rows = _baue_ct_rows_echtdaten(_smax["techniker"])
             ct_kennzahlen = {
                 "stk_potenzial_gesamt": _smax.get("stk_potenzial_gesamt", 0),
                 "einsatz_median_min":   _smax.get("einsatz_median_min", 0),
@@ -4441,7 +4690,7 @@ def main() -> None:
     )
 
     print("Berechne Gebietsmetriken...")
-    m_akt, m_opt, gebiet_optimiert_neu = _berechne_gebietsmetriken(techniker)
+    m_akt, m_opt, gebiet_optimiert_neu, gebiets_punkte = _berechne_gebietsmetriken(techniker)
     gebiets_metriken = (m_akt, m_opt)
     _GEBIET_OPTIMIERT = {**_GEBIET_AKTUELL, **gebiet_optimiert_neu}
     verschoben_gesamt = sum(m.get("verschoben_gewonnen", 0) for m in m_opt)
@@ -4465,6 +4714,7 @@ def main() -> None:
         repair_rows=repair_rows,
         is_echtdaten=_ECHTDATEN,
         ct_kennzahlen=ct_kennzahlen if _ECHTDATEN else None,
+        gebiets_punkte=gebiets_punkte,
     )
 
     _OUT_PATH.write_text(html, encoding="utf-8")

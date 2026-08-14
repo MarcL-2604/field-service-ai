@@ -140,12 +140,13 @@ class TestBerechneGebietsmetrikenStruktur:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.techniker = _lade_demo_techniker()
-        self.akt, self.opt, self.gebiet_opt = _berechne_gebietsmetriken(self.techniker)
+        self.akt, self.opt, self.gebiet_opt, self.punkte = _berechne_gebietsmetriken(self.techniker)
 
-    def test_gibt_dreitupel_zurueck(self):
+    def test_gibt_vierertupel_zurueck(self):
         assert isinstance(self.akt, list)
         assert isinstance(self.opt, list)
         assert isinstance(self.gebiet_opt, dict)
+        assert isinstance(self.punkte, list)
 
     def test_gleiche_technikeranzahl_in_beiden_listen(self):
         assert len(self.akt) == len(self.techniker)
@@ -196,16 +197,16 @@ class TestIdUnabhaengigkeit:
         }
 
     def test_gleiche_anzahl_verschobener_kliniken_nach_umbenennung(self):
-        _, opt_orig, _ = _berechne_gebietsmetriken(self.original)
-        _, opt_neu, _ = _berechne_gebietsmetriken(self.umbenannt)
+        _, opt_orig, _, _ = _berechne_gebietsmetriken(self.original)
+        _, opt_neu, _, _ = _berechne_gebietsmetriken(self.umbenannt)
 
         gesamt_orig = sum(m["verschoben_gewonnen"] for m in opt_orig)
         gesamt_neu = sum(m["verschoben_gewonnen"] for m in opt_neu)
         assert gesamt_orig == gesamt_neu
 
     def test_gleiche_kliniken_anzahl_pro_umbenanntem_techniker(self):
-        _, opt_orig, _ = _berechne_gebietsmetriken(self.original)
-        _, opt_neu, _ = _berechne_gebietsmetriken(self.umbenannt)
+        _, opt_orig, _, _ = _berechne_gebietsmetriken(self.original)
+        _, opt_neu, _, _ = _berechne_gebietsmetriken(self.umbenannt)
 
         orig_by_id = {m["id"]: m["kliniken"] for m in opt_orig}
         neu_by_id = {m["id"]: m["kliniken"] for m in opt_neu}
@@ -215,14 +216,14 @@ class TestIdUnabhaengigkeit:
     def test_funktioniert_auch_mit_nur_zwei_technikern(self):
         """Kleinstes sinnvolles Set (1.- und 2.-naechster muss existieren)."""
         zwei = dict(list(self.umbenannt.items())[:2])
-        akt, opt, _ = _berechne_gebietsmetriken(zwei)
+        akt, opt, _, _ = _berechne_gebietsmetriken(zwei)
         assert len(akt) == 2
         assert len(opt) == 2
 
     def test_funktioniert_mit_einem_einzigen_techniker(self):
         """Ohne 2.-naechsten Techniker darf nichts verschoben werden (kein Crash)."""
         einer = dict(list(self.umbenannt.items())[:1])
-        akt, opt, _ = _berechne_gebietsmetriken(einer)
+        akt, opt, _, _ = _berechne_gebietsmetriken(einer)
         assert len(opt) == 1
         assert opt[0]["verschoben"] == 0
 
@@ -328,7 +329,7 @@ class TestBerechneGebietsmetrikenDatenquelle:
     def test_echtdaten_modus_nutzt_reale_job_standorte(self):
         dash._ECHTDATEN = True
         techniker = _lade_demo_techniker()  # Koordinaten egal, nur Datenquelle testen
-        akt, opt, _ = _berechne_gebietsmetriken(techniker)
+        akt, opt, _, _ = _berechne_gebietsmetriken(techniker)
         # Reale Kliniken tragen "J"-IDs -- indirekt pruefbar ueber Nicht-Leere,
         # da IDs nicht im Rueckgabewert von _aggregiere() landen. Stattdessen:
         # direkter Vergleich der Ladefunktion.
@@ -339,7 +340,7 @@ class TestBerechneGebietsmetrikenDatenquelle:
     def test_demo_modus_nutzt_demo_kliniken(self):
         dash._ECHTDATEN = False
         techniker = _lade_demo_techniker()
-        akt, opt, _ = _berechne_gebietsmetriken(techniker)
+        akt, opt, _, _ = _berechne_gebietsmetriken(techniker)
         kliniken_demo, _, stunden = _lade_kliniken_demo()
         assert stunden == 2.0  # Demo-Kostenmodell (Konstante im Code)
         assert akt
