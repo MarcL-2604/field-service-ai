@@ -15,12 +15,14 @@ FRAGE_TYPEN: dict[str, str] = {
     "warum_gebiet":     "Warum hat {tid} dieses Gebiet?",
     "warum_auslastung": "Warum ist {tid} ausgelastet?",
     "warum_verschoben": "Warum wurden bei {tid} Kliniken verschoben?",
+    "warum_auslastung_abweichend": "Warum weicht die Auslastung von {tid} vom Zielkorridor ab?",
 }
 
 FRAGE_TYPEN_EN: dict[str, str] = {
     "warum_gebiet":     "Why does {tid} have this territory?",
     "warum_auslastung": "Why is {tid} at capacity?",
     "warum_verschoben": "Why were clinics moved for {tid}?",
+    "warum_auslastung_abweichend": "Why does {tid}'s utilization deviate from the target corridor?",
 }
 
 
@@ -256,6 +258,116 @@ def erklaere_warum_verschoben(
     return " ".join(teile)
 
 
+def erklaere_warum_auslastung_abweichend(
+    tid: str,
+    techniker: dict[str, dict],
+    ziel_min_pct: float = 80.0,
+    ziel_max_pct: float = 95.0,
+    ist_hugo_kerngebiet: bool = False,
+    sprache: str = "de",
+) -> str:
+    """Erklaert die Abweichung der echten Auslastung (auslastung_pct_real,
+    aus api/auslastung_analyse.py) vom Zielkorridor -- referenziert die
+    bestehende Gebietsoptimierungs-Logik als Empfehlung, aendert aber nichts
+    automatisch (Referenzwert, keine harte Regel)."""
+    td = techniker.get(tid)
+    if td is None:
+        if sprache == "en":
+            return f"No technician found with ID {tid}."
+        return f"Kein Techniker mit der ID {tid} gefunden."
+
+    pct = td.get("auslastung_pct_real")
+    korridor = td.get("auslastung_korridor")
+    if pct is None or korridor is None:
+        if sprache == "en":
+            return (
+                f"No real utilization data available for {tid} (only available in "
+                f"real-data mode, computed from actual visit history)."
+            )
+        return (
+            f"Für {tid} liegen keine echten Auslastungsdaten vor (nur im "
+            f"Echtdaten-Modus verfügbar, berechnet aus der tatsächlichen "
+            f"Einsatzhistorie)."
+        )
+
+    einsaetze = td.get("einsaetze_gesamt_real", 0)
+    stunden = td.get("einsatzstunden_jahr_real", 0.0)
+    hugo_hinweis_de = (
+        " Als Hugo-Kerngebiet-Techniker kann die Auslastung strukturell vom "
+        "Zielkorridor abweichen: das kleine Small-Capital-Kerngebiet ist eine "
+        "Verfügbarkeits-Garantie für schnelle Hugo-Reaktion, keine "
+        "Auslastungsoptimierung (Verfügbarkeit vor Auslastung)."
+        if ist_hugo_kerngebiet else ""
+    )
+    hugo_hinweis_en = (
+        " As a Hugo core-territory technician, utilization can structurally "
+        "deviate from the target corridor: the small Small-Capital core territory "
+        "is an availability guarantee for fast Hugo response, not a utilization "
+        "optimization (availability over utilization)."
+        if ist_hugo_kerngebiet else ""
+    )
+
+    if sprache == "en":
+        basis = (
+            f"{tid}: {pct:.1f}% real utilization ({einsaetze} visits, "
+            f"{stunden:.0f}h/year on-site time ÷ annual capacity -- travel "
+            f"time not included, so full utilization is structurally below 100%)."
+        )
+        if korridor == "im_korridor":
+            return (
+                f"{basis} This is within the {ziel_min_pct:.0f}-{ziel_max_pct:.0f}% "
+                f"target corridor -- no notable deviation.{hugo_hinweis_en}"
+            )
+        if korridor == "unter":
+            return (
+                f"{basis} This is below the {ziel_min_pct:.0f}-{ziel_max_pct:.0f}% "
+                f"target corridor. Possible reasons: low device density in the "
+                f"territory, a recently assigned/small territory, or genuinely "
+                f"available capacity. Recommendation: check the territory-"
+                f"optimization suggestions (Tab 6) and cross-training gaps (Tab 3) "
+                f"for this technician -- reference only, no automatic "
+                f"reassignment.{hugo_hinweis_en}"
+            )
+        return (
+            f"{basis} This is above the {ziel_min_pct:.0f}-{ziel_max_pct:.0f}% "
+            f"target corridor -- risk of overload. Recommendation: check whether "
+            f"the territory-optimization logic (Tab 6) suggests moving a clinic "
+            f"to a less utilized nearby technician -- reference only, no "
+            f"automatic reassignment.{hugo_hinweis_en}"
+        )
+
+    basis = (
+        f"{tid}: {pct:.1f}% echte Auslastung ({einsaetze} Einsätze, "
+        f"{stunden:.0f}h/Jahr Vor-Ort-Zeit ÷ Jahreskapazität — "
+        f"Fahrzeit ist nicht enthalten, daher liegt Vollauslastung strukturell "
+        f"unter 100%)."
+    )
+    if korridor == "im_korridor":
+        return (
+            f"{basis} Das liegt im Zielkorridor {ziel_min_pct:.0f}–"
+            f"{ziel_max_pct:.0f}% — keine nennenswerte Abweichung."
+            f"{hugo_hinweis_de}"
+        )
+    if korridor == "unter":
+        return (
+            f"{basis} Das liegt unter dem Zielkorridor {ziel_min_pct:.0f}–"
+            f"{ziel_max_pct:.0f}%. Mögliche Gründe: geringe Gerätedichte im "
+            f"Gebiet, ein kürzlich zugewiesenes/kleines Gebiet, oder tatsächlich "
+            f"freie Kapazität. Empfehlung: Gebietsoptimierungs-Vorschläge "
+            f"(Tab 6) und Crosstraining-Lücken (Tab 3) für diesen Techniker "
+            f"prüfen — reine Referenz, keine automatische "
+            f"Umverteilung.{hugo_hinweis_de}"
+        )
+    return (
+        f"{basis} Das liegt über dem Zielkorridor {ziel_min_pct:.0f}–"
+        f"{ziel_max_pct:.0f}% — Risiko einer Überlastung. Empfehlung: "
+        f"prüfen ob die Gebietsoptimierungs-Logik (Tab 6) eine Klinik-"
+        f"Verschiebung zu einem weniger ausgelasteten, nahen Techniker "
+        f"vorschlägt — reine Referenz, keine automatische "
+        f"Umverteilung.{hugo_hinweis_de}"
+    )
+
+
 def generiere_erklaerung(
     frage_typ: str,
     techniker_id: str,
@@ -266,6 +378,9 @@ def generiere_erklaerung(
     ampeln: list[dict] | None = None,
     umweg_faktor: float = 1.35,
     sprache: str = "de",
+    auslastung_ziel_min_pct: float = 80.0,
+    auslastung_ziel_max_pct: float = 95.0,
+    hugo_kerngebiet_ids: set[str] | None = None,
 ) -> str:
     """Erzeugt eine nachvollziehbare Text-Erklaerung rein aus vorhandenen
     Berechnungsdaten (Gebietsmetriken, Ampeln, Scoring-Gewichtung) -- ohne
@@ -281,6 +396,12 @@ def generiere_erklaerung(
         return erklaere_warum_auslastung(techniker_id, techniker, metriken_akt, ampeln, sprache)
     if frage_typ == "warum_verschoben":
         return erklaere_warum_verschoben(techniker_id, techniker, metriken_akt, metriken_opt, sprache)
+    if frage_typ == "warum_auslastung_abweichend":
+        ist_hugo = techniker_id in (hugo_kerngebiet_ids or set())
+        return erklaere_warum_auslastung_abweichend(
+            techniker_id, techniker, auslastung_ziel_min_pct, auslastung_ziel_max_pct,
+            ist_hugo, sprache,
+        )
     if sprache == "en":
         return f"Unknown question type: {frage_typ}"
     return f"Unbekannter Fragetyp: {frage_typ}"

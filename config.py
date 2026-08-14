@@ -45,6 +45,14 @@ REPAIR_ESKALATION_STUNDEN = 48   # Rot-Alert + Disponent
 REPAIR_SLA_VERTRAGSKUNDE_TAGE = 2.5
 REPAIR_SLA_NICHT_VERTRAGSKUNDE_TAGE = 3.5
 
+# ─── Auslastungs-Zielkorridor ───────────────────────
+# Referenzwert (KEINE harte Regel, keine automatische Zwangs-Umverteilung):
+# Anteil echter Vor-Ort-Einsatzstunden/Jahr an der Jahreskapazitaet
+# (AUSSENDIENST_STUNDEN bzw. HUGO_KA_ZIEL_STUNDEN x ARBEITSWOCHEN_PRO_JAHR).
+# Siehe api/auslastung_analyse.py.
+AUSLASTUNG_ZIEL_MIN_PCT = 80
+AUSLASTUNG_ZIEL_MAX_PCT = 95
+
 # ─── Ersatzteile ───────────────────────────────────
 ERSATZTEIL_SOFORT_TAGE = 2       # Im Fahrzeug vorhanden
 ERSATZTEIL_LAGER_TAGE = 3        # Zentrallager
@@ -170,7 +178,7 @@ KALENDER_INTEGRIERT = False       # Prototyp-Flag
 # ─── Test-Suite (Dashboard-Footer) ─────────────────
 # Manuell bei jedem pytest-Lauf/Release aktualisieren (`pytest --collect-only -q`).
 # Einzige Stelle im Code -- dashboard.py liest von hier, nicht hardcodiert.
-TESTS_ANZAHL = 994
+TESTS_ANZAHL = 1047
 
 # ─── Projekt-Kennzahlen (Landingpage index.html) ───
 # Einzige Quelle fuer die auf index.html beworbenen Kennzahlen. Bei neuem

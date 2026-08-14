@@ -3,7 +3,7 @@ ohne externen API-Aufruf. Prueft, dass die generierten Texte echte Zahlen
 aus den Berechnungsdaten enthalten statt Platzhaltern.
 """
 
-from reporting.erklaerungen import FRAGE_TYPEN, generiere_erklaerung
+from reporting.erklaerungen import FRAGE_TYPEN, generiere_erklaerung, erklaere_warum_auslastung_abweichend
 
 
 TECHNIKER = {
@@ -187,3 +187,93 @@ class TestGeneriereErklaerungEnglisch:
                 )
                 assert isinstance(text, str) and len(text) > 10
                 assert "Platzhalter" not in text
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# warum_auslastung_abweichend: Auslastungs-Zielkorridor-Erklaerung
+# ══════════════════════════════════════════════════════════════════════════════
+
+TECHNIKER_AUSLASTUNG = {
+    "T1": {
+        "standort": "Hamburg", "auslastung_pct_real": 26.5, "auslastung_korridor": "unter",
+        "einsaetze_gesamt_real": 353, "einsatzstunden_jahr_real": 312.2,
+    },
+    "T2": {
+        "standort": "München", "auslastung_pct_real": 88.0, "auslastung_korridor": "im_korridor",
+        "einsaetze_gesamt_real": 500, "einsatzstunden_jahr_real": 1000.0,
+    },
+    "T3": {
+        "standort": "Berlin", "auslastung_pct_real": 130.0, "auslastung_korridor": "ueber",
+        "einsaetze_gesamt_real": 700, "einsatzstunden_jahr_real": 1500.0,
+    },
+    "T4_ohne_daten": {"standort": "Köln"},  # Demo-Modus / keine Closed-Job-Historie
+}
+
+
+class TestErklaereWarumAuslastungAbweichend:
+    def test_unter_korridor_enthaelt_echte_zahlen_und_prozent(self):
+        text = erklaere_warum_auslastung_abweichend("T1", TECHNIKER_AUSLASTUNG)
+        assert "26.5%" in text
+        assert "353" in text
+        assert "unter dem Zielkorridor" in text
+        assert "80" in text and "95" in text
+
+    def test_im_korridor_keine_abweichung(self):
+        text = erklaere_warum_auslastung_abweichend("T2", TECHNIKER_AUSLASTUNG)
+        assert "im Zielkorridor" in text
+        assert "keine nennenswerte Abweichung" in text
+
+    def test_ueber_korridor_warnt_vor_ueberlastung(self):
+        text = erklaere_warum_auslastung_abweichend("T3", TECHNIKER_AUSLASTUNG)
+        assert "Überlastung" in text
+        assert "über dem Zielkorridor" in text
+
+    def test_referenziert_gebietsoptimierung_ohne_zwangsregel(self):
+        text = erklaere_warum_auslastung_abweichend("T1", TECHNIKER_AUSLASTUNG)
+        assert "Referenz" in text
+        assert "keine automatische Umverteilung" in text
+
+    def test_ohne_echte_daten_transparenter_hinweis(self):
+        text = erklaere_warum_auslastung_abweichend("T4_ohne_daten", TECHNIKER_AUSLASTUNG)
+        assert "keine echten Auslastungsdaten" in text
+        assert "Echtdaten-Modus" in text
+
+    def test_unbekannter_techniker(self):
+        text = erklaere_warum_auslastung_abweichend("T99", TECHNIKER_AUSLASTUNG)
+        assert "T99" in text and "Kein Techniker" in text
+
+    def test_hugo_kerngebiet_hinweis_nur_wenn_gesetzt(self):
+        ohne_hugo = erklaere_warum_auslastung_abweichend("T1", TECHNIKER_AUSLASTUNG, ist_hugo_kerngebiet=False)
+        mit_hugo = erklaere_warum_auslastung_abweichend("T1", TECHNIKER_AUSLASTUNG, ist_hugo_kerngebiet=True)
+        assert "Verfügbarkeit vor Auslastung" not in ohne_hugo
+        assert "Verfügbarkeit vor Auslastung" in mit_hugo
+
+    def test_englisch_uebersetzt_korrekt(self):
+        text = erklaere_warum_auslastung_abweichend("T1", TECHNIKER_AUSLASTUNG, sprache="en")
+        assert "26.5%" in text
+        assert "below the" in text and "target corridor" in text
+        assert "no automatic reassignment" in text
+
+    def test_ziel_korridor_werte_werden_uebernommen_nicht_hartcodiert(self):
+        text = erklaere_warum_auslastung_abweichend("T1", TECHNIKER_AUSLASTUNG, ziel_min_pct=70, ziel_max_pct=90)
+        assert "70" in text and "90" in text
+
+    def test_generiere_erklaerung_dispatcht_neuen_fragetyp(self):
+        text = generiere_erklaerung(
+            "warum_auslastung_abweichend", "T1",
+            techniker=TECHNIKER_AUSLASTUNG, metriken_akt=[],
+            hugo_kerngebiet_ids={"T1"},
+        )
+        assert "26.5%" in text
+        assert "Verfügbarkeit vor Auslastung" in text
+
+    def test_generiere_erklaerung_ohne_hugo_id_kein_hugo_hinweis(self):
+        text = generiere_erklaerung(
+            "warum_auslastung_abweichend", "T1",
+            techniker=TECHNIKER_AUSLASTUNG, metriken_akt=[],
+        )
+        assert "Verfügbarkeit vor Auslastung" not in text
+
+    def test_neuer_fragetyp_in_frage_typen_registriert(self):
+        assert "warum_auslastung_abweichend" in FRAGE_TYPEN
+        assert "{tid}" in FRAGE_TYPEN["warum_auslastung_abweichend"]

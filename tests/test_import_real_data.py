@@ -167,6 +167,23 @@ class TestEinsatzdauerMapping:
         ed = map_einsatzdauer_row(self._row(Mittelwert="0,5"))
         assert ed.mittelwert_min == 30
 
+    def test_zeilenbeschriftungen_spalte_wird_als_model_code_akzeptiert(self):
+        """Die echte Sheet-2-Datei nennt die Spalte 'Zeilenbeschriftungen'
+        (Excel-Pivot-Export), nicht 'Model_Code' -- muss trotzdem gemappt
+        werden (Bugfix: vorher wurde jede Zeile mit leerem model_code
+        gemappt, 0% Treffer bei echten Daten)."""
+        row = {"Zeilenbeschriftungen": "MC-HUGOTOWER", "Mittelwert": 13.28, "Median": 12}
+        ed = map_einsatzdauer_row(row)
+        assert ed.model_code == "MC-HUGOTOWER"
+        assert ed.mittelwert_min == round(13.28 * 60)
+
+    def test_model_code_hat_vorrang_vor_zeilenbeschriftungen(self):
+        """Falls beide Spalten vorhanden sind (z.B. synthetische Testzeile),
+        gewinnt 'Model_Code'."""
+        row = {"Model_Code": "MC-A", "Zeilenbeschriftungen": "MC-B", "Mittelwert": 1}
+        ed = map_einsatzdauer_row(row)
+        assert ed.model_code == "MC-A"
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Sheet 3: Closed Jobs

@@ -51,6 +51,8 @@ from config import (  # noqa: E402
     LUECKE_FAHRZEIT_SCHWELLE_MIN,
     UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN,
     UEBERSCHNEIDUNG_ANTEIL_SCHWELLE,
+    AUSLASTUNG_ZIEL_MIN_PCT,
+    AUSLASTUNG_ZIEL_MAX_PCT,
 )
 from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
@@ -110,6 +112,13 @@ def _lade_techniker() -> dict[str, dict]:
                     "total_mc":      t.get("total_model_codes", 365),
                     "pm_ratio_pct":  t.get("pm_ratio_pct", 0.0),
                     "in_skills_matrix": t.get("in_skills_matrix", False),
+                    "einsaetze_gesamt_real":    t.get("einsaetze_gesamt_real", 0),
+                    "einsatzstunden_jahr_real": t.get("einsatzstunden_jahr_real", 0.0),
+                    "auslastung_pct_real":      t.get("auslastung_pct_real", 0.0),
+                    "auslastung_korridor":      t.get("auslastung_korridor", "unter"),
+                    "einsaetze_je_cluster_real": t.get("einsaetze_je_cluster_real", {}),
+                    "hugo_einsaetze_jahr_real": t.get("hugo_einsaetze_jahr_real", 0.0),
+                    "durchschnittlicher_einsatzabstand_tage": t.get("durchschnittlicher_einsatzabstand_tage"),
                 }
                 for t in smax["techniker"]
             }
@@ -392,8 +401,38 @@ _DRINGLICHKEIT_CSS = {
 }
 
 
-def _render_ampel_karten(ampeln: list[dict], labor_zeiten: list[dict] | None = None) -> str:
+_KORRIDOR_LABEL = {"unter": "unter Korridor", "im_korridor": "im Korridor", "ueber": "&uuml;ber Korridor"}
+_KORRIDOR_CSS = {"unter": "korridor-unter", "im_korridor": "korridor-im", "ueber": "korridor-ueber"}
+
+
+def _render_korridor_badge(korridor: str | None, pct: float | None) -> str:
+    """Kompaktes Badge fuer den Auslastungs-Zielkorridor (config.
+    AUSLASTUNG_ZIEL_MIN_PCT/MAX_PCT) -- Referenzwert, KEINE harte Regel.
+    Bewusst getrennt von der bestehenden L3-Ampel (Qualifikationsabdeckung,
+    ampel-badge): misst reine Vor-Ort-Zeit ohne Fahrzeit aus echter
+    Einsatzhistorie (siehe api/auslastung_analyse.py). None bei fehlenden
+    Daten (z.B. Demo-Modus, oder Techniker ohne Closed-Job-Historie)."""
+    if korridor is None or pct is None:
+        return ""
+    label = _KORRIDOR_LABEL.get(korridor, korridor)
+    css = _KORRIDOR_CSS.get(korridor, "")
+    return (
+        f'<span class="korridor-badge {css}" tabindex="0">{pct:.0f}%&thinsp;{label}'
+        f'<span class="info-tip-bubble">Auslastungs-Zielkorridor '
+        f'{AUSLASTUNG_ZIEL_MIN_PCT}&ndash;{AUSLASTUNG_ZIEL_MAX_PCT}% aus echter '
+        f'Einsatzhistorie (Vor-Ort-Zeit &divide; Jahreskapazit&auml;t) &mdash; '
+        f'Referenzwert, keine harte Regel. Fahrzeit ist nicht enthalten, daher '
+        f'liegt Vollauslastung strukturell unter 100%.</span></span>'
+    )
+
+
+def _render_ampel_karten(
+    ampeln: list[dict],
+    labor_zeiten: list[dict] | None = None,
+    techniker: dict[str, dict] | None = None,
+) -> str:
     _AMPEL_ORDER = {"ampel-gruen": 0, "ampel-gelb": 1, "ampel-rot": 2}
+    techniker = techniker or {}
     l3_tip = _info_tip(
         "Anteil der regional ben&ouml;tigten Produktfamilien, f&uuml;r die "
         "der Techniker auf Qualifikationsstufe L3 geschult ist &mdash; "
@@ -412,6 +451,11 @@ def _render_ampel_karten(ampeln: list[dict], labor_zeiten: list[dict] | None = N
         kapazitaet = _HUGO_KA_KAPAZITAET if is_hugo else float(AUSSENDIENST_STUNDEN)
         ziel_pct = round(kapazitaet / 45 * 100, 1)
         auslastung_pct = round(wochenstunden / kapazitaet * 100, 1) if kapazitaet else 0.0
+
+        td = techniker.get(a["techniker_id"], {})
+        korridor_badge = _render_korridor_badge(
+            td.get("auslastung_korridor"), td.get("auslastung_pct_real"),
+        )
 
         hugo_badge = ""
         hugo_reserve = ""
@@ -442,6 +486,7 @@ def _render_ampel_karten(ampeln: list[dict], labor_zeiten: list[dict] | None = N
         </div>
         <div class="ampel-standort">{a['standort']}</div>
         <div class="ampel-region">{a['region']}</div>
+        {korridor_badge}
         {hugo_badge}
 
         <div class="metric-box metric-standard">
@@ -2498,6 +2543,28 @@ _CSS = """\
     .ampel-gelb  .ampel-badge { background: var(--warning); color: #fff; }
     .ampel-rot   .ampel-badge { background: var(--critical); color: #fff; }
 
+    /* ── Auslastungs-Zielkorridor-Badge (80-95%, Referenzwert) -- bewusst
+       getrennt gestylt von .ampel-badge (L3-Qualifikationsampel), nicht
+       verwechseln ── */
+    .korridor-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 4px;
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 2px 6px;
+      margin-top: 4px;
+      cursor: help;
+      position: relative;
+      white-space: nowrap;
+    }
+    .korridor-badge .info-tip-bubble { top: calc(100% + 6px); left: 0; transform: none; }
+    .korridor-badge:hover .info-tip-bubble,
+    .korridor-badge:focus .info-tip-bubble { visibility: visible; opacity: 1; }
+    .korridor-unter    { background: rgba(0,102,204,.12); color: #0058A3; }
+    .korridor-im       { background: rgba(0,160,128,.15); color: #007A5E; }
+    .korridor-ueber    { background: rgba(204,0,0,.12); color: #9A0000; }
+
     .hugo-ka-badge {
       display: inline-block;
       background: rgba(0,114,206,.15);
@@ -3804,16 +3871,23 @@ def _render_gebietsoptimierung(
     # ── Hugo-Kerngebiet: optionale Regel, Toggle default AUS ──
     hugo_kerngebiete = hugo_kerngebiete or []
     if hugo_kerngebiete:
-        hugo_kg_liste = ", ".join(
-            f"{hk['id']}" + (" (Springer)" if hk.get("ist_springer") else "")
-            for hk in hugo_kerngebiete
-        )
+        def _hugo_tech_text(hk: dict) -> str:
+            teil = f"{hk['id']}"
+            if hk.get("ist_springer"):
+                teil += " (Springer)"
+            hugo_jahr = techniker.get(hk["id"], {}).get("hugo_einsaetze_jahr_real")
+            if hugo_jahr is not None:
+                teil += f" [{hugo_jahr:.1f} Hugo-Eins&auml;tze/Jahr real]"
+            return teil
+
+        hugo_kg_liste = ", ".join(_hugo_tech_text(hk) for hk in hugo_kerngebiete)
         hugo_kg_hint = (
             f"Aktiv f&uuml;r {len(hugo_kerngebiete)} Hugo-Techniker: {hugo_kg_liste} "
             f"&mdash; Radius &#8776;{hugo_kerngebiete[0]['radius_km']:.0f} km "
             f"(&#8776;{HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN} min Fahrzeit um den Wohnort). "
             f"Team-Gr&ouml;&szlig;e: {HUGO_TEAM_GROESSE['PM']} Techniker f&uuml;r PM/STK, "
-            f"{HUGO_TEAM_GROESSE['REPAIR']} f&uuml;r Repair (90% der F&auml;lle). "
+            f"{HUGO_TEAM_GROESSE['REPAIR']} f&uuml;r Repair (90% der F&auml;lle) &mdash; "
+            f"Ergaenzung, keine Ersetzung durch die reale Hugo-Einsatzh&auml;ufigkeit. "
             f"{HUGO_SPRINGER} ist zus&auml;tzlich deutschlandweit als Springer f&uuml;r "
             f"alle Hugo-Systeme verf&uuml;gbar (inkl. alleiniger Zust&auml;ndigkeit Dresden)."
         )
@@ -3840,6 +3914,12 @@ def _render_gebietsoptimierung(
         "Vor-Ort-Stunden &divide; Fahrtstunden pro Jahr. Gr&uuml;n &ge;3,0 "
         "(effizient) &middot; Gelb 2,0&ndash;3,0 &middot; Rot &lt;2,0 "
         "(zu viel Fahrzeit im Verh&auml;ltnis zur Servicezeit)."
+    )
+    korridor_spalte_tip = _info_tip(
+        f"Auslastungs-Zielkorridor ({AUSLASTUNG_ZIEL_MIN_PCT}&ndash;{AUSLASTUNG_ZIEL_MAX_PCT}%, "
+        f"Referenzwert) aus echter Einsatzhistorie (Vor-Ort-Zeit &divide; "
+        f"Jahreskapazit&auml;t, ohne Fahrzeit) &mdash; nur im Echtdaten-Modus "
+        f"verf&uuml;gbar."
     )
     delta_fahrzeit_tip = _info_tip(
         "Ver&auml;nderung der j&auml;hrlichen Fahrtstunden durch die "
@@ -3915,6 +3995,10 @@ def _render_gebietsoptimierung(
     rows_aktuell = ""
     for m in metriken_akt:
         css = "go-gruen" if m["ratio"] >= 3.0 else ("go-gelb" if m["ratio"] >= 2.0 else "go-rot")
+        td_tech = techniker.get(m["id"], {})
+        korridor_zelle = _render_korridor_badge(
+            td_tech.get("auslastung_korridor"), td_tech.get("auslastung_pct_real"),
+        ) or "&ndash;"
         rows_aktuell += (
             f'<tr class="{css}" data-tech="{m["id"]}">'
             f'<td><strong>{m["id"]}</strong></td>'
@@ -3922,6 +4006,7 @@ def _render_gebietsoptimierung(
             f'<td>{m["kliniken"]}</td>'
             f'<td>{m["avg_fahrzeit"]} min</td>'
             f'<td><span class="badge badge-ratio {css.replace("go-","gebiets-")}">{m["ratio"]}</span></td>'
+            f'<td>{korridor_zelle}</td>'
             f'</tr>')
 
     # ── Ansicht 2: Optimierte Gebiete – Vorher/Nachher Tabelle ──
@@ -4079,6 +4164,7 @@ def _render_gebietsoptimierung(
                 <th>Kliniken</th>
                 <th>&Oslash; Fahrzeit</th>
                 <th>Ratio{ratio_tip}</th>
+                <th>Auslastung{korridor_spalte_tip}</th>
               </tr>
             </thead>
             <tbody>
@@ -4168,7 +4254,7 @@ def render_html(
     hugo_standorte_marker: list[dict] | None = None,
     gebiete_status: dict[str, dict] | None = None,
 ) -> str:
-    ampel_html    = _render_ampel_karten(ampeln, labor_zeiten)
+    ampel_html    = _render_ampel_karten(ampeln, labor_zeiten, techniker)
     stk_html      = _render_stk_tabelle(stk_rows)
     repair_html   = _render_repair_tabelle(repair_rows or [])
     ct_html       = _render_ct_tabelle(ct_top5, techniker, labor_zeiten or [])
@@ -5071,6 +5157,8 @@ def _vollstaendigkeits_pruefung(html: str) -> list[tuple[str, bool]]:
          'id="erklaer-box"' in html and 'erklaer-antwort' in html),
         ("Hugo-Kerngebiet-Toggle (optional, default AUS)",
          'id="hugo-kg-toggle"' in html and 'hugo-kg-hint' in html),
+        ("Auslastungs-Zielkorridor (Referenzwert, echte Einsatzhistorie)",
+         'Auslastungs-Zielkorridor' in html and f'{AUSLASTUNG_ZIEL_MIN_PCT}' in html),
     ]
     return checks
 
@@ -5282,6 +5370,7 @@ def main() -> None:
           f"{len(hugo_standorte_marker_daten)} Hugo-Standorte")
 
     print("Generiere Template-Erklaerungen (ohne KI-API, DE+EN)...")
+    _hugo_kerngebiet_ids = {hk["id"] for hk in hugo_kerngebiete}
     erklaerungen = {
         tid: {
             frage_typ: {
@@ -5290,6 +5379,9 @@ def main() -> None:
                     techniker=techniker, metriken_akt=m_akt, metriken_opt=m_opt,
                     ampeln=ampeln, umweg_faktor=HAVERSINE_UMWEG_FAKTOR,
                     sprache=sprache,
+                    auslastung_ziel_min_pct=AUSLASTUNG_ZIEL_MIN_PCT,
+                    auslastung_ziel_max_pct=AUSLASTUNG_ZIEL_MAX_PCT,
+                    hugo_kerngebiet_ids=_hugo_kerngebiet_ids,
                 )
                 for sprache in ("de", "en")
             }

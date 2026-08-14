@@ -34,7 +34,19 @@
         "MC-9735": 36,
         "MC-NITRON": 30,
         "MC-VLFX8": 14
-      }
+      },
+      "einsaetze_gesamt_real": 249,
+      "einsatzstunden_jahr_real": 277.9,
+      "auslastung_pct_real": 23.6,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "CLUSTER3_MONITORING": 202,
+        "CLUSTER1_OR": 27,
+        "HF_CHIRURGIE": 16,
+        "SMALL_CAPITAL": 4
+      },
+      "hugo_einsaetze_jahr_real": 9.81,
+      "durchschnittlicher_einsatzabstand_tage": 3.3
     },
     {
       "pseudonym_id": "Andrej F.",
@@ -78,7 +90,16 @@
         "MC-9735": 20,
         "MC-NITRON": 22,
         "MC-ARGON4": 8
-      }
+      },
+      "einsaetze_gesamt_real": 25,
+      "einsatzstunden_jahr_real": 40.4,
+      "auslastung_pct_real": 2.7,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "CLUSTER2_CARDIAC": 25
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 8.3
     },
     {
       "pseudonym_id": "Artur D.",
@@ -121,7 +142,18 @@
         "MC-PB": 100,
         "MC-840": 32,
         "MC-VLFX8": 2
-      }
+      },
+      "einsaetze_gesamt_real": 560,
+      "einsatzstunden_jahr_real": 406.7,
+      "auslastung_pct_real": 27.6,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "SMALL_CAPITAL": 434,
+        "CLUSTER3_MONITORING": 91,
+        "CLUSTER2_CARDIAC": 35
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 1.5
     },
     {
       "pseudonym_id": "Christoph T.",
@@ -156,7 +188,20 @@
         "MC-VLFX8": 2,
         "MC-NITRON": 21,
         "MC-9735": 20
-      }
+      },
+      "einsaetze_gesamt_real": 671,
+      "einsatzstunden_jahr_real": 519.1,
+      "auslastung_pct_real": 35.3,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "HF_CHIRURGIE": 195,
+        "SMALL_CAPITAL": 219,
+        "CLUSTER2_CARDIAC": 63,
+        "CLUSTER3_MONITORING": 162,
+        "UNBEKANNT": 32
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 1.2
     },
     {
       "pseudonym_id": "Christopher K.",
@@ -193,7 +238,21 @@
         "MC-8253": 16,
         "MC-NITRON": 15,
         "MC-9735": 29
-      }
+      },
+      "einsaetze_gesamt_real": 220,
+      "einsatzstunden_jahr_real": 273.2,
+      "auslastung_pct_real": 18.6,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "HF_CHIRURGIE": 97,
+        "UNBEKANNT": 39,
+        "CLUSTER2_CARDIAC": 20,
+        "CLUSTER3_MONITORING": 8,
+        "SMALL_CAPITAL": 14,
+        "CLUSTER1_OR": 42
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 3.6
     },
     {
       "pseudonym_id": "Dirk G.",
@@ -235,7 +294,20 @@
         "MC-BI70": 20,
         "MC-9735": 37,
         "MC-NITRON": 47
-      }
+      },
+      "einsaetze_gesamt_real": 702,
+      "einsatzstunden_jahr_real": 525.3,
+      "auslastung_pct_real": 35.7,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "SMALL_CAPITAL": 563,
+        "CLUSTER3_MONITORING": 80,
+        "UNBEKANNT": 15,
+        "CLUSTER2_CARDIAC": 39,
+        "CLUSTER1_OR": 5
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 1.1
     },
     {
       "pseudonym_id": "Dirk H.",
@@ -271,7 +343,21 @@
         "MC-LS10": 55,
         "MC-9735": 14,
         "MC-VLFX8": 76
-      }
+      },
+      "einsaetze_gesamt_real": 470,
+      "einsatzstunden_jahr_real": 371.7,
+      "auslastung_pct_real": 31.6,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "HF_CHIRURGIE": 228,
+        "CLUSTER2_CARDIAC": 5,
+        "UNBEKANNT": 139,
+        "CLUSTER3_MONITORING": 79,
+        "SMALL_CAPITAL": 9,
+        "CLUSTER1_OR": 10
+      },
+      "hugo_einsaetze_jahr_real": 3.63,
+      "durchschnittlicher_einsatzabstand_tage": 2.1
     },
     {
       "pseudonym_id": "Eduard S.",
@@ -310,7 +396,19 @@
         "MC-9735": 32,
         "MC-NITRON": 21,
         "MC-ARGON4": 8
-      }
+      },
+      "einsaetze_gesamt_real": 220,
+      "einsatzstunden_jahr_real": 272.0,
+      "auslastung_pct_real": 18.5,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "UNBEKANNT": 39,
+        "HF_CHIRURGIE": 69,
+        "CLUSTER2_CARDIAC": 39,
+        "SMALL_CAPITAL": 73
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 3.7
     },
     {
       "pseudonym_id": "Florian Z.",
@@ -351,7 +449,18 @@
         "MC-BI70": 32,
         "MC-9735": 57,
         "MC-NITRON": 47
-      }
+      },
+      "einsaetze_gesamt_real": 292,
+      "einsatzstunden_jahr_real": 467.7,
+      "auslastung_pct_real": 31.8,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "SMALL_CAPITAL": 197,
+        "CLUSTER1_OR": 46,
+        "CLUSTER2_CARDIAC": 49
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 2.7
     },
     {
       "pseudonym_id": "Hector C.",
@@ -391,7 +500,18 @@
         "MC-LS10": 55,
         "MC-9735": 13,
         "MC-VLFX8": 76
-      }
+      },
+      "einsaetze_gesamt_real": 156,
+      "einsatzstunden_jahr_real": 244.7,
+      "auslastung_pct_real": 16.6,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "SMALL_CAPITAL": 91,
+        "CLUSTER2_CARDIAC": 33,
+        "CLUSTER3_MONITORING": 32
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 3.0
     },
     {
       "pseudonym_id": "Heiko B.",
@@ -429,7 +549,16 @@
         "MC-NITRON": 3,
         "MC-VLFX8": 4,
         "MC-9735": 9
-      }
+      },
+      "einsaetze_gesamt_real": 15,
+      "einsatzstunden_jahr_real": 32.7,
+      "auslastung_pct_real": 2.2,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "CLUSTER2_CARDIAC": 15
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 10.9
     },
     {
       "pseudonym_id": "Lisa K.",
@@ -471,7 +600,14 @@
         "MC-BI70": 20,
         "MC-9735": 37,
         "MC-NITRON": 48
-      }
+      },
+      "einsaetze_gesamt_real": 0,
+      "einsatzstunden_jahr_real": 0.0,
+      "auslastung_pct_real": 0.0,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {},
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": null
     },
     {
       "pseudonym_id": "Marc L.",
@@ -511,7 +647,21 @@
         "MC-NITRON": 17,
         "MC-9735": 24,
         "MC-VLFX8": 2
-      }
+      },
+      "einsaetze_gesamt_real": 353,
+      "einsatzstunden_jahr_real": 312.2,
+      "auslastung_pct_real": 26.5,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "SMALL_CAPITAL": 115,
+        "CLUSTER2_CARDIAC": 31,
+        "CLUSTER3_MONITORING": 42,
+        "CLUSTER1_OR": 20,
+        "UNBEKANNT": 22,
+        "HF_CHIRURGIE": 123
+      },
+      "hugo_einsaetze_jahr_real": 5.81,
+      "durchschnittlicher_einsatzabstand_tage": 2.2
     },
     {
       "pseudonym_id": "Marco C.",
@@ -550,7 +700,17 @@
         "MC-PB": 12,
         "MC-NITRON": 17,
         "MC-9735": 14
-      }
+      },
+      "einsaetze_gesamt_real": 118,
+      "einsatzstunden_jahr_real": 169.3,
+      "auslastung_pct_real": 11.5,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "CLUSTER1_OR": 115,
+        "UNBEKANNT": 3
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 4.6
     },
     {
       "pseudonym_id": "Markus N.",
@@ -589,7 +749,17 @@
         "MC-PB": 12,
         "MC-NITRON": 17,
         "MC-9735": 14
-      }
+      },
+      "einsaetze_gesamt_real": 135,
+      "einsatzstunden_jahr_real": 220.6,
+      "auslastung_pct_real": 15.0,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "CLUSTER1_OR": 128,
+        "UNBEKANNT": 7
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 4.0
     },
     {
       "pseudonym_id": "Matthias B.",
@@ -631,7 +801,21 @@
         "MC-BI70": 32,
         "MC-9735": 56,
         "MC-NITRON": 47
-      }
+      },
+      "einsaetze_gesamt_real": 398,
+      "einsatzstunden_jahr_real": 350.9,
+      "auslastung_pct_real": 23.8,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "UNBEKANNT": 101,
+        "CLUSTER2_CARDIAC": 41,
+        "CLUSTER3_MONITORING": 66,
+        "HF_CHIRURGIE": 174,
+        "SMALL_CAPITAL": 15,
+        "CLUSTER1_OR": 1
+      },
+      "hugo_einsaetze_jahr_real": 0.36,
+      "durchschnittlicher_einsatzabstand_tage": 2.1
     },
     {
       "pseudonym_id": "Matthias W.",
@@ -670,7 +854,17 @@
         "MC-PB": 12,
         "MC-NITRON": 17,
         "MC-9735": 14
-      }
+      },
+      "einsaetze_gesamt_real": 28,
+      "einsatzstunden_jahr_real": 60.8,
+      "auslastung_pct_real": 4.1,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "CLUSTER1_OR": 27,
+        "UNBEKANNT": 1
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 16.6
     },
     {
       "pseudonym_id": "Michael G.",
@@ -709,7 +903,19 @@
         "MC-BI70": 20,
         "MC-9735": 35,
         "MC-NITRON": 36
-      }
+      },
+      "einsaetze_gesamt_real": 148,
+      "einsatzstunden_jahr_real": 201.9,
+      "auslastung_pct_real": 17.1,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "CLUSTER1_OR": 34,
+        "SMALL_CAPITAL": 55,
+        "HF_CHIRURGIE": 56,
+        "UNBEKANNT": 3
+      },
+      "hugo_einsaetze_jahr_real": 12.36,
+      "durchschnittlicher_einsatzabstand_tage": 5.3
     },
     {
       "pseudonym_id": "Michael L.",
@@ -750,7 +956,14 @@
         "MC-NITRON": 17,
         "MC-VLFX8": 2,
         "MC-9735": 17
-      }
+      },
+      "einsaetze_gesamt_real": 0,
+      "einsatzstunden_jahr_real": 0.0,
+      "auslastung_pct_real": 0.0,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {},
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": null
     },
     {
       "pseudonym_id": "Mohammad H.",
@@ -786,7 +999,20 @@
         "MC-9735": 30,
         "MC-NITRON": 28,
         "MC-VLFX8": 14
-      }
+      },
+      "einsaetze_gesamt_real": 459,
+      "einsatzstunden_jahr_real": 372.8,
+      "auslastung_pct_real": 25.3,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "UNBEKANNT": 49,
+        "CLUSTER3_MONITORING": 195,
+        "HF_CHIRURGIE": 159,
+        "CLUSTER2_CARDIAC": 34,
+        "SMALL_CAPITAL": 22
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 1.7
     },
     {
       "pseudonym_id": "Mousa A.",
@@ -827,7 +1053,17 @@
         "MC-BI70": 27,
         "MC-9735": 59,
         "MC-NITRON": 46
-      }
+      },
+      "einsaetze_gesamt_real": 73,
+      "einsatzstunden_jahr_real": 192.2,
+      "auslastung_pct_real": 13.1,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "CLUSTER1_OR": 47,
+        "CLUSTER2_CARDIAC": 26
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 7.5
     },
     {
       "pseudonym_id": "Peter S.",
@@ -866,7 +1102,19 @@
         "MC-9735": 33,
         "MC-NITRON": 27,
         "MC-VLFX8": 14
-      }
+      },
+      "einsaetze_gesamt_real": 179,
+      "einsatzstunden_jahr_real": 300.9,
+      "auslastung_pct_real": 20.4,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "SMALL_CAPITAL": 83,
+        "CLUSTER2_CARDIAC": 69,
+        "UNBEKANNT": 3,
+        "CLUSTER3_MONITORING": 24
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 3.7
     },
     {
       "pseudonym_id": "Roland K.",
@@ -904,7 +1152,20 @@
         "MC-9735": 15,
         "MC-NITRON": 19,
         "MC-VLFX8": 2
-      }
+      },
+      "einsaetze_gesamt_real": 400,
+      "einsatzstunden_jahr_real": 386.1,
+      "auslastung_pct_real": 26.2,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "HF_CHIRURGIE": 98,
+        "CLUSTER3_MONITORING": 153,
+        "CLUSTER2_CARDIAC": 40,
+        "UNBEKANNT": 37,
+        "SMALL_CAPITAL": 72
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 1.9
     },
     {
       "pseudonym_id": "Ulrich W.",
@@ -938,7 +1199,20 @@
         "MC-NITRON": 19,
         "MC-9735": 16,
         "MC-840": 30
-      }
+      },
+      "einsaetze_gesamt_real": 374,
+      "einsatzstunden_jahr_real": 269.5,
+      "auslastung_pct_real": 18.3,
+      "auslastung_korridor": "unter",
+      "einsaetze_je_cluster_real": {
+        "CLUSTER3_MONITORING": 125,
+        "HF_CHIRURGIE": 150,
+        "UNBEKANNT": 72,
+        "CLUSTER2_CARDIAC": 14,
+        "SMALL_CAPITAL": 13
+      },
+      "hugo_einsaetze_jahr_real": 0.0,
+      "durchschnittlicher_einsatzabstand_tage": 2.1
     }
   ],
   "total_model_codes": 365,
@@ -12988,5 +13262,14 @@
   "jobs_plz_aufgeloest": 7062,
   "jobs_gesamt": 10050,
   "beobachtungszeitraum_jahre": 2.75,
-  "generated_at": "2026-08-14T15:11:53"
+  "einsaetze_je_cluster_gesamt": {
+    "SMALL_CAPITAL": 2943,
+    "CLUSTER2_CARDIAC": 607,
+    "CLUSTER3_MONITORING": 1464,
+    "CLUSTER1_OR": 736,
+    "UNBEKANNT": 949,
+    "HF_CHIRURGIE": 2488
+  },
+  "auftragstyp_unterscheidbar": false,
+  "generated_at": "2026-08-14T16:33:16"
 }

@@ -225,8 +225,24 @@ def _wende_korrektur_an(repair_mcs: set[str], korrektur: dict) -> set[str]:
 def build_dashboard_data() -> dict:
     """Parst XLSX und erstellt dashboard-kompatible Daten mit pseudonymisierten IDs."""
     from api.import_real_data import parse_smax_xlsx
-    from api.cluster_mapping import finde_repair_familie
+    from api.cluster_mapping import finde_cluster, finde_repair_familie
+    from api.auslastung_analyse import (
+        durchschnittlicher_abstand_tage,
+        durchschnittsdauer_min,
+        einsatzdauer_map,
+        einsatzstunden_pro_jahr,
+        jobs_je_cluster,
+    )
     from techniker.plz_koordinaten import hole_koordinaten
+    from config import (
+        AUSSENDIENST_STUNDEN,
+        HUGO_KA_ZIEL_STUNDEN,
+        ARBEITSWOCHEN_PRO_JAHR,
+        AUSLASTUNG_ZIEL_MIN_PCT,
+        AUSLASTUNG_ZIEL_MAX_PCT,
+    )
+    from api.auslastung_analyse import auslastung_pct as _auslastung_pct
+    from api.auslastung_analyse import klassifiziere_korridor as _klassifiziere_korridor
 
     if not _XLSX.exists():
         raise FileNotFoundError(f"XLSX nicht gefunden: {_XLSX}")
@@ -278,6 +294,24 @@ def build_dashboard_data() -> dict:
         if d is not None
     ]
     beobachtungszeitraum_jahre = _berechne_beobachtungszeitraum_jahre(closed_datums)
+
+    # ── Auslastungs-Zielkorridor: reale Einsatzhistorie ALLER Geraete ──────────
+    # (nicht nur Hugo) je Techniker auswerten. Manager-Einsaetze bleiben in der
+    # Historie erhalten, zaehlen aber nicht in die Techniker-Auslastung.
+    # WICHTIG: PM/STK vs. Repair ist auf Auftragsebene NICHT unterscheidbar
+    # (kein Auftragstyp-Feld in Closed/Open Jobs, siehe api/auslastung_analyse.py
+    # Modul-Docstring) -- alle Berechnungen bleiben auf Cluster-/Techniker-Ebene.
+    nicht_manager_closed = [
+        a for a in ergebnis.geschlossene_auftraege if not a.historisch_manager_einsatz
+    ]
+    dauer_map = einsatzdauer_map(ergebnis.einsatzdauern)
+    fallback_dauer_min = durchschnittsdauer_min(ergebnis.einsatzdauern)
+    closed_je_tech_norm: dict[str, list] = {}
+    for auftrag in nicht_manager_closed:
+        if not auftrag.techniker:
+            continue
+        closed_je_tech_norm.setdefault(_norm_umlaut(auftrag.techniker), []).append(auftrag)
+    einsaetze_je_cluster_gesamt = jobs_je_cluster(nicht_manager_closed, finde_cluster)
 
     # Gebietsoptimierung: ALLE Jobs (nicht nur Repair) nach Standort aggregieren.
     # Reale Auftrags-Standorte + Auftragsvolumen -- Basis fuer die
@@ -362,6 +396,34 @@ def build_dashboard_data() -> dict:
             if f not in tech_repair_familien and not _crosstraining_ausgeschlossen(f)
         )
 
+        # Auslastungs-Zielkorridor: reale Einsatzhistorie dieses Technikers
+        # (alle Geraete-Cluster, siehe Modul-Docstring api/auslastung_analyse.py)
+        is_hugo_ka = ort_key in _HUGO_KA_STAEDTE
+        kapazitaet_wochenstunden = HUGO_KA_ZIEL_STUNDEN if is_hugo_ka else AUSSENDIENST_STUNDEN
+        tech_closed_jobs = closed_je_tech_norm.get(tn_norm, [])
+        einsatzstunden_jahr_real = einsatzstunden_pro_jahr(
+            tech_closed_jobs, dauer_map, fallback_dauer_min, beobachtungszeitraum_jahre,
+        )
+        auslastung_pct_real = _auslastung_pct(
+            einsatzstunden_jahr_real, kapazitaet_wochenstunden, ARBEITSWOCHEN_PRO_JAHR,
+        )
+        auslastung_korridor = _klassifiziere_korridor(
+            auslastung_pct_real, AUSLASTUNG_ZIEL_MIN_PCT, AUSLASTUNG_ZIEL_MAX_PCT,
+        )
+        einsaetze_je_cluster_real = jobs_je_cluster(tech_closed_jobs, finde_cluster)
+        # Hugo speziell (weiterhin relevant fuers Kerngebiet-Konzept): reale
+        # jaehrliche MC-HUGO-Einsatzhaeufigkeit -- Ergaenzung zu
+        # config_hugo_standorte.HUGO_TEAM_GROESSE, kein Ersatz dafuer.
+        hugo_jobs_real = [j for j in tech_closed_jobs if finde_repair_familie(j.model_code) == "MC-HUGO"]
+        hugo_einsaetze_jahr_real = (
+            round(len(hugo_jobs_real) / beobachtungszeitraum_jahre, 2)
+            if beobachtungszeitraum_jahre > 0 else 0.0
+        )
+        abstand_daten = [
+            d for d in (_parse_datum(j.erledigung_datum) for j in tech_closed_jobs) if d is not None
+        ]
+        durchschnittlicher_einsatzabstand_tage = durchschnittlicher_abstand_tage(abstand_daten)
+
         techniker_list.append({
             "pseudonym_id":      _display_id(tech.name),
             "standort":          ort,
@@ -383,6 +445,13 @@ def build_dashboard_data() -> dict:
             "crosstraining_luecken": crosstraining_luecken,
             "stk_potenzial":         stk_potenzial,
             "geraete_im_gebiet":     geraete_im_gebiet,
+            "einsaetze_gesamt_real":      len(tech_closed_jobs),
+            "einsatzstunden_jahr_real":   einsatzstunden_jahr_real,
+            "auslastung_pct_real":        auslastung_pct_real,
+            "auslastung_korridor":        auslastung_korridor,
+            "einsaetze_je_cluster_real":  einsaetze_je_cluster_real,
+            "hugo_einsaetze_jahr_real":   hugo_einsaetze_jahr_real,
+            "durchschnittlicher_einsatzabstand_tage": durchschnittlicher_einsatzabstand_tage,
         })
 
     dauern = [d for d in ergebnis.einsatzdauern if d.median_min > 0]
@@ -403,6 +472,8 @@ def build_dashboard_data() -> dict:
         "jobs_plz_aufgeloest":        jobs_aufgeloest,
         "jobs_gesamt":                jobs_gesamt,
         "beobachtungszeitraum_jahre": round(beobachtungszeitraum_jahre, 2),
+        "einsaetze_je_cluster_gesamt": einsaetze_je_cluster_gesamt,
+        "auftragstyp_unterscheidbar": False,  # kein Auftragstyp-Feld in Closed/Open Jobs (siehe api/auslastung_analyse.py)
         "generated_at":               datetime.now().isoformat(timespec="seconds"),
     }
 

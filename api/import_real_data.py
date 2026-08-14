@@ -163,7 +163,15 @@ def map_skill_row(model_code: str, tech_name: str, wert: str) -> SMaxSkillEintra
 
 
 def map_einsatzdauer_row(row: dict) -> SMaxEinsatzDauer:
-    """Mappt eine Einsatzdauer-Zeile; rechnet Stunden → Minuten um (x60)."""
+    """Mappt eine Einsatzdauer-Zeile; rechnet Stunden → Minuten um (x60).
+
+    Die Model-Code-Spalte heisst in der echten Sheet-2-Datei "Zeilenbeschriftungen"
+    (Excel-Pivot-Export der Quelle), nicht "Model_Code" -- beide Schluessel
+    werden akzeptiert (Model_Code zuerst, fuer Rueckwaertskompatibilitaet zu
+    Tests/synthetischen Daten). Ohne diesen Fallback wurde bislang JEDE Zeile
+    mit leerem model_code gemappt -- 0% der Closed Jobs bekamen eine echte
+    Model-Code-Dauer zugeordnet, obwohl Sheet 2 fuer 76 Model Codes befuellt ist.
+    """
     def _stunden_zu_min(v: object) -> int:
         try:
             return round(float(str(v).replace(",", ".")) * 60)
@@ -171,8 +179,9 @@ def map_einsatzdauer_row(row: dict) -> SMaxEinsatzDauer:
             return 0
 
     bemerkung = str(row.get("Bemerkung", "") or "").strip() or None
+    model_code = str(row.get("Model_Code") or row.get("Zeilenbeschriftungen") or "").strip()
     return SMaxEinsatzDauer(
-        model_code=str(row.get("Model_Code", "")).strip(),
+        model_code=model_code,
         mittelwert_min=_stunden_zu_min(row.get("Mittelwert")),
         median_min=_stunden_zu_min(row.get("Median")),
         bemerkung=bemerkung,
