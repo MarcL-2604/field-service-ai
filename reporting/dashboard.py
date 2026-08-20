@@ -3335,7 +3335,10 @@ _CSS = """\
       left: 50%;
       transform: translateX(-50%);
       width: max-content;
-      max-width: 250px;
+      /* viewport-bewusst: verhindert Abschneiden in schmalen Fenstern, auch
+         wenn die rand-spezifischen Ausrichtungsregeln unten (Tabellen-
+         Erst-/Letztspalte, erste Ampel-Karte) einen Fall nicht abdecken. */
+      max-width: min(250px, calc(100vw - 32px));
       background: #1A2B3C;
       color: #fff;
       font-size: 11px;
@@ -3356,6 +3359,28 @@ _CSS = """\
       opacity: 1;
     }
     th .info-tip { margin-left: 4px; }
+
+    /* ── Rand-bewusste Tooltip-Ausrichtung ──────────────────────────────
+       Die zentrierte Standard-Bubble (left:50%/translateX(-50%)) ragt bei
+       Icons nah am linken/rechten Fensterrand ueber den sichtbaren Bereich
+       hinaus und wird dort abgeschnitten (z.B. PLZ-Uebersicht-Icon in der
+       ersten Tabellenspalte "Techniker", oder die Spaltenkopf-Tooltips der
+       jeweils letzten Spalte). Fuer diese strukturell bekannten Randlagen
+       oeffnet die Bubble stattdessen gezielt zur Bildschirmmitte hin --
+       analog zum bereits bestehenden .korridor-badge .info-tip-bubble-Fix
+       oben. Rein CSS, kein JavaScript noetig (konsistent mit dem
+       Tooltip-Grundkonzept). */
+    .gebiets-metriken td:first-child .info-tip-bubble,
+    .ampel-grid > .ampel-karte:first-child .info-tip-bubble {
+      left: 0;
+      transform: none;
+    }
+    .gebiets-metriken th:last-child .info-tip-bubble,
+    .gebiets-metriken th:nth-last-child(2) .info-tip-bubble {
+      left: auto;
+      right: 0;
+      transform: none;
+    }
 
     /* ── Crosstraining: Mehrwert-Begruendung / Ausschluss-Hinweis ── */
     .ct-mehrwert {
