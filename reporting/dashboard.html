@@ -274,9 +274,6 @@
       position: relative;
       white-space: nowrap;
     }
-    .korridor-badge .info-tip-bubble { top: calc(100% + 6px); left: 0; transform: none; }
-    .korridor-badge:hover .info-tip-bubble,
-    .korridor-badge:focus .info-tip-bubble { visibility: visible; opacity: 1; }
     .korridor-unter    { background: rgba(0,102,204,.12); color: #0058A3; }
     .korridor-im       { background: rgba(0,160,128,.15); color: #007A5E; }
     .korridor-ueber    { background: rgba(204,0,0,.12); color: #9A0000; }
@@ -743,7 +740,19 @@
     }
     .go-info-text { font-size: 12.5px; color: var(--text); line-height: 1.55; }
 
-    /* ── Info-Tooltip: Kennzahlen-Erklaerung direkt am Ort der Verwirrung ── */
+    /* ── Info-Tooltip: Kennzahlen-Erklaerung direkt am Ort der Verwirrung ──
+       Die sichtbare Bubble wird per JS (Portal-Pattern, siehe
+       _build_tooltip_portal_script) bei Hover/Focus an document.body
+       angehaengt statt als Kind-Element positioniert. Grund: mehrere
+       Tooltip-Container (.gebiets-metriken, .ampel-grid) haben
+       overflow-x:auto (fuer schmale Fenster/breite Tabellen noetig), was
+       per CSS-Spezifikation overflow-y implizit auf 'auto' mitsetzt --
+       jede absolut positionierte Kind-Bubble wird dadurch am Container-
+       Rand abgeschnitten, unabhaengig von ihrer eigenen CSS-Position
+       (reine links/rechts-Ausrichtung reichte bei schmalen Containern
+       nicht aus). Der Portal-Ansatz umgeht das vollstaendig. Das
+       .info-tip-bubble-Markup bleibt als unsichtbarer Inhalts-/
+       data-label-de-Traeger fuer die i18n-Uebersetzung erhalten. */
     .info-tip {
       display: inline-flex;
       align-items: center;
@@ -767,19 +776,16 @@
       background: rgba(0,81,149,.26);
       outline: none;
     }
-    .info-tip-bubble {
+    .info-tip-bubble { display: none; }
+    th .info-tip { margin-left: 4px; }
+
+    .info-tip-portal {
+      position: fixed;
       visibility: hidden;
       opacity: 0;
-      position: absolute;
-      z-index: 60;
-      top: calc(100% + 7px);
-      left: 50%;
-      transform: translateX(-50%);
+      z-index: 9999;
       width: max-content;
-      /* viewport-bewusst: verhindert Abschneiden in schmalen Fenstern, auch
-         wenn die rand-spezifischen Ausrichtungsregeln unten (Tabellen-
-         Erst-/Letztspalte, erste Ampel-Karte) einen Fall nicht abdecken. */
-      max-width: min(250px, calc(100vw - 32px));
+      max-width: min(250px, calc(100vw - 16px));
       background: #1A2B3C;
       color: #fff;
       font-size: 11px;
@@ -793,34 +799,6 @@
       box-shadow: 0 6px 20px rgba(0,0,0,.28);
       transition: opacity .15s ease;
       pointer-events: none;
-    }
-    .info-tip:hover .info-tip-bubble,
-    .info-tip:focus .info-tip-bubble {
-      visibility: visible;
-      opacity: 1;
-    }
-    th .info-tip { margin-left: 4px; }
-
-    /* ── Rand-bewusste Tooltip-Ausrichtung ──────────────────────────────
-       Die zentrierte Standard-Bubble (left:50%/translateX(-50%)) ragt bei
-       Icons nah am linken/rechten Fensterrand ueber den sichtbaren Bereich
-       hinaus und wird dort abgeschnitten (z.B. PLZ-Uebersicht-Icon in der
-       ersten Tabellenspalte "Techniker", oder die Spaltenkopf-Tooltips der
-       jeweils letzten Spalte). Fuer diese strukturell bekannten Randlagen
-       oeffnet die Bubble stattdessen gezielt zur Bildschirmmitte hin --
-       analog zum bereits bestehenden .korridor-badge .info-tip-bubble-Fix
-       oben. Rein CSS, kein JavaScript noetig (konsistent mit dem
-       Tooltip-Grundkonzept). */
-    .gebiets-metriken td:first-child .info-tip-bubble,
-    .ampel-grid > .ampel-karte:first-child .info-tip-bubble {
-      left: 0;
-      transform: none;
-    }
-    .gebiets-metriken th:last-child .info-tip-bubble,
-    .gebiets-metriken th:nth-last-child(2) .info-tip-bubble {
-      left: auto;
-      right: 0;
-      transform: none;
     }
 
     /* ── Crosstraining: Mehrwert-Begruendung / Ausschluss-Hinweis ── */
@@ -1545,7 +1523,7 @@
   <span><span class="dot dot-gruen"></span> <span data-i18n="summary.green">Gr&uuml;n</span>: <strong>0</strong> (&ge;60&thinsp;% L3)</span>
   <span><span class="dot dot-gelb"></span> <span data-i18n="summary.yellow">Gelb</span>: <strong>4</strong> (30&ndash;59&thinsp;%)</span>
   <span><span class="dot dot-rot"></span> <span data-i18n="summary.red">Rot</span>: <strong>20</strong> (&lt;30&thinsp;%)</span>
-  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 20.08.2026 09:37 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
+  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: 20.08.2026 09:53 &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
 </div>
 
 <main>
@@ -3013,11 +2991,11 @@
         </tr>
       </thead>
       <tbody>
-      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>20.08. 02:37</td><td><span class='badge badge-normal'><span data-label-de="SLA: noch">SLA: noch</span> 41h</span></td><td><span data-label-de="Kontakt ausstehend">Kontakt ausstehend</span></td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>19.08. 02:37</td><td><span class='badge badge-hoch'><span data-label-de="SLA: noch">SLA: noch</span> 17h</span></td><td><span data-label-de="Kontakt ausstehend">Kontakt ausstehend</span></td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>18.08. 07:37</td><td><span class='badge badge-kritisch puls-animation'><span data-label-de="SLA VERLETZT">SLA VERLETZT</span></span></td><td><span data-label-de="Kontakt ausstehend">Kontakt ausstehend</span></td><td>&ndash;</td></tr>
-      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>19.08. 13:37</td><td><span class='badge badge-normal'><span data-label-de="&#10003; Kontakt">&#10003; Kontakt</span></span></td><td><span data-label-de="Kontakt hergestellt">Kontakt hergestellt</span></td><td>Im Fahrzeug</td></tr>
-      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>18.08. 21:37</td><td><span class='badge badge-blau'><span data-label-de="&#10003; Kontakt">&#10003; Kontakt</span></span></td><td><span data-label-de="Ersatzteil bestellt">Ersatzteil bestellt</span></td><td>Bestellt (3-5 Tage)</td></tr>
+      <tr><td><code>REP-2026-0042</code></td><td>UKE Hamburg</td><td>HugoRAS</td><td>20.08. 02:53</td><td><span class='badge badge-normal'><span data-label-de="SLA: noch">SLA: noch</span> 41h</span></td><td><span data-label-de="Kontakt ausstehend">Kontakt ausstehend</span></td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0041</code></td><td>Uniklinikum Ulm</td><td>EC300_Legend</td><td>19.08. 02:53</td><td><span class='badge badge-hoch'><span data-label-de="SLA: noch">SLA: noch</span> 17h</span></td><td><span data-label-de="Kontakt ausstehend">Kontakt ausstehend</span></td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0040</code></td><td>Uni Bonn</td><td>NIM4CM01</td><td>18.08. 07:53</td><td><span class='badge badge-kritisch puls-animation'><span data-label-de="SLA VERLETZT">SLA VERLETZT</span></span></td><td><span data-label-de="Kontakt ausstehend">Kontakt ausstehend</span></td><td>&ndash;</td></tr>
+      <tr><td><code>REP-2026-0039</code></td><td>Klinikum Bochum</td><td>HugoRAS</td><td>19.08. 13:53</td><td><span class='badge badge-normal'><span data-label-de="&#10003; Kontakt">&#10003; Kontakt</span></span></td><td><span data-label-de="Kontakt hergestellt">Kontakt hergestellt</span></td><td>Im Fahrzeug</td></tr>
+      <tr><td><code>REP-2026-0038</code></td><td>Charit&eacute; Berlin</td><td>O-arm</td><td>18.08. 21:53</td><td><span class='badge badge-blau'><span data-label-de="&#10003; Kontakt">&#10003; Kontakt</span></span></td><td><span data-label-de="Ersatzteil bestellt">Ersatzteil bestellt</span></td><td>Bestellt (3-5 Tage)</td></tr>
       </tbody>
     </table>
   </section>
@@ -4385,6 +4363,47 @@ document.addEventListener('keydown', function(e) {
     if(standorteLayer) standorteLayer.style.display=anzeigen;
     if(hint) hint.style.display=toggle.checked?'block':'none';
   });
+})();
+
+
+/* ── Info-Tooltips: Portal-Pattern gegen Overflow-Clipping ── */
+(function(){
+  var portal = document.createElement('div');
+  portal.className = 'info-tip-portal';
+  document.body.appendChild(portal);
+  var MARGIN = 8;
+  function hide(){
+    portal.style.visibility = 'hidden';
+    portal.style.opacity = '0';
+  }
+  hide();
+  document.querySelectorAll('.info-tip, .korridor-badge').forEach(function(anchor){
+    var bubble = anchor.querySelector('.info-tip-bubble');
+    if (!bubble) return;
+    function show(){
+      portal.innerHTML = bubble.innerHTML;
+      portal.style.left = MARGIN + 'px';
+      portal.style.top = MARGIN + 'px';
+      portal.style.visibility = 'visible';
+      portal.style.opacity = '1';
+      var r = anchor.getBoundingClientRect();
+      var bw = portal.offsetWidth, bh = portal.offsetHeight;
+      var left = r.left;
+      var top = r.bottom + 7;
+      if (left + bw > window.innerWidth - MARGIN) left = window.innerWidth - MARGIN - bw;
+      if (left < MARGIN) left = MARGIN;
+      if (top + bh > window.innerHeight - MARGIN) top = r.top - bh - 7;
+      if (top < MARGIN) top = MARGIN;
+      portal.style.left = left + 'px';
+      portal.style.top = top + 'px';
+    }
+    anchor.addEventListener('mouseenter', show);
+    anchor.addEventListener('focus', show);
+    anchor.addEventListener('mouseleave', hide);
+    anchor.addEventListener('blur', hide);
+  });
+  window.addEventListener('scroll', hide, true);
+  window.addEventListener('resize', hide);
 })();
 
 

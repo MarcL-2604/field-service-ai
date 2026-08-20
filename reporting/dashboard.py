@@ -2269,6 +2269,70 @@ def _build_gebiets_svg(
     return "\n    ".join(svg_parts)
 
 
+def _build_tooltip_portal_script() -> str:
+    """Baut das Portal-Pattern-JS fuer ALLE Info-Tooltips (.info-tip- und
+    .korridor-badge-Anker, siehe _info_tip()/_render_korridor_badge()).
+
+    Grund: mehrere Tooltip-Container (.gebiets-metriken, .ampel-grid) haben
+    overflow-x:auto (fuer schmale Fenster/breite Tabellen noetig). Per
+    CSS-Spezifikation wird dadurch auch overflow-y implizit 'auto' --
+    jede absolut positionierte Tooltip-Bubble als Kind-Element wird am
+    Container-Rand abgeschnitten, egal wie ihre eigene CSS-Position gesetzt
+    ist (reine links/rechts-Ausrichtung reichte bei schmalen Containern
+    nicht). Fix: die Bubble wird bei Hover/Focus aus der Container-
+    Hierarchie ausgehaengt und direkt an document.body angehaengt
+    (position:fixed, hoher z-index), mit Position aus
+    getBoundingClientRect() des Ankers berechnet und an die Viewport-
+    Raender geklemmt -- das umgeht jede Overflow-Clipping-Begrenzung UND
+    jede Stacking-Context-Ueberlagerung durch andere Elemente.
+
+    Alle .info-tip/.korridor-badge-Elemente sind Teil des serverseitig
+    vorgerenderten HTML (keine nachtraeglich per JS erzeugten Tooltips) --
+    ein einmaliges querySelectorAll beim Skriptstart deckt daher alle ab.
+    """
+    return (
+        "/* ── Info-Tooltips: Portal-Pattern gegen Overflow-Clipping ── */\n"
+        "(function(){\n"
+        "  var portal = document.createElement('div');\n"
+        "  portal.className = 'info-tip-portal';\n"
+        "  document.body.appendChild(portal);\n"
+        "  var MARGIN = 8;\n"
+        "  function hide(){\n"
+        "    portal.style.visibility = 'hidden';\n"
+        "    portal.style.opacity = '0';\n"
+        "  }\n"
+        "  hide();\n"
+        "  document.querySelectorAll('.info-tip, .korridor-badge').forEach(function(anchor){\n"
+        "    var bubble = anchor.querySelector('.info-tip-bubble');\n"
+        "    if (!bubble) return;\n"
+        "    function show(){\n"
+        "      portal.innerHTML = bubble.innerHTML;\n"
+        "      portal.style.left = MARGIN + 'px';\n"
+        "      portal.style.top = MARGIN + 'px';\n"
+        "      portal.style.visibility = 'visible';\n"
+        "      portal.style.opacity = '1';\n"
+        "      var r = anchor.getBoundingClientRect();\n"
+        "      var bw = portal.offsetWidth, bh = portal.offsetHeight;\n"
+        "      var left = r.left;\n"
+        "      var top = r.bottom + 7;\n"
+        "      if (left + bw > window.innerWidth - MARGIN) left = window.innerWidth - MARGIN - bw;\n"
+        "      if (left < MARGIN) left = MARGIN;\n"
+        "      if (top + bh > window.innerHeight - MARGIN) top = r.top - bh - 7;\n"
+        "      if (top < MARGIN) top = MARGIN;\n"
+        "      portal.style.left = left + 'px';\n"
+        "      portal.style.top = top + 'px';\n"
+        "    }\n"
+        "    anchor.addEventListener('mouseenter', show);\n"
+        "    anchor.addEventListener('focus', show);\n"
+        "    anchor.addEventListener('mouseleave', hide);\n"
+        "    anchor.addEventListener('blur', hide);\n"
+        "  });\n"
+        "  window.addEventListener('scroll', hide, true);\n"
+        "  window.addEventListener('resize', hide);\n"
+        "})();\n"
+    )
+
+
 def _build_gebiets_script(
     techniker: dict[str, dict],
     plz_abdeckung: list[dict] | None = None,
@@ -2833,9 +2897,6 @@ _CSS = """\
       position: relative;
       white-space: nowrap;
     }
-    .korridor-badge .info-tip-bubble { top: calc(100% + 6px); left: 0; transform: none; }
-    .korridor-badge:hover .info-tip-bubble,
-    .korridor-badge:focus .info-tip-bubble { visibility: visible; opacity: 1; }
     .korridor-unter    { background: rgba(0,102,204,.12); color: #0058A3; }
     .korridor-im       { background: rgba(0,160,128,.15); color: #007A5E; }
     .korridor-ueber    { background: rgba(204,0,0,.12); color: #9A0000; }
@@ -3302,7 +3363,19 @@ _CSS = """\
     }
     .go-info-text { font-size: 12.5px; color: var(--text); line-height: 1.55; }
 
-    /* ── Info-Tooltip: Kennzahlen-Erklaerung direkt am Ort der Verwirrung ── */
+    /* ── Info-Tooltip: Kennzahlen-Erklaerung direkt am Ort der Verwirrung ──
+       Die sichtbare Bubble wird per JS (Portal-Pattern, siehe
+       _build_tooltip_portal_script) bei Hover/Focus an document.body
+       angehaengt statt als Kind-Element positioniert. Grund: mehrere
+       Tooltip-Container (.gebiets-metriken, .ampel-grid) haben
+       overflow-x:auto (fuer schmale Fenster/breite Tabellen noetig), was
+       per CSS-Spezifikation overflow-y implizit auf 'auto' mitsetzt --
+       jede absolut positionierte Kind-Bubble wird dadurch am Container-
+       Rand abgeschnitten, unabhaengig von ihrer eigenen CSS-Position
+       (reine links/rechts-Ausrichtung reichte bei schmalen Containern
+       nicht aus). Der Portal-Ansatz umgeht das vollstaendig. Das
+       .info-tip-bubble-Markup bleibt als unsichtbarer Inhalts-/
+       data-label-de-Traeger fuer die i18n-Uebersetzung erhalten. */
     .info-tip {
       display: inline-flex;
       align-items: center;
@@ -3326,19 +3399,16 @@ _CSS = """\
       background: rgba(0,81,149,.26);
       outline: none;
     }
-    .info-tip-bubble {
+    .info-tip-bubble { display: none; }
+    th .info-tip { margin-left: 4px; }
+
+    .info-tip-portal {
+      position: fixed;
       visibility: hidden;
       opacity: 0;
-      position: absolute;
-      z-index: 60;
-      top: calc(100% + 7px);
-      left: 50%;
-      transform: translateX(-50%);
+      z-index: 9999;
       width: max-content;
-      /* viewport-bewusst: verhindert Abschneiden in schmalen Fenstern, auch
-         wenn die rand-spezifischen Ausrichtungsregeln unten (Tabellen-
-         Erst-/Letztspalte, erste Ampel-Karte) einen Fall nicht abdecken. */
-      max-width: min(250px, calc(100vw - 32px));
+      max-width: min(250px, calc(100vw - 16px));
       background: #1A2B3C;
       color: #fff;
       font-size: 11px;
@@ -3352,34 +3422,6 @@ _CSS = """\
       box-shadow: 0 6px 20px rgba(0,0,0,.28);
       transition: opacity .15s ease;
       pointer-events: none;
-    }
-    .info-tip:hover .info-tip-bubble,
-    .info-tip:focus .info-tip-bubble {
-      visibility: visible;
-      opacity: 1;
-    }
-    th .info-tip { margin-left: 4px; }
-
-    /* ── Rand-bewusste Tooltip-Ausrichtung ──────────────────────────────
-       Die zentrierte Standard-Bubble (left:50%/translateX(-50%)) ragt bei
-       Icons nah am linken/rechten Fensterrand ueber den sichtbaren Bereich
-       hinaus und wird dort abgeschnitten (z.B. PLZ-Uebersicht-Icon in der
-       ersten Tabellenspalte "Techniker", oder die Spaltenkopf-Tooltips der
-       jeweils letzten Spalte). Fuer diese strukturell bekannten Randlagen
-       oeffnet die Bubble stattdessen gezielt zur Bildschirmmitte hin --
-       analog zum bereits bestehenden .korridor-badge .info-tip-bubble-Fix
-       oben. Rein CSS, kein JavaScript noetig (konsistent mit dem
-       Tooltip-Grundkonzept). */
-    .gebiets-metriken td:first-child .info-tip-bubble,
-    .ampel-grid > .ampel-karte:first-child .info-tip-bubble {
-      left: 0;
-      transform: none;
-    }
-    .gebiets-metriken th:last-child .info-tip-bubble,
-    .gebiets-metriken th:nth-last-child(2) .info-tip-bubble {
-      left: auto;
-      right: 0;
-      transform: none;
     }
 
     /* ── Crosstraining: Mehrwert-Begruendung / Ausschluss-Hinweis ── */
@@ -4587,6 +4629,7 @@ def render_html(
     gebiets_svg_content = _build_gebiets_svg(
         techniker, plz_abd, hugo_kerngebiete, hugo_standorte_marker)
     gebiets_script = _build_gebiets_script(techniker, plz_abd, gebiets_punkte or [])
+    tooltip_portal_script = _build_tooltip_portal_script()
     tech_detail_json = _render_techniker_detail_data(
         techniker, demo_history or {})
     ts = erstellt_am.strftime("%d.%m.%Y %H:%M")
@@ -5238,6 +5281,8 @@ document.addEventListener('keydown', function(e) {{
 }});
 
 {gebiets_script}
+
+{tooltip_portal_script}
 
 {erklaer_script}
 
