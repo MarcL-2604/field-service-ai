@@ -520,6 +520,9 @@ LABEL_MAP_EN: dict[str, str] = {
     "Einstellungsbedarf": "Hiring needs",
     "Kliniken": "clinics", "Grossraum": "Greater", "PLZ-Bereiche": "ZIP code areas",
     "Detaillierte Begründungen": "Detailed justifications",
+    "PLZ": "ZIP", "PLZ-Präfixe:": "ZIP prefixes:", "weitere": "more",
+    "PLZ-Bereich vorher": "ZIP range before", "PLZ-Bereich nachher": "ZIP range after",
+    "Keine Kliniken zugeordnet": "No clinics assigned",
 }
 
 
@@ -1570,6 +1573,65 @@ def _lade_kliniken_echtdaten() -> tuple[list[dict], dict[str, float], float]:
     return kliniken, stk_count, stunden_pro_einsatz
 
 
+def _plz_uebersicht_je_techniker(
+    kliniken: list[dict], zuweisung: dict[str, str],
+) -> dict[str, dict]:
+    """Aggregiert die 2-stelligen PLZ-Praefixe der zugewiesenen Kliniken je
+    Techniker -- Grundlage fuer die PLZ-Uebersicht in der
+    Gebietsoptimierung-Tabelle (erleichtert die Einschaetzung fuer neue
+    Gebietszuschnitte).
+
+    Liefert je Techniker {"anzahl": int, "bereich": (lo, hi) | None,
+    "praefixe": [(plz2, anzahl), ...] absteigend nach Anzahl sortiert}.
+    "bereich" ist nur gesetzt, wenn die Praefixe eine LUECKENLOSE Kette
+    bilden (z.B. 72,73,74) -- sonst bleibt es None und der Aufrufer zeigt
+    ehrlich die Praefix-Liste statt einen Von-Bis-Bereich zu erzwingen, wo
+    real keiner existiert (realistisch bei vielen, verstreut zustaendigen
+    Technikern).
+    """
+    je_tech: dict[str, list[str]] = {}
+    for k in kliniken:
+        tid = zuweisung.get(k["id"])
+        plz = k.get("plz", "")
+        if not tid or len(plz) < 2:
+            continue
+        je_tech.setdefault(tid, []).append(plz[:2])
+
+    ergebnis: dict[str, dict] = {}
+    for tid, praefixe_liste in je_tech.items():
+        zaehler: dict[str, int] = {}
+        for p in praefixe_liste:
+            zaehler[p] = zaehler.get(p, 0) + 1
+        distinct = sorted(zaehler)
+        lo, hi = int(distinct[0]), int(distinct[-1])
+        zusammenhaengend = (hi - lo + 1) == len(distinct)
+        ergebnis[tid] = {
+            "anzahl": len(praefixe_liste),
+            "bereich": (lo, hi) if zusammenhaengend else None,
+            "praefixe": sorted(zaehler.items(), key=lambda x: (-x[1], x[0])),
+        }
+    return ergebnis
+
+
+def _render_plz_uebersicht(info: dict | None) -> str:
+    """Baut den PLZ-Uebersichtstext fuer einen Techniker (Tooltip-Inhalt,
+    siehe _plz_uebersicht_je_techniker). Zusammenhaengende Praefixe werden
+    als Von-Bis-Bereich dargestellt, verstreute ehrlich als Praefix-Liste
+    mit Anzahl -- kein kuenstlich erzwungener Bereich."""
+    if not info or not info.get("anzahl"):
+        return _label("Keine Kliniken zugeordnet")
+    if info["bereich"]:
+        lo, hi = info["bereich"]
+        bereich_txt = f"{lo:02d}xxx" if lo == hi else f"{lo:02d}xxx&ndash;{hi:02d}xxx"
+        return f'{_label("PLZ")} {bereich_txt} ({info["anzahl"]} {_label("Kliniken")})'
+    top = info["praefixe"][:5]
+    rest = len(info["praefixe"]) - len(top)
+    teile = ", ".join(f"{p}xxx ({n} {_label('Kliniken')})" for p, n in top)
+    if rest > 0:
+        teile += f" + {rest} {_label('weitere')}"
+    return f'{_label("PLZ-Präfixe:")} {teile}'
+
+
 def _berechne_gebietsmetriken(
     techniker: dict[str, dict],
 ) -> tuple[list[dict], list[dict], dict[str, str], list[dict], dict[str, dict]]:
@@ -1702,6 +1764,14 @@ def _berechne_gebietsmetriken(
         m["verschoben"] = gewonnen.get(m["id"], 0) + abgegeben.get(m["id"], 0)
         m["verschoben_gewonnen"] = gewonnen.get(m["id"], 0)
         m["verschoben_abgegeben"] = abgegeben.get(m["id"], 0)
+
+    # ── PLZ-Uebersicht je Techniker (aktuell + optimiert) fuer die Tabelle ──
+    plz_info_akt = _plz_uebersicht_je_techniker(kliniken, zuweisung_akt)
+    plz_info_opt = _plz_uebersicht_je_techniker(kliniken, zuweisung_opt)
+    for m in metriken_akt:
+        m["plz_info"] = plz_info_akt.get(m["id"])
+    for m in metriken_opt:
+        m["plz_info"] = plz_info_opt.get(m["id"])
 
     # ── Bundesland-Kartenfarben aus der tatsaechlichen optimierten Zuweisung ──
     topo_paths = _topo_to_svg_paths()
@@ -2005,6 +2075,55 @@ def _radius_px_at(lat: float, lon: float, radius_km: float) -> float:
     return radius_km * (px_dist / km_dist)
 
 
+def _placiere_techniker_labels(punkte: list[dict]) -> list[dict]:
+    """Kollisionsfreie Platzierung der Techniker-Namens-Labels auf der SVG-Karte.
+
+    Bei dicht beieinanderliegenden Technikern (z.B. Ruhrgebiet/NRW) wuerden
+    die Labels beim bisherigen fixen Offset (rechts vom Marker) uebereinander
+    liegen und verschmelzen. Greedy-Algorithmus: pro Punkt werden mehrere
+    Offset-Kandidaten (rechts/links, verschiedene Hoehen) der Reihe nach
+    gegen bereits platzierte Label-Boxen geprueft; der erste ueberlappungs-
+    freie Kandidat gewinnt. Weicht das Label vom Standard-Offset ab, zeigt
+    der Aufrufer eine duenne Verbindungslinie (Leader-Line) zum Marker an.
+
+    Rein Python/serverseitig -- kein JS-Force-Layout noetig, konsistent mit
+    der bestehenden 100%-offline-SVG-Architektur (keine Zoom-/Client-Logik).
+    """
+    _CHAR_W = 6.3   # px pro Zeichen bei font-size 10px bold (Naeherung)
+    _LABEL_H = 12.0
+    _DEFAULT = (9.0, 4.0)
+    platziert: list[tuple[float, float, float, float]] = []
+    ergebnis = []
+
+    for p in sorted(punkte, key=lambda p: (p["py"], p["px"])):
+        text_w = len(p["text"]) * _CHAR_W + 2.0
+        kandidaten = [
+            _DEFAULT, (9.0, -8.0), (9.0, 16.0),
+            (-text_w - 9.0, 4.0), (-text_w - 9.0, -8.0), (-text_w - 9.0, 16.0),
+            (9.0, -20.0), (9.0, 28.0),
+            (-text_w - 9.0, -20.0), (-text_w - 9.0, 28.0),
+        ]
+        gewaehlt = kandidaten[-1]
+        for dx, dy in kandidaten:
+            x0 = p["px"] + dx
+            x1 = x0 + text_w
+            y1 = p["py"] + dy
+            y0 = y1 - _LABEL_H
+            kollidiert = any(
+                x0 < ox1 and x1 > ox0 and y0 < oy1 and y1 > oy0
+                for ox0, oy0, ox1, oy1 in platziert
+            )
+            if not kollidiert:
+                gewaehlt = (dx, dy)
+                break
+        dx, dy = gewaehlt
+        lx, ly = p["px"] + dx, p["py"] + dy
+        platziert.append((lx, ly - _LABEL_H, lx + text_w, ly))
+        ergebnis.append({**p, "lx": lx, "ly": ly, "versetzt": (dx, dy) != _DEFAULT})
+
+    return ergebnis
+
+
 def _build_gebiets_svg(
     techniker: dict[str, dict],
     plz_abdeckung: list[dict] | None = None,
@@ -2048,22 +2167,37 @@ def _build_gebiets_svg(
             f'<title>PLZ {p["plz2"]}xxx: {p["fahrzeit_min"]} min ({p["naechster_tech"]})</title></circle>'
         )
 
-    # 3. Techniker-Standorte
+    # 3. Techniker-Standorte (Marker + kollisionsfrei platzierte Namens-Labels)
+    tech_punkte = []
     for tid, td in sorted(techniker.items()):
         if not td.get("lat"):
             continue
         px, py = _project_mercator(td["lon"], td["lat"])
-        fc = _TECH_FARBEN.get(tid, "#999")
-        standort = td.get("standort", "")
+        tech_punkte.append({
+            "id": tid, "px": px, "py": py,
+            "fc": _TECH_FARBEN.get(tid, "#999"),
+            "standort": td.get("standort", ""),
+            "text": tid,
+        })
+
+    for p in tech_punkte:
         svg_parts.append(
-            f'<circle class="td" cx="{px}" cy="{py}" r="6" fill="{fc}" '
+            f'<circle class="td" cx="{p["px"]}" cy="{p["py"]}" r="6" fill="{p["fc"]}" '
             f'stroke="#fff" stroke-width="2">'
-            f'<title>{tid} ({standort})</title></circle>'
+            f'<title>{p["id"]} ({p["standort"]})</title></circle>'
         )
+
+    for p in _placiere_techniker_labels(tech_punkte):
+        if p["versetzt"]:
+            svg_parts.append(
+                f'<line class="tl-leader" x1="{p["px"]}" y1="{p["py"]}" '
+                f'x2="{p["lx"] - 2:.1f}" y2="{p["ly"] - 3:.1f}" '
+                f'stroke="{p["fc"]}" stroke-width="1" opacity="0.55"/>'
+            )
         svg_parts.append(
-            f'<text class="tl" x="{px + 9}" y="{py + 4}" '
+            f'<text class="tl" x="{p["lx"]:.1f}" y="{p["ly"]:.1f}" '
             f'font-family="Plus Jakarta Sans,sans-serif" font-size="10px" font-weight="700" fill="#1A1A1A">'
-            f'{tid}</text>'
+            f'{p["id"]}</text>'
         )
 
     # 4. Einstellungsempfehlungen (roter Kreis + weisser Stern)
@@ -4146,9 +4280,10 @@ def _render_gebietsoptimierung(
         korridor_zelle = _render_korridor_badge(
             td_tech.get("auslastung_korridor"), td_tech.get("auslastung_pct_real"),
         ) or "&ndash;"
+        plz_tip = _info_tip(_render_plz_uebersicht(m.get("plz_info")))
         rows_aktuell += (
             f'<tr class="{css}" data-tech="{m["id"]}">'
-            f'<td><strong>{m["id"]}</strong></td>'
+            f'<td><strong>{m["id"]}</strong>{plz_tip}</td>'
             f'<td>{m["standort"]}</td>'
             f'<td>{m["kliniken"]}</td>'
             f'<td>{m["avg_fahrzeit"]} min</td>'
@@ -4172,9 +4307,15 @@ def _render_gebietsoptimierung(
         else:
             delta_css = "go-delta-neutral"
         verschoben = m_o.get("verschoben", 0)
+        plz_vorher = _render_plz_uebersicht(m_a.get("plz_info") if m_a else None)
+        plz_nachher = _render_plz_uebersicht(m_o.get("plz_info"))
+        plz_tip_opt = _info_tip(
+            f'<strong>{_label("PLZ-Bereich vorher")}:</strong> {plz_vorher}<br>'
+            f'<strong>{_label("PLZ-Bereich nachher")}:</strong> {plz_nachher}'
+        )
         rows_optimiert += (
             f'<tr data-tech="{m_o["id"]}">'
-            f'<td><strong>{m_o["id"]}</strong></td>'
+            f'<td><strong>{m_o["id"]}</strong>{plz_tip_opt}</td>'
             f'<td>{m_o["standort"]}</td>'
             f'<td>{ratio_vorher}</td>'
             f'<td>{ratio_nachher}</td>'
