@@ -240,8 +240,8 @@ class TestHugoKerngebietToggleBox:
             _M_AKT, _M_OPT, _TOGGLE_TECHNIKER,
             hugo_kerngebiete=_TOGGLE_HUGO_KERNGEBIETE,
         )
-        assert f"{HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN} Min." in html
-        assert "Wohnort" in html
+        assert str(HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN) in html
+        assert "Min. Radius um Wohnort" in html  # via _label(), siehe LABEL_MAP_EN
 
 
 class TestHugoKerngebietSvgDefaultVersteckt:

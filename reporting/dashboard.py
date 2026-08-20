@@ -208,16 +208,16 @@ def _lade_labor_zeiten() -> list[dict]:
 _CLUSTER_MAP: dict[str, tuple[str, str]] = {
     "Energie":                  ("cluster-small-capital",  "0\u202F\u20ac intern"),
     "Capnografie":              ("cluster-small-capital",  "0\u202F\u20ac intern"),
-    "Elektrochirurgie":         ("cluster-hf-chirurgie",   "Kosten: T&E anfragen *"),
-    "Hugo":                     ("cluster-1-or",           "10h Handon + T&E anfragen *"),
-    "Endoskopie":               ("cluster-1-or",           "10h Handon + T&E anfragen *"),
-    "Wirbelsaeule":             ("cluster-1-or",           "10h Handon + T&E anfragen *"),
-    "Gastroenterologie":        ("cluster-1-or",           "10h Handon + T&E anfragen *"),
-    "Kardiovaskulaer":          ("cluster-2-cardiac",      "10h Handon + T&E anfragen *"),
-    "Kardiovaskulaer_Ablation": ("cluster-2-cardiac",      "10h Handon + T&E anfragen *"),
-    "Beatmung":                 ("cluster-3-monitoring",   "T&E anfragen *"),
-    "Neuromonitoring":          ("cluster-3-monitoring",   "T&E anfragen *"),
-    "Neurophysiologie":         ("cluster-3-monitoring",   "T&E anfragen *"),
+    "Elektrochirurgie":         ("cluster-hf-chirurgie",   "Kosten: T&amp;E anfragen *"),
+    "Hugo":                     ("cluster-1-or",           "10h Handon + T&amp;E anfragen *"),
+    "Endoskopie":               ("cluster-1-or",           "10h Handon + T&amp;E anfragen *"),
+    "Wirbelsaeule":             ("cluster-1-or",           "10h Handon + T&amp;E anfragen *"),
+    "Gastroenterologie":        ("cluster-1-or",           "10h Handon + T&amp;E anfragen *"),
+    "Kardiovaskulaer":          ("cluster-2-cardiac",      "10h Handon + T&amp;E anfragen *"),
+    "Kardiovaskulaer_Ablation": ("cluster-2-cardiac",      "10h Handon + T&amp;E anfragen *"),
+    "Beatmung":                 ("cluster-3-monitoring",   "T&amp;E anfragen *"),
+    "Neuromonitoring":          ("cluster-3-monitoring",   "T&amp;E anfragen *"),
+    "Neurophysiologie":         ("cluster-3-monitoring",   "T&amp;E anfragen *"),
     "Navigation":               ("cluster-4-digital",      "Online/Teams m\u00f6glich"),
 }
 
@@ -400,6 +400,150 @@ _DRINGLICHKEIT_CSS = {
     "NORMAL":   "badge-normal",
 }
 
+# \u2500\u2500 Zentrale Label-Uebersetzung fuer wiederkehrende Status-/Badge-Woerter \u2500\u2500
+# (i18n-Komplettaudit): statt jede Vorkommensstelle einzeln an einen eigenen
+# data-i18n-Key zu binden, wird das Wort in <span data-label-de="..."> gewrappt
+# und die JS-Funktion setLang() ersetzt es generisch ueber diese EINE Tabelle
+# (siehe JS-Objekt _LABEL_MAP_EN im Script-Teil von render_html). Neue
+# Status-/Phasen-Woerter muessen nur hier ergaenzt werden, nicht an jeder
+# Render-Stelle.
+LABEL_MAP_EN: dict[str, str] = {
+    "GR\u00dcN": "GREEN", "GELB": "YELLOW", "ROT": "RED",
+    "\u00dcBERF\u00c4LLIG": "OVERDUE", "KRITISCH": "CRITICAL", "HOCH": "HIGH", "NORMAL": "NORMAL",
+    "unter Korridor": "below corridor", "im Korridor": "in corridor", "\u00fcber Korridor": "above corridor",
+    "\u2713 Kontakt": "\u2713 Contacted", "SLA VERLETZT": "SLA BREACHED", "SLA: noch": "SLA:",
+    "Eingang": "Received", "Kontakt ausstehend": "Contact pending", "Kontakt hergestellt": "Contact made",
+    "Ersatzteil pruefen": "Checking spare part", "Ersatzteil bestellt": "Part ordered",
+    "Ersatzteil verfuegbar": "Part available", "Repair in Arbeit": "Repair in progress",
+    "Abgeschlossen": "Completed",
+    "Auslastungs-Zielkorridor 80–95% aus echter Einsatzhistorie (Vor-Ort-Zeit ÷ Jahreskapazität) — "
+    "Referenzwert, keine harte Regel. Fahrzeit ist nicht enthalten, daher "
+    "liegt Vollauslastung strukturell unter 100%.":
+        "Utilization target corridor 80–95% from real visit history (on-site time ÷ annual "
+        "capacity) — reference value, not a hard rule. Travel time is not included, so full "
+        "utilization is structurally below 100%.",
+    "Algorithmus: Klinik wechselt zum 2.-nächsten Techniker, wenn dessen Auslastung ≥":
+        "Algorithm: clinic moves to the 2nd-nearest technician if their utilization is ≥",
+    "Prozentpunkte niedriger ist und die Fahrzeit-Mehrbelastung ≤":
+        "percentage points lower and the additional travel time stays ≤",
+    "min bleibt": "min",
+    "Mo": "Mon", "Di": "Tue", "Mi": "Wed", "Do": "Thu",
+    "grün": "green",
+    "Einlesen": "Import", "Bestätigung": "Confirmation", "TD-Prüfung": "TD Check",
+    "Kundenmail": "Customer Email", "Mensch": "Human",
+    "Disponent prüft": "Dispatcher reviews", "Techniker-Push": "Technician push",
+    "KI-Empfehlung": "AI recommendation",
+    "Termin-Check": "Appointment check", "Dokumente prüfen": "Check documents",
+    "Vollautomatisiert · Copilot — kein Autopilot": "Fully automated · Copilot — not autopilot",
+    "Basis": "Base", "Einschleusung": "Induction", "Grossgeraet": "Large device",
+    "Gespraech MTech": "MedTech talk", "gesamt": "total",
+    "Netto-Zeit": "Net time", "Service": "Service", "Admin": "Admin",
+    "Puffer-Aufschlüsselung": "Buffer breakdown", "Gesamt Puffer": "Total buffer",
+    "Gesamtzeit": "Total time",
+    "Pro geplantem Einsatz: Netto-Zeit (grün) + Puffer (gelb). Klick für Aufschlüsselung. Quelle: labor_zeiten.csv":
+        "Per planned visit: net time (green) + buffer (yellow). Click for breakdown. Source: labor_zeiten.csv",
+    "zusätzliche STKs/Jahr möglich": "additional safety checks/year possible",
+    "Min. Einsatzdauer": "min. visit duration",
+    "Stundensatz: T&E anfragen": "Hourly rate: ask T&E",
+    "Zusätzlicher Deckungsbeitrag (Stundensatz: T&E anfragen)": "Additional contribution margin (hourly rate: ask T&E)",
+    "Potenzial": "Potential", "STK-Dauer": "SC duration", "T&E anfragen": "Ask T&E",
+    "Berechnete Kennzahlen — Stundensatz auf Anfrage bei Medtronic T&E":
+        "Calculated metrics — hourly rate available on request from Medtronic T&E",
+    "Zeitersparnis Planung": "Planning time savings",
+    "Techniker": "technicians", "Tag": "day", "Tage": "days", "Wochen": "weeks", "Jahr": "year",
+    "manuelle Planung entfällt": "manual planning eliminated",
+    "Monetärer Wert": "Monetary value",
+    "Jährliche Einsparung (Stundensatz bei T&E anfragen)": "Annual savings (hourly rate: ask T&E)",
+    "Crosstraining-ROI": "Cross-training ROI",
+    "Fahrzeit / Gebiet": "Travel time / territory",
+    "Fahrzeit-Einsparung aus Gebiets-Szenario": "Travel time savings from territory scenario",
+    "Mobilitätskostenreduktion": "Mobility cost reduction",
+    "Investition & Break-even": "Investment & break-even",
+    "einmalig": "one-time",
+    "Break-even: ca. 10 Wochen": "Break-even: approx. 10 weeks",
+    "Einmalige Implementierungskosten": "One-time implementation costs",
+    "Stundensatz bei Medtronic Training & Education (T&E) anfragen — alle übrigen Kennzahlen sind belastbare Ist-Werte":
+        "Ask Medtronic Training & Education (T&E) for the hourly rate — all other figures are solid actuals",
+    "Was zeigt diese Ansicht?": "What does this view show?",
+    "Zeigt die IST-Gebietsaufteilung basierend auf den aktuellen Techniker-Wohnorten und den ihnen historisch "
+    "zugeordneten Klinik-PLZ-Gebieten. Jede Farbe entspricht einem Techniker-Gebiet. Ratio = Vor-Ort-Stunden ÷ "
+    "Fahrtstunden pro Jahr — Grün ≥3,0 (effizient), Gelb 2,0–3,0, Rot <2,0 (zu viel Fahrzeit im Verhältnis zur "
+    "Servicezeit).":
+        "Shows the AS-IS territory split based on current technician home locations and the clinic ZIP-code areas "
+        "historically assigned to them. Each color represents one technician's territory. Ratio = on-site hours ÷ "
+        "travel hours per year — green ≥3.0 (efficient), yellow 2.0–3.0, red <2.0 (too much travel time relative to "
+        "service time).",
+    "Wie und warum wird optimiert?": "How and why is it optimized?",
+    "Für jede Klinik werden der 1.- und 2.-nächstgelegene Techniker (Fahrzeit, Haversine-Distanz ×":
+        "For each clinic, the 1st- and 2nd-nearest technician (travel time, Haversine distance ×",
+    "Straßenfaktor) verglichen. Ist der 2.-nächste um mehr als":
+        "road factor) are compared. If the 2nd-nearest is more than",
+    "Prozentpunkte weniger ausgelastet und beträgt die Fahrzeit-Mehrbelastung höchstens":
+        "percentage points less utilized, and the additional travel time is at most",
+    "Minuten, wandert die Klinik zu ihm. Ziel: gleichmäßigere Auslastung bei vertretbaren Anfahrtswegen — "
+    "unabhängig von Techniker-Anzahl oder -Bezeichnung.":
+        "minutes, the clinic moves to them. Goal: more even utilization with reasonable travel distances — "
+        "independent of technician count or naming.",
+    "Auslastung basiert auf der Ø jährlichen Auftragsrate aus":
+        "Utilization is based on the avg. annual order rate from",
+    "Jahren Historie (Closed Jobs) zzgl. aktuellem Auftragsrückstand (Open Jobs).":
+        "years of history (closed jobs) plus the current order backlog (open jobs).",
+    "Ratio vorher/nachher = Vor-Ort-Stunden ÷ Fahrtstunden pro Jahr vor bzw. nach der Optimierung (siehe "
+    "„Aktuelle Gebiete“ für die Farbskala). Δ Fahrzeit zeigt die Veränderung der jährlichen Fahrtstunden — "
+    "negativ (grün) = Entlastung, positiv (rot) = Mehrbelastung.":
+        "Ratio before/after = on-site hours ÷ travel hours per year before/after optimization (see “Current "
+        "Territories” for the color scale). Δ travel time shows the change in annual travel hours — negative "
+        "(green) = relief, positive (red) = additional load.",
+    "Was ist hier zu sehen?": "What is shown here?",
+    "Zeigt Gebiete mit doppelter Abdeckung (mehrere Techniker nah beieinander = Überschneidung, "
+    "Optimierungspotenzial) und Gebiete ohne nahen Techniker (Lücke = längere Anfahrtszeiten für Kunden in "
+    "dieser Region).":
+        "Shows territories with double coverage (multiple technicians close together = overlap, optimization "
+        "potential) and territories without a nearby technician (gap = longer travel times for customers in "
+        "that region).",
+    "Überschneidung": "Overlap", "Lücke": "Gap",
+    "der Kliniken zwischen 1./2.-nächstem Techniker kontestiert (≤":
+        "of clinics contested between 1st/2nd-nearest technician (≤",
+    "min Fahrzeit-Differenz) — Gebiete konsolidieren": "min travel time difference) — consolidate territories",
+    "Neueinstellung oder Gebiets-Erweiterung empfohlen": "New hire or territory expansion recommended",
+    "Keine Anpassung nötig": "No adjustment needed",
+    "Small-Capital-Kerngebiet anzeigen": "Show Small Capital core territory",
+    "Min. Radius um Wohnort": "min. radius around home location",
+    "Analyse aller": "Analysis of all",
+    "PLZ-Bereiche (2-stellig) · Grün <60 min · Gelb 60–90 min · Rot >90 min vom nächsten Techniker · "
+    "Sterne = empfohlene Neueinstellungs-Standorte":
+        "2-digit ZIP code areas · green <60 min · yellow 60–90 min · red >90 min from the nearest "
+        "technician · stars = recommended new-hire locations",
+    "PLZ gut abgedeckt (<60 min)": "ZIP codes well covered (<60 min)",
+    "PLZ grenzwertig (60–90 min)": "ZIP codes borderline (60–90 min)",
+    "PLZ unterversorgt (>90 min)": "ZIP codes underserved (>90 min)",
+    "Einstellungsbedarf": "Hiring needs",
+    "Kliniken": "clinics", "Grossraum": "Greater", "PLZ-Bereiche": "ZIP code areas",
+    "Detaillierte Begründungen": "Detailed justifications",
+}
+
+
+def _label(text: str) -> str:
+    """Wrappt ein Wort aus dem zentralen LABEL_MAP_EN-Vokabular in ein
+    <span data-label-de="..."> fuer generische JS-Uebersetzung (siehe
+    LABEL_MAP_EN-Docstring). Fuer beliebigen Freitext NICHT verwenden -- nur
+    fuer feste, bekannte Status-/Badge-Woerter."""
+    return f'<span data-label-de="{text}">{text}</span>'
+
+
+_SLA_TEXT_MUSTER = re.compile(r"^SLA: noch (\d+)h$")
+
+
+def _label_sla_text(sla_text: str) -> str:
+    """Wie _label(), aber fuer den Repair-SLA-Text (sla_text), der bei
+    'SLA: noch Xh' eine dynamische Stundenzahl enthaelt -- nur der statische
+    Praefix 'SLA: noch' wird uebersetzt (LABEL_MAP_EN), die Zahl bleibt
+    unveraendert ausserhalb des Spans."""
+    m = _SLA_TEXT_MUSTER.match(sla_text)
+    if m:
+        return f'{_label("SLA: noch")} {m.group(1)}h'
+    return _label(sla_text)
+
 
 _KORRIDOR_LABEL = {"unter": "unter Korridor", "im_korridor": "im Korridor", "ueber": "&uuml;ber Korridor"}
 _KORRIDOR_CSS = {"unter": "korridor-unter", "im_korridor": "korridor-im", "ueber": "korridor-ueber"}
@@ -416,13 +560,15 @@ def _render_korridor_badge(korridor: str | None, pct: float | None) -> str:
         return ""
     label = _KORRIDOR_LABEL.get(korridor, korridor)
     css = _KORRIDOR_CSS.get(korridor, "")
+    tip_de = (
+        f"Auslastungs-Zielkorridor {AUSLASTUNG_ZIEL_MIN_PCT}–{AUSLASTUNG_ZIEL_MAX_PCT}% "
+        f"aus echter Einsatzhistorie (Vor-Ort-Zeit ÷ Jahreskapazität) — "
+        f"Referenzwert, keine harte Regel. Fahrzeit ist nicht enthalten, daher "
+        f"liegt Vollauslastung strukturell unter 100%."
+    )
     return (
-        f'<span class="korridor-badge {css}" tabindex="0">{pct:.0f}%&thinsp;{label}'
-        f'<span class="info-tip-bubble">Auslastungs-Zielkorridor '
-        f'{AUSLASTUNG_ZIEL_MIN_PCT}&ndash;{AUSLASTUNG_ZIEL_MAX_PCT}% aus echter '
-        f'Einsatzhistorie (Vor-Ort-Zeit &divide; Jahreskapazit&auml;t) &mdash; '
-        f'Referenzwert, keine harte Regel. Fahrzeit ist nicht enthalten, daher '
-        f'liegt Vollauslastung strukturell unter 100%.</span></span>'
+        f'<span class="korridor-badge {css}" tabindex="0">{pct:.0f}%&thinsp;{_label(label)}'
+        f'<span class="info-tip-bubble">{_label(tip_de)}</span></span>'
     )
 
 
@@ -482,7 +628,7 @@ def _render_ampel_karten(
            onclick="showTechDetail('{a['techniker_id']}')">
         <div class="ampel-header">
           <div class="ampel-id">{a['techniker_id']}</div>
-          <div class="ampel-badge">{a['ampel_label']}</div>
+          <div class="ampel-badge">{_label(a['ampel_label'])}</div>
         </div>
         <div class="ampel-standort">{a['standort']}</div>
         <div class="ampel-region">{a['region']}</div>
@@ -544,7 +690,7 @@ def _render_stk_tabelle(auftraege_rows: list[dict]) -> str:
             f"<td>{row['produkt']}</td>"
             f"<td>{row['faelligkeit']}</td>"
             f"<td>{termine_html}</td>"
-            f"<td><span class='badge {css}'>{row['dringlichkeit']}</span></td>"
+            f"<td><span class='badge {css}'>{_label(row['dringlichkeit'])}</span></td>"
             f"<td>{row['tage']}</td>"
             f"</tr>"
         )
@@ -573,8 +719,8 @@ def _render_repair_tabelle(repair_rows: list[dict]) -> str:
             f"<td>{row['klinik']}</td>"
             f"<td>{row['geraet']}</td>"
             f"<td>{row['eingang']}</td>"
-            f"<td><span class='badge {css}{puls}'>{row['sla_text']}</span></td>"
-            f"<td>{row['phase']}</td>"
+            f"<td><span class='badge {css}{puls}'>{_label_sla_text(row['sla_text'])}</span></td>"
+            f"<td>{_label(row['phase'])}</td>"
             f"<td>{row.get('ersatzteil', '&ndash;')}</td>"
             f"</tr>"
         )
@@ -634,9 +780,9 @@ def _render_ct_tabelle(
         # Cluster-Badges pro fehlender Familie
         cluster_badges = []
         for fam in fehlende_list:
-            css_cls, label = _CLUSTER_MAP.get(fam, ("cluster-small-capital", "Kosten: T&E anfragen *"))
+            css_cls, kosten_label = _CLUSTER_MAP.get(fam, ("cluster-small-capital", "Kosten: T&amp;E anfragen *"))
             cluster_badges.append(
-                f"<span class='cluster-badge {css_cls}'>{fam}: {label}</span>"
+                f"<span class='cluster-badge {css_cls}'>{fam}: {_label(kosten_label)}</span>"
             )
         badges_html = " ".join(cluster_badges)
 
@@ -706,7 +852,7 @@ def _render_nrw_warnung(warnung: dict | None) -> str:
     )
     return f"""
   <section class="warnung-box">
-    <h2>&#9888; NRW-&Uuml;berlastungs-Warnung</h2>
+    <h2 data-i18n="h.nrw">&#9888; NRW-&Uuml;berlastungs-Warnung</h2>
     <p class="warnung-stats">
       380 STK/Kopf NRW vs. 72 Nord &middot;
       <strong>{warnung['anzahl_schwach']} von 4 NRW-Technikern</strong> decken weniger als
@@ -751,7 +897,7 @@ def _render_puffer_section(labor_zeiten: list[dict]) -> str:
 
             puffer_detail = "".join(
                 f"<div class='puffer-item'>"
-                f"<span class='puffer-label'>{k}:</span> "
+                f"<span class='puffer-label'>{_label(k)}:</span> "
                 f"<span class='puffer-val'>{v} min</span></div>"
                 for k, v in _PUFFER.items()
             )
@@ -765,7 +911,7 @@ def _render_puffer_section(labor_zeiten: list[dict]) -> str:
                 f'<strong>{tid}</strong> &middot; '
                 f'{lz.get("produkt_familie","")} &middot; '
                 f'{lz.get("geraete_typ","")} &middot; '
-                f'<span class="puffer-gesamt">{gesamt} min gesamt</span>'
+                f'<span class="puffer-gesamt">{gesamt} min {_label("gesamt")}</span>'
                 f' <span class="sub">&#9660;</span></div>'
                 f'<div class="puffer-bar-wrap">'
                 f'<div class="puffer-bar-netto" style="width:{netto_pct}%">'
@@ -774,24 +920,23 @@ def _render_puffer_section(labor_zeiten: list[dict]) -> str:
                 f'{_PUFFER_GESAMT} min</div></div>'
                 f'<div id="{detail_id}" class="puffer-detail" style="display:none">'
                 f'<div class="puffer-detail-grid">'
-                f'<div><strong>Netto-Zeit:</strong> {netto_min} min Service + {admin_min} min Admin = {netto_total} min</div>'
+                f'<div><strong>{_label("Netto-Zeit")}:</strong> {netto_min} min {_label("Service")} + {admin_min} min {_label("Admin")} = {netto_total} min</div>'
                 f'<div class="puffer-aufschluesselung">'
-                f'<strong>Puffer-Aufschl&uuml;sselung:</strong>'
+                f'<strong>{_label("Puffer-Aufschlüsselung")}:</strong>'
                 f'{puffer_detail}'
                 f'<div class="puffer-item puffer-summe">'
-                f'<span class="puffer-label">Gesamt Puffer:</span> '
+                f'<span class="puffer-label">{_label("Gesamt Puffer")}:</span> '
                 f'<span class="puffer-val">{_PUFFER_GESAMT} min</span></div>'
                 f'</div>'
-                f'<div><strong>Gesamtzeit:</strong> {netto_total} + {_PUFFER_GESAMT} = '
+                f'<div><strong>{_label("Gesamtzeit")}:</strong> {netto_total} + {_PUFFER_GESAMT} = '
                 f'<strong>{gesamt} min</strong> ({gesamt/60:.1f}h)</div>'
                 f'</div></div></div>')
 
     return f"""
   <section>
-    <h2>Tourplanung &mdash; Puffer-Visualisierung</h2>
+    <h2 data-i18n="h.puffer">Tourplanung &mdash; Puffer-Visualisierung</h2>
     <p class="section-hint">
-      Pro geplantem Einsatz: Netto-Zeit (gr&uuml;n) + Puffer (gelb).
-      Klick f&uuml;r Aufschl&uuml;sselung. Quelle: labor_zeiten.csv
+      {_label("Pro geplantem Einsatz: Netto-Zeit (grün) + Puffer (gelb). Klick für Aufschlüsselung. Quelle: labor_zeiten.csv")}
     </p>
     <div class="puffer-container">
 {"".join(rows)}
@@ -818,16 +963,16 @@ def _render_workflow_status() -> str:
         items.append(
             f'<div class="wf-step">'
             f'<div class="wf-icon">{icon}</div>'
-            f'<div class="wf-label">{label}</div>'
-            f'<span class="wf-badge {badge_cls}">{badge_txt}</span>'
-            f'<div class="wf-detail">{detail}</div>'
+            f'<div class="wf-label">{_label(label)}</div>'
+            f'<span class="wf-badge {badge_cls}">{_label(badge_txt)}</span>'
+            f'<div class="wf-detail">{_label(detail)}</div>'
             f'</div>{arrow}'
         )
     return f"""
   <section>
-    <h2>6 &mdash; Workflow-Status</h2>
+    <h2 data-i18n="h.workflow6">6 &mdash; Workflow-Status</h2>
     <p class="section-hint">
-      Vollautomatisiert &middot; Copilot &mdash; kein Autopilot
+      {_label("Vollautomatisiert · Copilot — kein Autopilot")}
     </p>
     <div class="wf-pipeline">
       {"".join(items)}
@@ -841,51 +986,50 @@ def _render_business_case(stk_potenzial_gesamt: int = 0, median_min: int = 0) ->
         stk_fmt = f"{stk_potenzial_gesamt:,}".replace(",", ".")
         med_fmt = str(median_min)
         ct_roi_html = f"""
-        <div class="bc-result">{stk_fmt} zus&auml;tzliche STKs/Jahr m&ouml;glich</div>
-        <div class="bc-formula">&times; &Oslash; {med_fmt}&thinsp;Min. Einsatzdauer &times; [Stundensatz: T&amp;E anfragen]</div>
-        <div class="bc-hint">= Zus&auml;tzlicher Deckungsbeitrag (Stundensatz: T&amp;E anfragen)</div>"""
+        <div class="bc-result">{stk_fmt} {_label("zusätzliche STKs/Jahr möglich")}</div>
+        <div class="bc-formula">&times; &Oslash; {med_fmt}&thinsp;{_label("Min. Einsatzdauer")} &times; [{_label("Stundensatz: T&amp;E anfragen")}]</div>
+        <div class="bc-hint">= {_label("Zusätzlicher Deckungsbeitrag (Stundensatz: T&amp;E anfragen)")}</div>"""
     else:
-        ct_roi_html = """
-        <div class="bc-formula">[+STK/a Potenzial] &times; [&Oslash; STK-Dauer h] &times; [T&amp;E anfragen]</div>
-        <div class="bc-hint">= Zus&auml;tzlicher Deckungsbeitrag (Stundensatz: T&amp;E anfragen)</div>"""
+        ct_roi_html = f"""
+        <div class="bc-formula">[+STK/a {_label("Potenzial")}] &times; [&Oslash; {_label("STK-Dauer")} h] &times; [{_label("T&amp;E anfragen")}]</div>
+        <div class="bc-hint">= {_label("Zusätzlicher Deckungsbeitrag (Stundensatz: T&amp;E anfragen)")}</div>"""
 
     return f"""
   <section>
-    <h2>7 &mdash; Business Case</h2>
+    <h2 data-i18n="h.business7">7 &mdash; Business Case</h2>
     <p class="section-hint">
-      Berechnete Kennzahlen &mdash; Stundensatz auf Anfrage bei Medtronic T&amp;E
+      {_label("Berechnete Kennzahlen — Stundensatz auf Anfrage bei Medtronic T&amp;E")}
     </p>
     <div class="bc-grid">
       <div class="bc-card">
-        <div class="bc-card-title">Zeitersparnis Planung</div>
-        <div class="bc-formula">24 Techniker &times; 4 h/Tag &times; 4 Tage &times; 52 Wochen</div>
-        <div class="bc-result">= 4.992 h/Jahr</div>
-        <div class="bc-hint">manuelle Planung entf&auml;llt</div>
+        <div class="bc-card-title">{_label("Zeitersparnis Planung")}</div>
+        <div class="bc-formula">24 {_label("Techniker")} &times; 4 h/{_label("Tag")} &times; 4 {_label("Tage")} &times; 52 {_label("Wochen")}</div>
+        <div class="bc-result">= 4.992 h/{_label("Jahr")}</div>
+        <div class="bc-hint">{_label("manuelle Planung entfällt")}</div>
       </div>
       <div class="bc-card">
-        <div class="bc-card-title">Monet&auml;rer Wert</div>
-        <div class="bc-formula">4.992 h &times; [Stundensatz: T&amp;E anfragen]</div>
-        <div class="bc-hint">= J&auml;hrliche Einsparung (Stundensatz bei T&amp;E anfragen)</div>
+        <div class="bc-card-title">{_label("Monetärer Wert")}</div>
+        <div class="bc-formula">4.992 h &times; [{_label("Stundensatz: T&amp;E anfragen")}]</div>
+        <div class="bc-hint">= {_label("Jährliche Einsparung (Stundensatz bei T&amp;E anfragen)")}</div>
       </div>
       <div class="bc-card">
-        <div class="bc-card-title">Crosstraining-ROI</div>{ct_roi_html}
+        <div class="bc-card-title">{_label("Crosstraining-ROI")}</div>{ct_roi_html}
       </div>
       <div class="bc-card">
-        <div class="bc-card-title">Fahrzeit / Gebiet</div>
-        <div class="bc-formula">Fahrzeit-Einsparung aus Gebiets-Szenario</div>
-        <div class="bc-result">~10.000 &euro;/Jahr</div>
-        <div class="bc-hint">Mobilit&auml;tskostenreduktion</div>
+        <div class="bc-card-title">{_label("Fahrzeit / Gebiet")}</div>
+        <div class="bc-formula">{_label("Fahrzeit-Einsparung aus Gebiets-Szenario")}</div>
+        <div class="bc-result">~10.000 &euro;/{_label("Jahr")}</div>
+        <div class="bc-hint">{_label("Mobilitätskostenreduktion")}</div>
       </div>
       <div class="bc-card">
-        <div class="bc-card-title">Investition &amp; Break-even</div>
-        <div class="bc-formula">17.590 &euro; einmalig</div>
-        <div class="bc-result">Break-even: ca. 10 Wochen</div>
-        <div class="bc-hint">Einmalige Implementierungskosten</div>
+        <div class="bc-card-title">{_label("Investition &amp; Break-even")}</div>
+        <div class="bc-formula">17.590 &euro; {_label("einmalig")}</div>
+        <div class="bc-result">{_label("Break-even: ca. 10 Wochen")}</div>
+        <div class="bc-hint">{_label("Einmalige Implementierungskosten")}</div>
       </div>
     </div>
     <div class="bc-gold-hint">
-      &#9733; Stundensatz bei Medtronic Training &amp; Education (T&amp;E) anfragen &mdash;
-      alle &uuml;brigen Kennzahlen sind belastbare Ist-Werte
+      &#9733; {_label("Stundensatz bei Medtronic Training &amp; Education (T&amp;E) anfragen — alle übrigen Kennzahlen sind belastbare Ist-Werte")}
     </div>
   </section>"""
 
@@ -1686,19 +1830,19 @@ def _render_gebietsplanung(
 
     # Einstellungsempfehlungen: HTML-Liste (rechts neben Karte)
     _STERN_DETAILS = {
-        "Berlin":   "12 Kliniken &middot; T3 Weimar 180 min",
-        "Hannover": "8 Kliniken &middot; T9 Hamburg 95 min",
-        "München":  "10 Kliniken &middot; T7 Wildenberg 110 min",
-        "Mannheim": "6 Kliniken &middot; T12 Frankfurt 85 min",
+        "Berlin":   f'12 {_label("Kliniken")} &middot; T3 Weimar 180 min',
+        "Hannover": f'8 {_label("Kliniken")} &middot; T9 Hamburg 95 min',
+        "München":  f'10 {_label("Kliniken")} &middot; T7 Wildenberg 110 min',
+        "Mannheim": f'6 {_label("Kliniken")} &middot; T12 Frankfurt 85 min',
     }
     einst_items = []
     for emp in _EINSTELLUNGS_EMPFEHLUNGEN:
-        detail = _STERN_DETAILS.get(emp["standort"], f'{emp["kliniken_geschaetzt"]} Kliniken')
+        detail = _STERN_DETAILS.get(emp["standort"], f'{emp["kliniken_geschaetzt"]} {_label("Kliniken")}')
         einst_items.append(
             f'      <div class="einst-item">'
             f'<div class="einst-dot">\u2605</div>'
             f'<div class="einst-text">'
-            f'<div class="einst-name">Grossraum {emp["standort"]}</div>'
+            f'<div class="einst-name">{_label("Grossraum")} {emp["standort"]}</div>'
             f'<div class="einst-detail">{detail}</div>'
             f'<div class="einst-detail" style="margin-top:4px;color:var(--text-muted)">{emp["region"]}</div>'
             f'</div></div>')
@@ -1710,7 +1854,7 @@ def _render_gebietsplanung(
         einst_rows.append(
             f'      <tr><td><strong>{emp["standort"]}</strong></td>'
             f'<td>{emp["region"]}</td>'
-            f'<td>{len(emp["abdeckt_plz"])} PLZ-Bereiche</td>'
+            f'<td>{len(emp["abdeckt_plz"])} {_label("PLZ-Bereiche")}</td>'
             f'<td>~{emp["kliniken_geschaetzt"]}</td>'
             f'<td class="fehlend-liste">{emp["begruendung"]}</td></tr>')
     einst_html = "\n".join(einst_rows)
@@ -1725,17 +1869,14 @@ def _render_gebietsplanung(
 
     return f"""
   <section>
-    <h2>PLZ-Abdeckung &amp; Einstellungsbedarf</h2>
+    <h2 data-i18n="h.hiring">PLZ-Abdeckung &amp; Einstellungsbedarf</h2>
     <p class="section-hint">
-      Analyse aller {plz_total} PLZ-Bereiche (2-stellig) &middot;
-      Gr&uuml;n &lt;60&thinsp;min &middot; Gelb 60&ndash;90&thinsp;min &middot;
-      Rot &gt;90&thinsp;min vom n&auml;chsten Techniker &middot;
-      Sterne = empfohlene Neueinstellungs-Standorte
+      {_label("Analyse aller")} {plz_total} {_label("PLZ-Bereiche (2-stellig) · Grün <60 min · Gelb 60–90 min · Rot >90 min vom nächsten Techniker · Sterne = empfohlene Neueinstellungs-Standorte")}
     </p>
     <div class="gebiets-summary">
-      <span><span class="dot dot-gruen"></span> <strong>{plz_gruen}</strong> PLZ gut abgedeckt (&lt;60&thinsp;min)</span>
-      <span><span class="dot dot-gelb"></span> <strong>{plz_gelb}</strong> PLZ grenzwertig (60&ndash;90&thinsp;min)</span>
-      <span><span class="dot dot-rot"></span> <strong>{plz_rot}</strong> PLZ unterversorgt (&gt;90&thinsp;min)</span>
+      <span><span class="dot dot-gruen"></span> <strong>{plz_gruen}</strong> {_label("PLZ gut abgedeckt (<60 min)")}</span>
+      <span><span class="dot dot-gelb"></span> <strong>{plz_gelb}</strong> {_label("PLZ grenzwertig (60–90 min)")}</span>
+      <span><span class="dot dot-rot"></span> <strong>{plz_rot}</strong> {_label("PLZ unterversorgt (>90 min)")}</span>
     </div>
 
     <div class="einst-layout">
@@ -1743,22 +1884,22 @@ def _render_gebietsplanung(
         <svg id="germany-map-plz" viewBox="0 0 480 580" preserveAspectRatio="xMidYMid meet"><!-- filled by _build_gebiets_svg --></svg>
       </div>
       <div class="einst-liste">
-        <div class="einst-liste-header">&starf; Einstellungsbedarf</div>
+        <div class="einst-liste-header">&starf; {_label("Einstellungsbedarf")}</div>
 {einst_liste_html}
       </div>
     </div>
 
     <h3 style="font-size:14px;color:var(--text);margin:20px 0 10px;padding-bottom:8px;border-bottom:1px solid rgba(0,81,149,.12)">
-      Detaillierte Begr&uuml;ndungen
+      {_label("Detaillierte Begründungen")}
     </h3>
     <table>
       <thead>
         <tr>
-          <th>Standort</th>
-          <th>Region</th>
-          <th>Abdeckung{abdeckung_tip}</th>
-          <th>Kliniken{kliniken_geschaetzt_tip}</th>
-          <th>Begr&uuml;ndung</th>
+          <th data-i18n="th.standort">Standort</th>
+          <th data-i18n="th.region">Region</th>
+          <th><span data-i18n="th.abdeckung">Abdeckung</span>{abdeckung_tip}</th>
+          <th><span data-i18n="th.kliniken">Kliniken</span>{kliniken_geschaetzt_tip}</th>
+          <th data-i18n="th.begruendung">Begr&uuml;ndung</th>
         </tr>
       </thead>
       <tbody>
@@ -3762,14 +3903,23 @@ _CSS = """\
     section:nth-child(4) { animation-delay: .15s; }"""
 
 
-def _go_info_box(icon: str, titel: str, text: str) -> str:
-    """Erzeugt eine Erlaeuterungsbox (Icon + Titel + Text) im Medtronic Light Theme."""
+def _go_info_box(icon: str, titel: str, text: str, text_bereits_uebersetzt: bool = False) -> str:
+    """Erzeugt eine Erlaeuterungsbox (Icon + Titel + Text) im Medtronic Light Theme.
+
+    titel/text sind je Aufrufstelle statisch (keine Pro-Zeile-Daten) und
+    werden daher automatisch ueber LABEL_MAP_EN uebersetzbar gemacht
+    (i18n-Komplettaudit) -- neue EN-Texte muessen nur in LABEL_MAP_EN
+    ergaenzt werden, nicht an jeder Aufrufstelle einzeln. Wenn text bereits
+    aus mehreren einzeln _label()-gewrappten Chunks zusammengesetzt wurde
+    (z.B. weil echte Datenwerte eingebettet sind), text_bereits_uebersetzt=True
+    setzen, um doppeltes/kaputtes Wrapping zu vermeiden."""
+    text_html = text if text_bereits_uebersetzt else _label(text)
     return (
         f'<div class="go-info-box">'
         f'<div class="go-info-icon">{icon}</div>'
         f'<div class="go-info-body">'
-        f'<div class="go-info-title">{titel}</div>'
-        f'<div class="go-info-text">{text}</div>'
+        f'<div class="go-info-title">{_label(titel)}</div>'
+        f'<div class="go-info-text">{text_html}</div>'
         f'</div></div>'
     )
 
@@ -3900,8 +4050,8 @@ def _render_gebietsoptimierung(
         f'<div class="hugo-kg-box">'
         f'<label class="hugo-kg-toggle">'
         f'<input type="checkbox" id="hugo-kg-toggle">'
-        f'Small-Capital-Kerngebiet anzeigen '
-        f'(max. {HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN} Min. Radius um Wohnort)'
+        f'{_label("Small-Capital-Kerngebiet anzeigen")} '
+        f'(max. {HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN} {_label("Min. Radius um Wohnort")})'
         f'</label>'
         f'<div class="hugo-kg-hint" id="hugo-kg-hint" style="display:none">{hugo_kg_hint}</div>'
         f'</div>'
@@ -3955,31 +4105,28 @@ def _render_gebietsoptimierung(
             _zeitraum_jahre = _smax_meta.get("beobachtungszeitraum_jahre")
             if _zeitraum_jahre:
                 zeitraum_hinweis = (
-                    " Auslastung basiert auf der &Oslash; j&auml;hrlichen "
-                    f"Auftragsrate aus {_zeitraum_jahre:.1f} Jahren Historie "
-                    "(Closed Jobs) zzgl. aktuellem Auftragsr&uuml;ckstand (Open Jobs)."
+                    f' {_label("Auslastung basiert auf der Ø jährlichen Auftragsrate aus")} '
+                    f"{_zeitraum_jahre:.1f} "
+                    f'{_label("Jahren Historie (Closed Jobs) zzgl. aktuellem Auftragsrückstand (Open Jobs).")}'
                 )
         except Exception:
             pass
+    info_optimiert_text = (
+        f'{_label("Für jede Klinik werden der 1.- und 2.-nächstgelegene Techniker (Fahrzeit, Haversine-Distanz ×")} '
+        f'{umweg_faktor_text} '
+        f'{_label("Straßenfaktor) verglichen. Ist der 2.-nächste um mehr als")} '
+        f'{OPTIMIERUNG_AUSLASTUNGS_SCHWELLE} '
+        f'{_label("Prozentpunkte weniger ausgelastet und beträgt die Fahrzeit-Mehrbelastung höchstens")} '
+        f'{OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN} '
+        f'{_label("Minuten, wandert die Klinik zu ihm. Ziel: gleichmäßigere Auslastung bei vertretbaren Anfahrtswegen — unabhängig von Techniker-Anzahl oder -Bezeichnung.")}'
+        f'{zeitraum_hinweis} '
+        f'{_label("Ratio vorher/nachher = Vor-Ort-Stunden ÷ Fahrtstunden pro Jahr vor bzw. nach der Optimierung (siehe „Aktuelle Gebiete“ für die Farbskala). Δ Fahrzeit zeigt die Veränderung der jährlichen Fahrtstunden — negativ (grün) = Entlastung, positiv (rot) = Mehrbelastung.")}'
+    )
     info_optimiert = _go_info_box(
         "&#129504;",
         "Wie und warum wird optimiert?",
-        "F&uuml;r jede Klinik werden der 1.- und 2.-n&auml;chstgelegene "
-        "Techniker (Fahrzeit, Haversine-Distanz &times; "
-        f"{umweg_faktor_text} Stra&szlig;enfaktor) verglichen. Ist der "
-        f"2.-n&auml;chste um mehr als {OPTIMIERUNG_AUSLASTUNGS_SCHWELLE} "
-        "Prozentpunkte weniger ausgelastet und betr&auml;gt die "
-        f"Fahrzeit-Mehrbelastung h&ouml;chstens "
-        f"{OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN} Minuten, wandert die "
-        "Klinik zu ihm. Ziel: gleichm&auml;&szlig;igere Auslastung bei "
-        "vertretbaren Anfahrtswegen &mdash; unabh&auml;ngig von "
-        "Techniker-Anzahl oder -Bezeichnung."
-        f"{zeitraum_hinweis} Ratio vorher/nachher = Vor-Ort-Stunden "
-        "&divide; Fahrtstunden pro Jahr vor bzw. nach der Optimierung "
-        "(siehe &bdquo;Aktuelle Gebiete&ldquo; f&uuml;r die Farbskala). "
-        "&Delta; Fahrzeit zeigt die Ver&auml;nderung der j&auml;hrlichen "
-        "Fahrtstunden &mdash; negativ (gr&uuml;n) = Entlastung, positiv "
-        "(rot) = Mehrbelastung.",
+        info_optimiert_text,
+        text_bereits_uebersetzt=True,
     )
     info_luecken = _go_info_box(
         "&#9888;",
@@ -4073,30 +4220,29 @@ def _render_gebietsoptimierung(
             rows_luecken += (
                 f'<tr class="go-overlap" data-tech="{primaer}">'
                 f'<td><span class="go-dot go-dot-orange"></span>{gebiet}</td>'
-                f'<td>&Uuml;berschneidung</td>'
+                f'<td>{_label("Überschneidung")}</td>'
                 f'<td>{techs_html}</td>'
-                f'<td>{info["anteil_pct"]}% der Kliniken zwischen 1./2.-n&auml;chstem '
-                f'Techniker kontestiert (&le;{UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN} min '
-                f'Fahrzeit-Differenz) &mdash; Gebiete konsolidieren</td>'
+                f'<td>{info["anteil_pct"]}% {_label("der Kliniken zwischen 1./2.-nächstem Techniker kontestiert (≤")}'
+                f'{UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN} {_label("min Fahrzeit-Differenz) — Gebiete konsolidieren")}</td>'
                 f'</tr>')
         elif typ == "gap":
             tid = info["naechster"]
             rows_luecken += (
                 f'<tr class="go-gap" data-tech="{tid}">'
                 f'<td><span class="go-dot go-dot-rot"></span>{gebiet}</td>'
-                f'<td>L&uuml;cke</td>'
+                f'<td>{_label("Lücke")}</td>'
                 f'<td><span class="go-tech-link" data-tech="{tid}">{tid}</span> '
                 f'(&#216; {info["fahrzeit_min"]} min)</td>'
-                f'<td>Neueinstellung oder Gebiets-Erweiterung empfohlen</td>'
+                f'<td>{_label("Neueinstellung oder Gebiets-Erweiterung empfohlen")}</td>'
                 f'</tr>')
         else:
             tid = info["techs"][0]
             rows_luecken += (
                 f'<tr class="go-optimal" data-tech="{tid}">'
                 f'<td><span class="go-dot go-dot-gruen"></span>{gebiet}</td>'
-                f'<td>Optimal</td>'
+                f'<td>{_label("Optimal")}</td>'
                 f'<td><span class="go-tech-link" data-tech="{tid}">{tid}</span></td>'
-                f'<td>Keine Anpassung n&ouml;tig</td>'
+                f'<td>{_label("Keine Anpassung nötig")}</td>'
                 f'</tr>')
 
     # Top-3 Empfehlungen
@@ -4137,9 +4283,9 @@ def _render_gebietsoptimierung(
     </p>
 
     <div class="go-view-buttons" id="go-view-buttons">
-      <button class="go-view-btn active" data-view="aktuell">Aktuelle Gebiete</button>
-      <button class="go-view-btn" data-view="optimiert">Optimierte Gebiete</button>
-      <button class="go-view-btn" data-view="luecken">L&uuml;cken &amp; &Uuml;berschneidungen</button>
+      <button class="go-view-btn active" data-view="aktuell" data-i18n="go.viewAktuell">Aktuelle Gebiete</button>
+      <button class="go-view-btn" data-view="optimiert" data-i18n="go.viewOptimiert">Optimierte Gebiete</button>
+      <button class="go-view-btn" data-view="luecken" data-i18n="go.viewLuecken">L&uuml;cken &amp; &Uuml;berschneidungen</button>
     </div>
 
     <div class="gebiets-layout">
@@ -4147,8 +4293,8 @@ def _render_gebietsoptimierung(
         <svg id="germany-map-opt" width="480" height="580"><!-- filled by _build_gebiets_svg --></svg>
         <div class="gebiets-legende" id="gebiets-legende-opt"></div>
         <div class="gebiets-karte-tools">
-          <span class="go-hint">Techniker anklicken, um sein Gebiet hervorzuheben</span>
-          <button class="go-reset-btn" id="go-reset-btn" disabled>&#10005; Zur&uuml;cksetzen</button>
+          <span class="go-hint" data-i18n="go.hint">Techniker anklicken, um sein Gebiet hervorzuheben</span>
+          <button class="go-reset-btn" id="go-reset-btn" disabled data-i18n="go.reset">&#10005; Zur&uuml;cksetzen</button>
         </div>
         {hugo_kg_html}
       </div>
@@ -4160,11 +4306,11 @@ def _render_gebietsoptimierung(
             <thead>
               <tr>
                 <th data-i18n="th.technician">Techniker</th>
-                <th>Standort</th>
-                <th>Kliniken</th>
-                <th>&Oslash; Fahrzeit</th>
-                <th>Ratio{ratio_tip}</th>
-                <th>Auslastung{korridor_spalte_tip}</th>
+                <th data-i18n="th.standort">Standort</th>
+                <th data-i18n="th.kliniken">Kliniken</th>
+                <th data-i18n="th.oFahrzeit">&Oslash; Fahrzeit</th>
+                <th><span data-i18n="th.ratio">Ratio</span>{ratio_tip}</th>
+                <th><span data-i18n="th.auslastung">Auslastung</span>{korridor_spalte_tip}</th>
               </tr>
             </thead>
             <tbody>
@@ -4176,19 +4322,19 @@ def _render_gebietsoptimierung(
         <div class="go-view-content" id="go-view-optimiert">
           {info_optimiert}
           <div class="bc-gold-hint" style="margin-bottom:14px">
-            &#9733; Algorithmus: Klinik wechselt zum 2.-n&auml;chsten Techniker, wenn dessen
-            Auslastung &ge;{OPTIMIERUNG_AUSLASTUNGS_SCHWELLE} Prozentpunkte niedriger ist und
-            die Fahrzeit-Mehrbelastung &le;{OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN} min bleibt
+            &#9733; {_label("Algorithmus: Klinik wechselt zum 2.-nächsten Techniker, wenn dessen Auslastung ≥")}
+            {OPTIMIERUNG_AUSLASTUNGS_SCHWELLE} {_label("Prozentpunkte niedriger ist und die Fahrzeit-Mehrbelastung ≤")}
+            {OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN} {_label("min bleibt")}
           </div>
           <table>
             <thead>
               <tr>
-                <th>Techniker</th>
-                <th>Standort</th>
-                <th>Ratio vorher{ratio_tip}</th>
-                <th>Ratio nachher{ratio_tip}</th>
-                <th>&Delta; Fahrzeit{delta_fahrzeit_tip}</th>
-                <th>Verschobene Kliniken</th>
+                <th data-i18n="th.technician">Techniker</th>
+                <th data-i18n="th.standort">Standort</th>
+                <th><span data-i18n="th.ratioVorher">Ratio vorher</span>{ratio_tip}</th>
+                <th><span data-i18n="th.ratioNachher">Ratio nachher</span>{ratio_tip}</th>
+                <th><span data-i18n="th.deltaFahrzeit">&Delta; Fahrzeit</span>{delta_fahrzeit_tip}</th>
+                <th data-i18n="th.verschobeneKliniken">Verschobene Kliniken</th>
               </tr>
             </thead>
             <tbody>
@@ -4205,10 +4351,10 @@ def _render_gebietsoptimierung(
           <table>
             <thead>
               <tr>
-                <th>Gebiet</th>
-                <th>Status{luecken_status_tip}</th>
-                <th>Techniker</th>
-                <th>Empfehlung</th>
+                <th data-i18n="th.gebiet">Gebiet</th>
+                <th><span data-i18n="th.status">Status</span>{luecken_status_tip}</th>
+                <th data-i18n="th.technician">Techniker</th>
+                <th data-i18n="th.empfehlung">Empfehlung</th>
               </tr>
             </thead>
             <tbody>
@@ -4544,7 +4690,7 @@ def render_html(
   Field Service AI &nbsp;|&nbsp;
   Medtronic GmbH Service &amp; Repair &nbsp;|&nbsp;
   <span data-i18n="footer.copilot">Vollautomatisiert &middot; Copilot &mdash; kein Autopilot</span> &nbsp;|&nbsp;
-  {TESTS_ANZAHL} Tests gr&uuml;n
+  {TESTS_ANZAHL} Tests {_label("grün")}
 </footer>
 
 </div><!-- /dashboard-panel -->
@@ -4619,6 +4765,11 @@ def render_html(
 
 <script>
 /* ── i18n Translation ── */
+/* Zentrale Label-Uebersetzung (i18n-Komplettaudit): [data-label-de]-Elemente
+   werden generisch ueber diese EINE Tabelle uebersetzt, statt jede
+   Vorkommensstelle einzeln an einen data-i18n-Key zu binden. Siehe
+   reporting/dashboard.py LABEL_MAP_EN. */
+var _LABEL_MAP_EN = {json.dumps(LABEL_MAP_EN, ensure_ascii=False)};
 var _I18N = {{
   DE: {{
     'header.demo': {json.dumps(demo_badge_text_de, ensure_ascii=False)},
@@ -4698,7 +4849,32 @@ var _I18N = {{
     'hint.top3': 'Priorisiert nach Fahrzeit-Einsparungspotenzial und Crosstraining-Bedarf',
     'erklaer.intro': 'Frage direkt aus den Berechnungsdaten beantworten \u2014 kein API-Key n\u00f6tig:',
     'erklaer.btn': 'Erkl\u00e4ren',
-    'erklaer.divider': 'F\u00fcr freie Fragen: Claude API-Key verbinden (optional)'
+    'erklaer.divider': 'F\u00fcr freie Fragen: Claude API-Key verbinden (optional)',
+    'h.nrw': '\u26a0 NRW-\u00dcberlastungs-Warnung',
+    'h.puffer': 'Tourplanung \u2014 Puffer-Visualisierung',
+    'h.workflow6': '6 \u2014 Workflow-Status',
+    'h.business7': '7 \u2014 Business Case',
+    'h.hiring': 'PLZ-Abdeckung & Einstellungsbedarf',
+    'th.standort': 'Standort',
+    'th.region': 'Region',
+    'th.abdeckung': 'Abdeckung',
+    'th.kliniken': 'Kliniken',
+    'th.begruendung': 'Begr\u00fcndung',
+    'th.oFahrzeit': '\u00d8 Fahrzeit',
+    'th.ratio': 'Ratio',
+    'th.auslastung': 'Auslastung',
+    'th.ratioVorher': 'Ratio vorher',
+    'th.ratioNachher': 'Ratio nachher',
+    'th.deltaFahrzeit': '\u0394 Fahrzeit',
+    'th.verschobeneKliniken': 'Verschobene Kliniken',
+    'th.gebiet': 'Gebiet',
+    'th.status': 'Status',
+    'th.empfehlung': 'Empfehlung',
+    'go.viewAktuell': 'Aktuelle Gebiete',
+    'go.viewOptimiert': 'Optimierte Gebiete',
+    'go.viewLuecken': 'L\u00fccken & \u00dcberschneidungen',
+    'go.hint': 'Techniker anklicken, um sein Gebiet hervorzuheben',
+    'go.reset': '\u2715 Zur\u00fccksetzen'
   }},
   EN: {{
     'header.demo': {json.dumps(demo_badge_text_en, ensure_ascii=False)},
@@ -4778,7 +4954,32 @@ var _I18N = {{
     'hint.top3': 'Prioritized by travel time savings potential and cross-training needs',
     'erklaer.intro': 'Answer questions directly from the calculation data \u2014 no API key needed:',
     'erklaer.btn': 'Explain',
-    'erklaer.divider': 'For free-form questions: connect Claude API key (optional)'
+    'erklaer.divider': 'For free-form questions: connect Claude API key (optional)',
+    'h.nrw': '\u26a0 NRW Overload Warning',
+    'h.puffer': 'Tour Planning \u2014 Buffer Visualization',
+    'h.workflow6': '6 \u2014 Workflow Status',
+    'h.business7': '7 \u2014 Business Case',
+    'h.hiring': 'ZIP Code Coverage & Hiring Needs',
+    'th.standort': 'Location',
+    'th.region': 'Region',
+    'th.abdeckung': 'Coverage',
+    'th.kliniken': 'Clinics',
+    'th.begruendung': 'Justification',
+    'th.oFahrzeit': 'Avg. Travel Time',
+    'th.ratio': 'Ratio',
+    'th.auslastung': 'Utilization',
+    'th.ratioVorher': 'Ratio before',
+    'th.ratioNachher': 'Ratio after',
+    'th.deltaFahrzeit': '\u0394 Travel Time',
+    'th.verschobeneKliniken': 'Relocated Clinics',
+    'th.gebiet': 'Territory',
+    'th.status': 'Status',
+    'th.empfehlung': 'Recommendation',
+    'go.viewAktuell': 'Current Territories',
+    'go.viewOptimiert': 'Optimized Territories',
+    'go.viewLuecken': 'Gaps & Overlaps',
+    'go.hint': 'Click a technician to highlight their territory',
+    'go.reset': '\u2715 Reset'
   }}
 }};
 var _currentLang = localStorage.getItem('fsa_lang') || 'DE';
@@ -4799,6 +5000,10 @@ function setLang(lang) {{
   document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {{
     var key = el.getAttribute('data-i18n-placeholder');
     if (dict[key] !== undefined) el.placeholder = dict[key];
+  }});
+  document.querySelectorAll('[data-label-de]').forEach(function(el) {{
+    var de = el.getAttribute('data-label-de');
+    el.textContent = (lang === 'EN' && _LABEL_MAP_EN[de] !== undefined) ? _LABEL_MAP_EN[de] : de;
   }});
   var btn = document.getElementById('lang-toggle-btn');
   if (btn) btn.textContent = lang === 'DE' ? 'EN' : 'DE';
@@ -5265,7 +5470,7 @@ def main() -> None:
                 css_cls = badge_css.get(v.bewertung, "badge-normal")
                 termine_parts.append(
                     f"<span class='badge {css_cls}' title='{v.bewertung}'>"
-                    f"{v.wochentag} {v.datum.strftime('%d.%m.')}</span>"
+                    f"{_label(v.wochentag)} {v.datum.strftime('%d.%m.')}</span>"
                 )
             termine_html = " / ".join(termine_parts)
         else:
