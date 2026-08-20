@@ -152,6 +152,22 @@ UEBERSCHNEIDUNG_ANTEIL_SCHWELLE = 0.30    # Anteil kontestierter Kliniken im Geb
 # Siehe reporting/hugo_kerngebiet.py.
 HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN = 90
 
+# ─── Stundensaetze (Startwerte, anpassbar) ─────────
+# Ersetzen die bisherigen "T&E anfragen"-Platzhalter im Business-Case-Tab
+# durch konkrete Euro-Betraege. AUSDRUECKLICH SCHAETZWERTE, keine von
+# Medtronic T&E bestaetigten Ist-Zahlen -- im Dashboard entsprechend als
+# "Startwert, anpassbar" gekennzeichnet (siehe reporting/dashboard.py
+# _render_business_case). Bei Bedarf hier zentral anpassen.
+TECHNIKER_KOSTENSATZ_EUR_STUNDE = 45.0
+# Herleitung (Schaetzung): Marktdurchschnitt Bruttolohn Servicetechniker
+# Medizintechnik Deutschland ~24 EUR/h, x Lohnnebenkosten-Faktor ~1,9
+# (Arbeitgeberanteile Sozialversicherung, Urlaubs-/Krankheitsruecklage,
+# anteilige Fahrzeug-/Ausruestungskosten) = interner Vollkostensatz.
+KUNDEN_VERRECHNUNGSSATZ_EUR_STUNDE = 150.0
+# Herleitung (Schaetzung): typischer Repair-Erloessatz bei Nicht-
+# Vertragskunden (Time-&-Material-Abrechnung) im Medizintechnik-Field-
+# Service-Markt Deutschland.
+
 # ─── Trainingskosten (Platzhalter) ─────────────────
 TRAINING_SMALL_CAPITAL_EUR = 0        # intern
 TRAINING_HF_CHIRURGIE_EUR = 0         # STK/PM intern
@@ -178,7 +194,7 @@ KALENDER_INTEGRIERT = False       # Prototyp-Flag
 # ─── Test-Suite (Dashboard-Footer) ─────────────────
 # Manuell bei jedem pytest-Lauf/Release aktualisieren (`pytest --collect-only -q`).
 # Einzige Stelle im Code -- dashboard.py liest von hier, nicht hardcodiert.
-TESTS_ANZAHL = 1089
+TESTS_ANZAHL = 1131
 
 # ─── Projekt-Kennzahlen (Landingpage index.html) ───
 # Einzige Quelle fuer die auf index.html beworbenen Kennzahlen. Bei neuem

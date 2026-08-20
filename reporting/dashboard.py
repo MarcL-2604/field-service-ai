@@ -53,6 +53,8 @@ from config import (  # noqa: E402
     UEBERSCHNEIDUNG_ANTEIL_SCHWELLE,
     AUSLASTUNG_ZIEL_MIN_PCT,
     AUSLASTUNG_ZIEL_MAX_PCT,
+    TECHNIKER_KOSTENSATZ_EUR_STUNDE,
+    KUNDEN_VERRECHNUNGSSATZ_EUR_STUNDE,
 )
 from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
@@ -444,17 +446,16 @@ LABEL_MAP_EN: dict[str, str] = {
         "Per planned visit: net time (green) + buffer (yellow). Click for breakdown. Source: labor_zeiten.csv",
     "zusätzliche STKs/Jahr möglich": "additional safety checks/year possible",
     "Min. Einsatzdauer": "min. visit duration",
-    "Stundensatz: T&E anfragen": "Hourly rate: ask T&E",
-    "Zusätzlicher Deckungsbeitrag (Stundensatz: T&E anfragen)": "Additional contribution margin (hourly rate: ask T&E)",
-    "Potenzial": "Potential", "STK-Dauer": "SC duration", "T&E anfragen": "Ask T&E",
-    "Berechnete Kennzahlen — Stundensatz auf Anfrage bei Medtronic T&E":
-        "Calculated metrics — hourly rate available on request from Medtronic T&E",
+    "Potenzial": "Potential", "STK-Dauer": "SC duration",
+    "Berechnete Kennzahlen mit Startwerten für Techniker-Kostensatz und Kunden-Verrechnungssatz — anpassbar in config.py":
+        "Calculated metrics using starting values for technician cost rate and customer billing rate — adjustable in config.py",
     "Zeitersparnis Planung": "Planning time savings",
     "Techniker": "technicians", "Tag": "day", "Tage": "days", "Wochen": "weeks", "Jahr": "year",
     "manuelle Planung entfällt": "manual planning eliminated",
     "Monetärer Wert": "Monetary value",
-    "Jährliche Einsparung (Stundensatz bei T&E anfragen)": "Annual savings (hourly rate: ask T&E)",
+    "Jährliche Einsparung": "Annual savings",
     "Crosstraining-ROI": "Cross-training ROI",
+    "interne Kapazitätsersparnis": "internal capacity savings",
     "Fahrzeit / Gebiet": "Travel time / territory",
     "Fahrzeit-Einsparung aus Gebiets-Szenario": "Travel time savings from territory scenario",
     "Mobilitätskostenreduktion": "Mobility cost reduction",
@@ -462,8 +463,17 @@ LABEL_MAP_EN: dict[str, str] = {
     "einmalig": "one-time",
     "Break-even: ca. 10 Wochen": "Break-even: approx. 10 weeks",
     "Einmalige Implementierungskosten": "One-time implementation costs",
-    "Stundensatz bei Medtronic Training & Education (T&E) anfragen — alle übrigen Kennzahlen sind belastbare Ist-Werte":
-        "Ask Medtronic Training & Education (T&E) for the hourly rate — all other figures are solid actuals",
+    "Startwert, anpassbar": "Starting value, adjustable",
+    "Techniker-Kostensatz (Startwert, anpassbar in config.py)":
+        "Technician cost rate (starting value, adjustable in config.py)",
+    "Alle übrigen Kennzahlen sind belastbare Ist-Werte.": "All other figures are solid actuals.",
+    "Herleitung (Schätzung): Marktdurchschnitt Bruttolohn Servicetechniker Medizintechnik Deutschland ≈24 €/h × Lohnnebenkosten-Faktor ≈1,9 (Sozialversicherung, Urlaubs-/Krankheitsrücklage, anteilige Fahrzeug-/Ausrüstungskosten). Zentral anpassbar in config.py.":
+        "Derivation (estimate): German medical-device field service technician average gross wage ≈€24/h × non-wage labor cost factor ≈1.9 (employer social security contributions, vacation/sick-leave reserve, pro-rata vehicle/equipment costs). Centrally adjustable in config.py.",
+    "Euro-Äquivalent des STK-Potenzials bei internem Techniker-Kostensatz (Startwert, anpassbar in config.py) — zeigt den Wert der freiwerdenden Kapazität, kein garantierter Zusatzumsatz.":
+        "Euro equivalent of the safety-check potential at the internal technician cost rate (starting value, adjustable in config.py) — shows the value of freed-up capacity, not guaranteed additional revenue.",
+    "Bessere Auslastung: von": "Improved utilization: from", "auf": "to",
+    "geschätzt": "estimated", "Unternehmensmehrwert": "Business value",
+    "Einsatzdauer": "visit duration", "zusätzliche Kapazität nutzbar": "additional capacity usable",
     "Was zeigt diese Ansicht?": "What does this view show?",
     "Zeigt die IST-Gebietsaufteilung basierend auf den aktuellen Techniker-Wohnorten und den ihnen historisch "
     "zugeordneten Klinik-PLZ-Gebieten. Jede Farbe entspricht einem Techniker-Gebiet. Ratio = Vor-Ort-Stunden ÷ "
@@ -804,13 +814,17 @@ def _render_ct_tabelle(
             z_pct = round((qualifiziert + 1) / regional * 100) if regional else 0
             avg_h = _avg_einsatzdauer_stunden(labor_zeiten, top_familie)
             zusatz_stunden = round(stk_potenzial * avg_h, 1)
+            eur_wert = round(zusatz_stunden * TECHNIKER_KOSTENSATZ_EUR_STUNDE)
+            eur_wert_fmt = f"{eur_wert:,}".replace(",", ".")
             mehrwert_html = (
                 f'<div class="ct-mehrwert">'
-                f'<div>Potenzial: <strong>+{stk_potenzial:.0f} STK/Jahr</strong> ({top_familie})</div>'
-                f'<div>Bessere Auslastung: von {y_pct}% auf {z_pct}% (gesch&auml;tzt)</div>'
-                f'<div>Unternehmensmehrwert: {stk_potenzial:.0f} STK/a &times; '
-                f'&#216;{avg_h:.1f}h Einsatzdauer &asymp; '
-                f'<strong>{zusatz_stunden:.0f}h</strong> zus&auml;tzliche Kapazit&auml;t nutzbar</div>'
+                f'<div>{_label("Potenzial")}: <strong>+{stk_potenzial:.0f} STK/{_label("Jahr")}</strong> ({top_familie})</div>'
+                f'<div>{_label("Bessere Auslastung: von")} {y_pct}% {_label("auf")} {z_pct}% ({_label("geschätzt")})</div>'
+                f'<div>{_label("Unternehmensmehrwert")}: {stk_potenzial:.0f} STK/a &times; '
+                f'&#216;{avg_h:.1f}h {_label("Einsatzdauer")} &asymp; '
+                f'<strong>{zusatz_stunden:.0f}h</strong> {_label("zusätzliche Kapazität nutzbar")} '
+                f'(&asymp;&thinsp;{eur_wert_fmt}&thinsp;&euro;/{_label("Jahr")} {_label("interne Kapazitätsersparnis")}, '
+                f'{_label("Startwert, anpassbar")}{_kostensatz_info_tip()})</div>'
                 f'</div>'
             )
 
@@ -983,25 +997,59 @@ def _render_workflow_status() -> str:
   </section>"""
 
 
+def _kostensatz_info_tip() -> str:
+    """Wiederverwendbares Herleitungs-Tooltip fuer TECHNIKER_KOSTENSATZ_EUR_STUNDE
+    (Business-Case- und Crosstraining-Tab) -- macht an jeder Verwendungsstelle
+    klar, dass der Satz ein Schaetzwert/Startwert ist, keine von Medtronic
+    T&E bestaetigte Ist-Zahl."""
+    return _info_tip(
+        _label(
+            "Herleitung (Schätzung): Marktdurchschnitt Bruttolohn Servicetechniker "
+            "Medizintechnik Deutschland ≈24 €/h × Lohnnebenkosten-Faktor ≈1,9 "
+            "(Sozialversicherung, Urlaubs-/Krankheitsrücklage, anteilige "
+            "Fahrzeug-/Ausrüstungskosten). Zentral anpassbar in config.py."
+        )
+    )
+
+
 def _render_business_case(stk_potenzial_gesamt: int = 0, median_min: int = 0) -> str:
-    """Erzeugt die Business-Case Sektion mit konkreten Kennzahlen."""
+    """Erzeugt die Business-Case Sektion mit konkreten Kennzahlen.
+
+    Nutzt TECHNIKER_KOSTENSATZ_EUR_STUNDE (config.py) statt der bisherigen
+    "T&E anfragen"-Platzhalter fuer alle Kennzahlen, die auf internem
+    Techniker-Stundenaufwand basieren (Zeitersparnis Planung, Crosstraining-
+    ROI). Der Satz ist ausdruecklich ein Schaetzwert/Startwert (siehe
+    Herleitung in config.py und im Tooltip unten) -- keine von Medtronic
+    T&E bestaetigte Ist-Zahl, deshalb ueberall als "Startwert, anpassbar"
+    gekennzeichnet.
+    """
+    kostensatz_fmt = f"{TECHNIKER_KOSTENSATZ_EUR_STUNDE:.0f}".replace(".", ",")
+    kostensatz_tip = _kostensatz_info_tip()
+
+    zeitersparnis_h = 4992
+    monetaerer_wert = round(zeitersparnis_h * TECHNIKER_KOSTENSATZ_EUR_STUNDE)
+    monetaerer_wert_fmt = f"{monetaerer_wert:,}".replace(",", ".")
+
     if stk_potenzial_gesamt > 0:
         stk_fmt = f"{stk_potenzial_gesamt:,}".replace(",", ".")
         med_fmt = str(median_min)
+        einsatzdauer_h = median_min / 60
+        ct_wert = round(stk_potenzial_gesamt * einsatzdauer_h * TECHNIKER_KOSTENSATZ_EUR_STUNDE)
+        ct_wert_fmt = f"{ct_wert:,}".replace(",", ".")
         ct_roi_html = f"""
         <div class="bc-result">{stk_fmt} {_label("zusätzliche STKs/Jahr möglich")}</div>
-        <div class="bc-formula">&times; &Oslash; {med_fmt}&thinsp;{_label("Min. Einsatzdauer")} &times; [{_label("Stundensatz: T&amp;E anfragen")}]</div>
-        <div class="bc-hint">= {_label("Zusätzlicher Deckungsbeitrag (Stundensatz: T&amp;E anfragen)")}</div>"""
+        <div class="bc-formula">&times; &Oslash; {med_fmt}&thinsp;{_label("Min. Einsatzdauer")} &times; {kostensatz_fmt}&thinsp;&euro;/h{kostensatz_tip}</div>
+        <div class="bc-hint">= {ct_wert_fmt} &euro;/{_label("Jahr")} {_label("interne Kapazitätsersparnis")}</div>"""
     else:
         ct_roi_html = f"""
-        <div class="bc-formula">[+STK/a {_label("Potenzial")}] &times; [&Oslash; {_label("STK-Dauer")} h] &times; [{_label("T&amp;E anfragen")}]</div>
-        <div class="bc-hint">= {_label("Zusätzlicher Deckungsbeitrag (Stundensatz: T&amp;E anfragen)")}</div>"""
+        <div class="bc-formula">[+STK/a {_label("Potenzial")}] &times; [&Oslash; {_label("STK-Dauer")} h] &times; {kostensatz_fmt}&thinsp;&euro;/h{kostensatz_tip}</div>
+        <div class="bc-hint">= {_label("interne Kapazitätsersparnis")}</div>"""
 
     return f"""
   <section>
     <h2 data-i18n="h.business7">7 &mdash; Business Case</h2>
     <p class="section-hint">
-      {_label("Berechnete Kennzahlen — Stundensatz auf Anfrage bei Medtronic T&amp;E")}
+      {_label("Berechnete Kennzahlen mit Startwerten für Techniker-Kostensatz und Kunden-Verrechnungssatz — anpassbar in config.py")}
     </p>
     <div class="bc-grid">
       <div class="bc-card">
@@ -1012,8 +1060,9 @@ def _render_business_case(stk_potenzial_gesamt: int = 0, median_min: int = 0) ->
       </div>
       <div class="bc-card">
         <div class="bc-card-title">{_label("Monetärer Wert")}</div>
-        <div class="bc-formula">4.992 h &times; [{_label("Stundensatz: T&amp;E anfragen")}]</div>
-        <div class="bc-hint">= {_label("Jährliche Einsparung (Stundensatz bei T&amp;E anfragen)")}</div>
+        <div class="bc-formula">4.992 h &times; {kostensatz_fmt}&thinsp;&euro;/h{kostensatz_tip}</div>
+        <div class="bc-result">= {monetaerer_wert_fmt} &euro;/{_label("Jahr")}</div>
+        <div class="bc-hint">{_label("Jährliche Einsparung")}</div>
       </div>
       <div class="bc-card">
         <div class="bc-card-title">{_label("Crosstraining-ROI")}</div>{ct_roi_html}
@@ -1032,7 +1081,8 @@ def _render_business_case(stk_potenzial_gesamt: int = 0, median_min: int = 0) ->
       </div>
     </div>
     <div class="bc-gold-hint">
-      &#9733; {_label("Stundensatz bei Medtronic Training &amp; Education (T&amp;E) anfragen — alle übrigen Kennzahlen sind belastbare Ist-Werte")}
+      &#9733; {_label("Techniker-Kostensatz (Startwert, anpassbar in config.py)")}: {kostensatz_fmt}&thinsp;&euro;/h{kostensatz_tip}.
+      {_label("Alle übrigen Kennzahlen sind belastbare Ist-Werte.")}
     </div>
   </section>"""
 
@@ -4835,6 +4885,7 @@ def render_html(
     </a>
   </div>
   <div class="header-right">
+    <a href="manual.html" class="lang-toggle" style="text-decoration:none" data-i18n="nav.manual">Handbuch</a>
     <a href="workflow_demo.html" class="lang-toggle" style="text-decoration:none">Workflow Demo</a>
     <span class="demo-badge" data-i18n="header.demo">{demo_badge_text_de}</span>
     <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleLang()">EN</button>
@@ -5066,6 +5117,7 @@ def render_html(
 var _LABEL_MAP_EN = {json.dumps(LABEL_MAP_EN, ensure_ascii=False)};
 var _I18N = {{
   DE: {{
+    'nav.manual': 'Handbuch',
     'header.demo': {json.dumps(demo_badge_text_de, ensure_ascii=False)},
     'tab.overview': '\u00dcbersicht',
     'tab.orders': 'Auftr\u00e4ge',
@@ -5171,6 +5223,7 @@ var _I18N = {{
     'go.reset': '\u2715 Zur\u00fccksetzen'
   }},
   EN: {{
+    'nav.manual': 'Manual',
     'header.demo': {json.dumps(demo_badge_text_en, ensure_ascii=False)},
     'tab.overview': 'Overview',
     'tab.orders': 'Orders',
