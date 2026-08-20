@@ -1877,6 +1877,7 @@ def _render_gebietsplanung(
     metriken_akt: list[dict],
     metriken_opt: list[dict],
     plz_abdeckung: list[dict] | None = None,
+    viewbox: str = "0 0 480 580",
 ) -> str:
     """Erzeugt den 'PLZ-Abdeckung & Einstellungsbedarf'-Abschnitt (Tab Einstellungsbedarf).
 
@@ -1951,7 +1952,7 @@ def _render_gebietsplanung(
 
     <div class="einst-layout">
       <div class="einst-karte">
-        <svg id="germany-map-plz" viewBox="0 0 480 580" preserveAspectRatio="xMidYMid meet"><!-- filled by _build_gebiets_svg --></svg>
+        <svg id="germany-map-plz" viewBox="{viewbox}" preserveAspectRatio="xMidYMid meet"><!-- filled by _build_gebiets_svg --></svg>
       </div>
       <div class="einst-liste">
         <div class="einst-liste-header">&starf; {_label("Einstellungsbedarf")}</div>
@@ -2122,6 +2123,76 @@ def _placiere_techniker_labels(punkte: list[dict]) -> list[dict]:
         ergebnis.append({**p, "lx": lx, "ly": ly, "versetzt": (dx, dy) != _DEFAULT})
 
     return ergebnis
+
+
+_XY_PAIR_RE = re.compile(r'(-?\d+\.?\d*),(-?\d+\.?\d*)')
+
+
+def _berechne_gebiets_viewbox(
+    techniker: dict[str, dict],
+    margin: float = 12.0,
+) -> tuple[float, float, float, float]:
+    """Berechnet die tatsaechliche Bounding-Box der STAENDIG sichtbaren
+    Kartenelemente (Bundeslaender-Flaechen, Techniker-Marker + kollisions-
+    versetzte Labels, Einstellungsempfehlungen) inkl. Sicherheitsrand.
+
+    Grund: die vormals feste viewBox '0 0 480 580' (aus den urspruenglichen
+    _project_mercator-Default-Parametern uebernommen) deckt die tatsaechliche
+    Nord-Sued-Ausdehnung Deutschlands nicht vollstaendig ab -- Bayern und
+    Baden-Wuerttemberg ragen im Sueden ueber y=580 hinaus, die noerdlichen
+    Inseln Schleswig-Holsteins sogar ueber y=0 nach oben (Mercator-Skalierung
+    war fuer den vollen Breitengrad-Bereich 47,27°N-55,05°N leicht zu knapp
+    bemessen). Diese Funktion ermittelt die reale Bounding-Box direkt aus
+    denselben projizierten Koordinaten, die auch beim Zeichnen verwendet
+    werden (_project_mercator/_topo_to_svg_paths).
+
+    Bewusst AUSSER Acht gelassen: die optionalen Hugo-Kerngebiet-Kreise
+    (Toggle default AUS) -- einzelne Kreise (z.B. Gangelt, Grenznaehe NL)
+    ragen weit ueber die Landesflaeche hinaus und wuerden die Standard-
+    ansicht unnoetig verkleinern/verzerren, obwohl sie i.d.R. ausgeblendet
+    sind. Stattdessen sichert `.gebiets-karte svg, .einst-karte svg
+    { overflow: visible }` (siehe CSS) diese Kreise gegen Abschneiden ab,
+    OHNE die Kernkarte zu stauchen -- sie duerfen im Toggle-Fall einfach
+    etwas ueber den Kartenrahmen hinausragen statt unsichtbar zu werden.
+
+    Gibt (min_x, min_y, width, height) zurueck.
+    """
+    xs: list[float] = []
+    ys: list[float] = []
+
+    for p in _topo_to_svg_paths():
+        for x_str, y_str in _XY_PAIR_RE.findall(p["d"]):
+            xs.append(float(x_str))
+            ys.append(float(y_str))
+
+    tech_punkte = []
+    for tid, td in sorted(techniker.items()):
+        if not td.get("lat"):
+            continue
+        px, py = _project_mercator(td["lon"], td["lat"])
+        tech_punkte.append({"id": tid, "px": px, "py": py, "text": tid})
+        xs.append(px)
+        ys.append(py)
+
+    for p in _placiere_techniker_labels(tech_punkte):
+        text_w = len(p["text"]) * 6.3 + 2.0
+        xs.extend([p["lx"], p["lx"] + text_w])
+        ys.extend([p["ly"] - 12.0, p["ly"]])
+
+    for e in _EINSTELLUNGS_EMPFEHLUNGEN:
+        px, py = _project_mercator(e["lon"], e["lat"])
+        xs.extend([px - 10, px + 10])
+        ys.extend([py - 10, py + 10])
+
+    if not xs or not ys:
+        return 0.0, 0.0, 480.0, 580.0
+
+    min_x, max_x = min(xs) - margin, max(xs) + margin
+    min_y, max_y = min(ys) - margin, max(ys) + margin
+    return (
+        round(min_x, 1), round(min_y, 1),
+        round(max_x - min_x, 1), round(max_y - min_y, 1),
+    )
 
 
 def _build_gebiets_svg(
@@ -3336,6 +3407,13 @@ _CSS = """\
       border: 1px solid rgba(0,81,149,.2);
       border-radius: 14px;
       background: #F0F4FA;
+      /* Sicherheitsnetz fuer optionale Overlays (Hugo-Kerngebiet-Kreise,
+         Toggle default AUS), die ueber die aus der Landesflaeche berechnete
+         viewBox hinausragen koennen (siehe _berechne_gebiets_viewbox) --
+         damit werden sie im Toggle-Fall sichtbar statt abgeschnitten,
+         waehrend die Standardansicht kompakt auf Deutschland zugeschnitten
+         bleibt. */
+      overflow: visible;
     }
     .gebiets-karte svg path.st { opacity: .7; transition: opacity .2s ease; }
     .gebiets-karte svg path.st:hover { opacity: .9; }
@@ -3458,6 +3536,7 @@ _CSS = """\
       border: 1px solid rgba(0,81,149,.2);
       border-radius: 14px;
       background: #F0F4FA;
+      overflow: visible;
       width: 100%;
       height: auto;
     }
@@ -4214,6 +4293,8 @@ def _render_gebietsoptimierung(
     techniker: dict[str, dict],
     hugo_kerngebiete: list[dict] | None = None,
     gebiete_status: dict[str, dict] | None = None,
+    viewbox: str = "0 0 480 580",
+    opt_height: int = 580,
 ) -> str:
     """Erzeugt den Gebietsoptimierung-Tab mit 3 klickbaren Ansicht-Buttons."""
     if not metriken_akt:
@@ -4498,7 +4579,7 @@ def _render_gebietsoptimierung(
 
     <div class="gebiets-layout">
       <div class="gebiets-karte">
-        <svg id="germany-map-opt" width="480" height="580"><!-- filled by _build_gebiets_svg --></svg>
+        <svg id="germany-map-opt" width="480" height="{opt_height}" viewBox="{viewbox}" preserveAspectRatio="xMidYMid meet"><!-- filled by _build_gebiets_svg --></svg>
         <div class="gebiets-legende" id="gebiets-legende-opt"></div>
         <div class="gebiets-karte-tools">
           <span class="go-hint" data-i18n="go.hint">Techniker anklicken, um sein Gebiet hervorzuheben</span>
@@ -4623,9 +4704,13 @@ def render_html(
     )
     m_akt, m_opt  = gebiets_metriken or ([], [])
     plz_abd       = _berechne_plz_abdeckung(techniker)
-    gebiets_html  = _render_gebietsplanung(m_akt, m_opt, plz_abd)
+    vb_x, vb_y, vb_w, vb_h = _berechne_gebiets_viewbox(techniker)
+    gebiets_viewbox = f"{vb_x} {vb_y} {vb_w} {vb_h}"
+    gebiets_opt_height = round(480 * vb_h / vb_w) if vb_w else 580
+    gebiets_html  = _render_gebietsplanung(m_akt, m_opt, plz_abd, gebiets_viewbox)
     gebietsopt_html = _render_gebietsoptimierung(
-        m_akt, m_opt, techniker, hugo_kerngebiete, gebiete_status)
+        m_akt, m_opt, techniker, hugo_kerngebiete, gebiete_status,
+        gebiets_viewbox, gebiets_opt_height)
     gebiets_svg_content = _build_gebiets_svg(
         techniker, plz_abd, hugo_kerngebiete, hugo_standorte_marker)
     gebiets_script = _build_gebiets_script(techniker, plz_abd, gebiets_punkte or [])
