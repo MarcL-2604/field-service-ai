@@ -163,7 +163,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
 
   <div class="manual-gold-hint">
     <span class="star">&#9733;</span>
-    <span data-i18n="page.goldhint">Dieses Handbuch wird kontinuierlich aktualisiert. Stand: 20.08.2026.</span>
+    <span data-i18n="page.goldhint">Dieses Handbuch wird kontinuierlich aktualisiert. Stand: 21.08.2026.</span>
   </div>
 
   <div class="manual-layout">
@@ -172,11 +172,12 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
       <div class="toc-chapter" data-i18n="toc.ch1">Kapitel 1 — Für Koordinatoren</div>
       <a href="#ch1-1" data-i18n="toc.ch1.1">1. Erste Schritte</a>
       <a href="#ch1-2" data-i18n="toc.ch1.2">2. Daten-Import</a>
-      <a href="#ch1-3" data-i18n="toc.ch1.3">3. Dashboard verstehen</a>
-      <a href="#ch1-4" data-i18n="toc.ch1.4">4. Gebietsoptimierung im Detail</a>
-      <a href="#ch1-5" data-i18n="toc.ch1.5">5. Workflow-Demo nutzen</a>
-      <a href="#ch1-6" data-i18n="toc.ch1.6">6. Tipps &amp; Tricks</a>
-      <a href="#ch1-7" data-i18n="toc.ch1.7">7. Häufige Fragen</a>
+      <a href="#ch1-3" data-i18n="toc.ch1.3">3. Daten-Import im Detail</a>
+      <a href="#ch1-4" data-i18n="toc.ch1.4">4. Dashboard verstehen</a>
+      <a href="#ch1-5" data-i18n="toc.ch1.5">5. Gebietsoptimierung im Detail</a>
+      <a href="#ch1-6" data-i18n="toc.ch1.6">6. Workflow-Demo nutzen</a>
+      <a href="#ch1-7" data-i18n="toc.ch1.7">7. Tipps &amp; Tricks</a>
+      <a href="#ch1-8" data-i18n="toc.ch1.8">8. Häufige Fragen</a>
       <div class="toc-chapter" data-i18n="toc.ch2">Kapitel 2 — Für Techniker</div>
       <a href="#ch2-1" data-i18n="toc.ch2.1">1. Aufträge erhalten</a>
       <a href="#ch2-2" data-i18n="toc.ch2.2">2. Auftragsdetails verstehen</a>
@@ -227,13 +228,72 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
           </ol>
           <p><strong>GCH-Filter:</strong> Manager- und GCH-Einträge (Geschäftsführung/interne Rollen ohne Außendienst-Einsätze) werden beim Import automatisch herausgefiltert — nur echte Außendienst-Techniker landen im Dashboard.</p>
           <p>Fehlerhafte Zeilen brechen den Import <strong>nicht</strong> komplett ab — sie werden übersprungen und im Fehlerprotokoll je Zeile aufgelistet, damit der Rest der Daten trotzdem nutzbar ist.</p>
+          <p><strong>Wichtig:</strong> coordinator_import.html ist aktuell ein Browser-Prototyp ohne Backend-Anbindung — „Alle speichern" legt die Daten nur lokal im Browser ab (<code>localStorage</code>) und aktualisiert das Dashboard <strong>nicht</strong>. Der tatsächliche, produktive Import der Live-Daten läuft aktuell über Claude Code und zwei Python-Skripte — siehe Kapitel 1.3 „Daten-Import im Detail".</p>
         </div>
         <div class="screenshot-placeholder" data-i18n="ch1.2.screenshot">[Platzhalter: Screenshot Daten-Import mit 5 Sheet-Kacheln und Validierungsstatus]</div>
       </section>
 
       <section class="manual-section" id="ch1-3">
-        <h2><span class="section-num">3.</span><span data-i18n="ch1.3.h">Dashboard verstehen</span></h2>
+        <h2><span class="section-num">3.</span><span data-i18n="ch1.3.h">Daten-Import im Detail</span></h2>
         <div data-i18n-html="ch1.3.body">
+          <p>Diese Anleitung beschreibt den <strong>tatsächlichen, produktiven Import-Vorgang</strong> — den Weg, mit dem die aktuellen Live-Daten (24 Techniker, 6.569 Geräte, 1.444 Kliniken) ins Dashboard gelangt sind. Er läuft über Claude Code und zwei Python-Skripte, <strong>nicht</strong> über die Speichern-Schaltfläche in coordinator_import.html (siehe Hinweis in Kapitel 1.2).</p>
+
+          <h3>Quellformat — was SMax liefern muss</h3>
+          <p>Eine Excel-Datei (<code>.xlsx</code>) mit exakt <strong>5 Sheets</strong>. Die Sheet-Namen müssen exakt übereinstimmen (Groß-/Kleinschreibung, Unterstriche, Leerzeichen):</p>
+          <ul>
+            <li><strong>„1_Skills Matrix"</strong> — Model_Code in Spalte A (Zeile 1 = Header), Techniker-Vollnamen als weitere Spaltenköpfe, Zellwerte <code>JA</code>/<code>NEIN</code> je Techniker/Model-Code-Kombination.</li>
+            <li><strong>„2_Durchscnittliche_Zeit_MC"</strong> (Schreibweise mit fehlendem „h" ist Absicht — so heißt das Sheet im echten Export) — Spalten <code>Model_Code</code> (im echten Export teils <code>Zeilenbeschriftungen</code> benannt, ein Excel-Pivot-Exportartefakt — beide Namen werden akzeptiert), <code>Mittelwert</code>, <code>Median</code> (beide in <strong>Stunden</strong>, nicht Minuten — wird beim Import ×60 in Minuten umgerechnet), optional <code>Bemerkung</code>.</li>
+            <li><strong>„3_Closed Jobs"</strong> — <code>Work Order Number</code>, <code>Account</code>, <code>City</code>, <code>Zip</code>, <code>Model Number</code>, <code>Next PM Due Date</code>, <code>Actual Resolution</code>, <code>Serial Number</code>, <code>Warranty End Date</code>, <code>Technician</code>.</li>
+            <li><strong>„4_Open_Jobs"</strong> — wie Closed Jobs (ohne <code>Actual Resolution</code>), zusätzlich <code>Order Status</code>, <code>On Hold Reason</code>, <code>Contract End Date</code>.</li>
+            <li><strong>„5_Wohnorte"</strong> — <code>Name</code>, <code>Land</code>, <code>Stadt</code> (keine PLZ enthalten — wird automatisch per <code>pgeocode</code> aufgelöst).</li>
+          </ul>
+          <div class="example-box">
+            <div class="ex-label">Hinweis</div>
+            Der reale SMax-Export enthält bei Closed/Open Jobs teils weitere Spalten (z.&nbsp;B. <code>Contract Category</code>, <code>Contract Type</code>) — diese dürfen vorhanden sein, werden vom Import aktuell aber nicht ausgewertet und einfach ignoriert.
+          </div>
+
+          <h3>Import-Schritte</h3>
+          <ol>
+            <li>Excel-Datei exakt als <code>KI_gestuetzte_Planung.xlsx</code> nach <code>C:\Projekte\FieldServiceAI\data\</code> kopieren — Dateiname und Pfad sind im Code fest hinterlegt. Bei abweichendem Namen/Pfad einfach in Claude Code angeben, dann übernimmt Claude Code das Umbenennen/Verschieben.</li>
+            <li>Claude Code im Projektordner <code>C:\Projekte\FieldServiceAI</code> starten.</li>
+            <li>Import ausführen: <code>python -m api.smax_cache</code> — liest die XLSX vollständig (intern fest <code>sample_limit=None</code>, kein Stichproben-Limit) und schreibt <code>data/smax_dashboard_data.json</code> neu. Die Konsolenausgabe zeigt Techniker-, Skill- und Auftragszahlen sowie die PLZ-Auflösungsquote zur Kontrolle.</li>
+            <li>Dashboard neu generieren: <code>python -m reporting.dashboard</code> — erzeugt <code>reporting/dashboard.html</code> und die Root-Kopie <code>dashboard.html</code> (GitHub-Pages-Stand) neu, beide danach identisch.</li>
+            <li><code>pytest tests/</code> laufen lassen — alle Tests müssen grün bleiben, bevor der neue Stand übernommen wird.</li>
+            <li>Bei grünem Ergebnis: <code>git add</code>, <code>commit</code>, <code>push</code> für den Live-Stand.</li>
+          </ol>
+
+          <h3>Was während des Imports automatisch passiert</h3>
+          <ul>
+            <li>Nur Techniker mit <code>Land = Germany</code> werden importiert.</li>
+            <li>3 Manager (Stefan Theuerkorn, Rolf Gieling, Jürgen Lehmann) werden <strong>nicht</strong> als aktive Techniker importiert — ihre historischen Job-Daten (als <code>Technician</code> in Closed Jobs) bleiben aber erhalten und fließen weiterhin in die Auftragshistorie ein.</li>
+            <li>Skills Matrix: <code>JA</code> → Qualifikation „PM". Ob zusätzlich Repair-Berechtigung besteht, hängt vom Cluster-Mapping des Model Codes ab (siehe „Wenn sich das Format ändert" unten), nicht vom Techniker-Eintrag selbst.</li>
+            <li>PLZ-Auflösung für Job-Standorte über <code>pgeocode</code> — ca. 70&nbsp;% Abdeckung für Deutschland; Österreich/Schweiz bleiben bewusst unaufgelöst (außerhalb des Scopes).</li>
+            <li>STK/Jahr-Normalisierung: Closed Jobs werden durch den tatsächlichen Beobachtungszeitraum (früheste bis späteste <code>Actual Resolution</code>) geteilt und so auf ein Jahr hochgerechnet; Open Jobs zählen als aktueller Rückstand ungeteilt dazu.</li>
+          </ul>
+
+          <h3>Wenn sich das Format ändert</h3>
+          <p>Falls SMax neue, umbenannte oder anders strukturierte Spalten liefert, reicht ein reiner Datenaustausch nicht mehr — die Mapping-Logik in <code>api/import_real_data.py</code> (Funktionen <code>map_closed_job_row()</code>, <code>map_open_job_row()</code> usw.) muss dann an die neuen Spaltennamen angepasst werden. Das ist kein einfacher Datenimport mehr, sondern eine Code-Änderung.</p>
+          <p><strong>Cluster-Mapping</strong> (Model Code → Gerätecluster → Repair-Berechtigung) ist <strong>manuell</strong> gepflegt in <code>data/model_code_cluster_mapping.json</code>. Neue Model Codes ohne Eintrag dort werden beim Import stillschweigend ignoriert (kein Fehler, kein Absturz — sie fehlen nur in Qualifikations-Ampel und Cross-Training). Prozess für neue Codes: Model-Codes-Liste (<code>data/model_codes_liste.txt</code>) mit den aktuell gemappten Codes abgleichen, die Differenz an den zuständigen Fachexperten (Rebecca, siehe Sheet-Zuordnung in coordinator_import.html) zur Cluster-Einstufung schicken und die Antwort als neue <code>exact</code>- oder <code>prefixes</code>-Einträge in die JSON-Datei übernehmen.</p>
+
+          <h3>Häufige Fehlerquellen</h3>
+          <details class="faq-item">
+            <summary>Sheet-Namen weichen vom erwarteten Namen ab</summary>
+            <div class="faq-a">Der Import überspringt das betreffende Sheet stillschweigend (Warnung in der Konsolenausgabe von <code>python -m api.smax_cache</code>, kein harter Fehler) — die zugehörigen Daten fehlen dann komplett im Ergebnis. Sheet-Namen exakt wie oben unter „Quellformat" verwenden.</div>
+          </details>
+          <details class="faq-item">
+            <summary>Model Codes ohne Cluster-Zuordnung</summary>
+            <div class="faq-a">Werden bei Qualifikations-Ampel und Cross-Training-Empfehlungen ignoriert — nicht als Fehlermeldung sichtbar, sondern schlicht nicht berücksichtigt. Regelmäßig <code>data/model_codes_liste.txt</code> gegen <code>data/model_code_cluster_mapping.json</code> prüfen (siehe „Wenn sich das Format ändert" oben).</div>
+          </details>
+          <details class="faq-item">
+            <summary>Techniker-Namen in Skills Matrix weichen von Sheet 5 ab</summary>
+            <div class="faq-a">Der Namensabgleich zwischen Sheet 1 und Sheet 5 normalisiert nur Umlaute (ä→ae, ö→oe, ü→ue, ß→ss) — es gibt <strong>kein</strong> Fuzzy-Matching mit Toleranz für Tippfehler oder abweichende Schreibweisen. Bei echten Abweichungen (fehlender zweiter Vorname, andere Schreibweise) verknüpft das System den Skill-Eintrag nicht mit dem Techniker. Diagnose: Konsolenausgabe von <code>python -m api.smax_cache</code> prüfen — Techniker ohne verknüpfte Skills sind dort mit <code>[keine Skills]</code> markiert.</div>
+          </details>
+        </div>
+      </section>
+
+      <section class="manual-section" id="ch1-4">
+        <h2><span class="section-num">4.</span><span data-i18n="ch1.4.h">Dashboard verstehen</span></h2>
+        <div data-i18n-html="ch1.4.body">
           <p>Das Dashboard gliedert sich in 7 Tabs:</p>
           <ul>
             <li><strong>Übersicht</strong> — Qualifikations-Ampel je Techniker (Grün/Gelb/Rot nach L3-Abdeckung), Sortierbar und mit Detail-Karten je Techniker.</li>
@@ -241,7 +301,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
             <li><strong>Cross-Training</strong> — welcher Techniker sollte auf welche Produktfamilie geschult werden, inkl. Wirtschaftlichkeits-Kennzahlen.</li>
             <li><strong>Workflow</strong> — die 7-Schritte-Automatisierungspipeline vom Auftragseingang bis zur Kundenmail.</li>
             <li><strong>Business Case</strong> — Kennzahlen zum wirtschaftlichen Nutzen (Zeitersparnis, Crosstraining-ROI, Fahrzeit-Einsparung).</li>
-            <li><strong>Gebietsoptimierung</strong> — Aktuelle/Optimierte Gebiete und Lücken &amp; Überschneidungen (siehe Kapitel 1.4).</li>
+            <li><strong>Gebietsoptimierung</strong> — Aktuelle/Optimierte Gebiete und Lücken &amp; Überschneidungen (siehe Kapitel 1.5).</li>
             <li><strong>Einstellungsbedarf</strong> — PLZ-Abdeckungskarte mit Empfehlungen für neue Standorte.</li>
           </ul>
           <h3>Kennzahlen im Detail</h3>
@@ -263,12 +323,12 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
           <p><strong>STK/Jahr</strong>: geschätztes Potenzial an Sicherheitstechnischen Kontrollen pro Jahr, abgeleitet aus dem Gerätebestand im Gebiet des Technikers.</p>
           <p><strong>Stundensätze</strong> (Business Case &amp; Cross-Training): Der interne Techniker-Kostensatz (<code>45&thinsp;&euro;/h</code>) und der externe Kunden-Verrechnungssatz (<code>150&thinsp;&euro;/h</code>) sind zentral in <code>config.py</code> hinterlegte Startwerte, ausdrücklich als Schätzung gekennzeichnet — keine von Medtronic T&amp;E bestätigten Ist-Zahlen. Sie ersetzen die bisherigen „T&amp;E anfragen"-Platzhalter durch konkrete Euro-Beträge und sind bei Bedarf zentral anpassbar.</p>
         </div>
-        <div class="screenshot-placeholder" data-i18n="ch1.3.screenshot">[Platzhalter: Screenshot Übersicht-Tab mit Qualifikations-Ampel]</div>
+        <div class="screenshot-placeholder" data-i18n="ch1.4.screenshot">[Platzhalter: Screenshot Übersicht-Tab mit Qualifikations-Ampel]</div>
       </section>
 
-      <section class="manual-section" id="ch1-4">
-        <h2><span class="section-num">4.</span><span data-i18n="ch1.4.h">Gebietsoptimierung im Detail</span></h2>
-        <div data-i18n-html="ch1.4.body">
+      <section class="manual-section" id="ch1-5">
+        <h2><span class="section-num">5.</span><span data-i18n="ch1.5.h">Gebietsoptimierung im Detail</span></h2>
+        <div data-i18n-html="ch1.5.body">
           <p>Der Tab „Gebietsoptimierung" hat 3 Unter-Reiter:</p>
           <ul>
             <li><strong>Aktuelle Gebiete</strong> — die Ist-Gebietsaufteilung basierend auf den heutigen Techniker-Wohnorten und den historisch zugeordneten Klinik-PLZ-Gebieten.</li>
@@ -280,12 +340,12 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
           <h3>Hugo-Kerngebiet-Konzept</h3>
           <p>Hugo-Systeme (Robotik) stehen an wenigen, teils weit vom Wohnort entfernten Standorten — das ist normal und wird nicht begrenzt. Begrenzt wird stattdessen das <strong>Alltags-Kerngebiet</strong> (Small-Capital-Geräte, Tagestouren) um den Wohnort des Hugo-Technikers: ein 90-Minuten-Radius als Verfügbarkeits-Garantie, damit er täglich nach Hause zurückkehrt und im Störungsfall sein Equipment griffbereit hat. Diese Ansicht ist optional per Toggle einblendbar (Standard: aus).</p>
         </div>
-        <div class="screenshot-placeholder" data-i18n="ch1.4.screenshot">[Platzhalter: Screenshot Gebietskarte mit Hugo-Kerngebiet-Kreisen]</div>
+        <div class="screenshot-placeholder" data-i18n="ch1.5.screenshot">[Platzhalter: Screenshot Gebietskarte mit Hugo-Kerngebiet-Kreisen]</div>
       </section>
 
-      <section class="manual-section" id="ch1-5">
-        <h2><span class="section-num">5.</span><span data-i18n="ch1.5.h">Workflow-Demo nutzen</span></h2>
-        <div data-i18n-html="ch1.5.body">
+      <section class="manual-section" id="ch1-6">
+        <h2><span class="section-num">6.</span><span data-i18n="ch1.6.h">Workflow-Demo nutzen</span></h2>
+        <div data-i18n-html="ch1.6.body">
           <p>Auf <strong>workflow_demo.html</strong> lässt sich ein Muster-Auftrag Schritt für Schritt durchspielen. Die 7 Schritte:</p>
           <ol>
             <li>Auftragseingang</li>
@@ -300,9 +360,9 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
         </div>
       </section>
 
-      <section class="manual-section" id="ch1-6">
-        <h2><span class="section-num">6.</span><span data-i18n="ch1.6.h">Tipps &amp; Tricks</span></h2>
-        <div data-i18n-html="ch1.6.body">
+      <section class="manual-section" id="ch1-7">
+        <h2><span class="section-num">7.</span><span data-i18n="ch1.7.h">Tipps &amp; Tricks</span></h2>
+        <div data-i18n-html="ch1.7.body">
           <ul>
             <li><strong>ⓘ-Icons nutzen:</strong> überall im Dashboard erklären kleine ⓘ-Symbole bei Hover oder Fokus die Herleitung einer Kennzahl.</li>
             <li><strong>KI-Erklärungsfeld:</strong> im rechten Panel Techniker und Fragetyp auswählen, „Erklären" klicken — template-basiert, ohne API-Key nutzbar. Für freie Fragen kann optional ein eigener Claude-API-Key verbunden werden (wird nur lokal im Browser gespeichert).</li>
@@ -312,9 +372,9 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
         </div>
       </section>
 
-      <section class="manual-section" id="ch1-7">
-        <h2><span class="section-num">7.</span><span data-i18n="ch1.7.h">Häufige Fragen</span></h2>
-        <div data-i18n-html="ch1.7.body">
+      <section class="manual-section" id="ch1-8">
+        <h2><span class="section-num">8.</span><span data-i18n="ch1.8.h">Häufige Fragen</span></h2>
+        <div data-i18n-html="ch1.8.body">
           <details class="faq-item">
             <summary>Warum ändert sich die Auslastung nicht sofort?</summary>
             <div class="faq-a">Die Auslastung wird aus historischen Ist-Daten berechnet (abgeschlossene + offene Aufträge aus dem letzten Import), nicht live bei jedem Seitenaufruf neu gemessen. Sie aktualisiert sich erst mit dem nächsten Daten-Import.</div>
@@ -325,7 +385,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
           </details>
           <details class="faq-item">
             <summary>Wie aktualisiere ich die Daten?</summary>
-            <div class="faq-a">Neuen Export der 5 Sheets über coordinator_import.html importieren (siehe Kapitel 1.2). Anschließend wird das Dashboard mit den aktuellen Daten neu generiert.</div>
+            <div class="faq-a">Der produktive Import läuft aktuell über Claude Code und zwei Python-Skripte, nicht über die Speichern-Schaltfläche in coordinator_import.html (die ist ein Browser-Prototyp ohne Backend-Anbindung, siehe Kapitel 1.3). Vollständige Schritt-für-Schritt-Anleitung: Kapitel 1.3 „Daten-Import im Detail".</div>
           </details>
         </div>
       </section>
@@ -464,12 +524,12 @@ document.addEventListener('DOMContentLoaded', function() {
     'nav.import': 'Import', 'nav.workflowdemo': 'Workflow Demo', 'nav.manual': 'Manual',
     'page.title': 'Field Service AI <span>Manual</span>',
     'page.sub': 'Guide for coordinators and technicians — from data import to a completed visit.',
-    'page.goldhint': 'This manual is continuously updated. Last updated: 2026-08-20.',
+    'page.goldhint': 'This manual is continuously updated. Last updated: 2026-08-21.',
     'toc.ch1': 'Chapter 1 — For Coordinators',
     'toc.ch1.1': '1. Getting started', 'toc.ch1.2': '2. Data import',
-    'toc.ch1.3': '3. Understanding the dashboard', 'toc.ch1.4': '4. Territory optimization in detail',
-    'toc.ch1.5': '5. Using the workflow demo', 'toc.ch1.6': '6. Tips & tricks',
-    'toc.ch1.7': '7. FAQ',
+    'toc.ch1.3': '3. Data import in detail', 'toc.ch1.4': '4. Understanding the dashboard',
+    'toc.ch1.5': '5. Territory optimization in detail', 'toc.ch1.6': '6. Using the workflow demo',
+    'toc.ch1.7': '7. Tips & tricks', 'toc.ch1.8': '8. FAQ',
     'toc.ch2': 'Chapter 2 — For Technicians',
     'toc.ch2.1': '1. Receiving assignments', 'toc.ch2.2': '2. Understanding assignment details',
     'toc.ch2.3': '3. Confirm appointment/ask a question', 'toc.ch2.4': '4. Completing a visit',
@@ -507,11 +567,53 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<li>Once all 5 sheets are ready: click <strong>"Save all"</strong>.</li>'
       + '</ol>'
       + '<p><strong>GCH filter:</strong> Manager and GCH entries (management/internal roles without field visits) are automatically filtered out during import — only genuine field technicians end up in the dashboard.</p>'
-      + '<p>Faulty rows do <strong>not</strong> abort the whole import — they are skipped and listed per row in the error log, so the rest of the data stays usable.</p>',
+      + '<p>Faulty rows do <strong>not</strong> abort the whole import — they are skipped and listed per row in the error log, so the rest of the data stays usable.</p>'
+      + '<p><strong>Important:</strong> coordinator_import.html is currently a browser prototype without backend wiring — "Save all" only stores the data locally in the browser (<code>localStorage</code>) and does <strong>not</strong> update the dashboard. The actual production import of the live data currently runs via Claude Code and two Python scripts — see chapter 1.3 "Data import in detail".</p>',
 
-    'ch1.3.h': 'Understanding the dashboard',
-    'ch1.3.screenshot': '[Placeholder: screenshot of the Overview tab with qualification traffic lights]',
+    'ch1.3.h': 'Data import in detail',
     'ch1.3.body':
+      '<p>This describes the <strong>actual, production import process</strong> — how the current live data (24 technicians, 6,569 devices, 1,444 clinics) got into the dashboard. It runs via Claude Code and two Python scripts, <strong>not</strong> via the save button in coordinator_import.html (see note in chapter 1.2).</p>'
+      + '<h3>Source format — what SMax must deliver</h3>'
+      + '<p>An Excel file (<code>.xlsx</code>) with exactly <strong>5 sheets</strong>. Sheet names must match exactly (case, underscores, spaces):</p>'
+      + '<ul>'
+      + '<li><strong>"1_Skills Matrix"</strong> — Model_Code in column A (row 1 = header), technician full names as further column headers, cell values <code>JA</code>/<code>NEIN</code> (German for YES/NO) per technician/model-code combination.</li>'
+      + '<li><strong>"2_Durchscnittliche_Zeit_MC"</strong> (the missing "h" in the spelling is intentional — that is the real sheet name in the actual export) — columns <code>Model_Code</code> (in the real export sometimes named <code>Zeilenbeschriftungen</code>, an Excel pivot-export artifact — both names are accepted), <code>Mittelwert</code>, <code>Median</code> (both in <strong>hours</strong>, not minutes — converted ×60 to minutes on import), optional <code>Bemerkung</code>.</li>'
+      + '<li><strong>"3_Closed Jobs"</strong> — <code>Work Order Number</code>, <code>Account</code>, <code>City</code>, <code>Zip</code>, <code>Model Number</code>, <code>Next PM Due Date</code>, <code>Actual Resolution</code>, <code>Serial Number</code>, <code>Warranty End Date</code>, <code>Technician</code>.</li>'
+      + '<li><strong>"4_Open_Jobs"</strong> — like Closed Jobs (without <code>Actual Resolution</code>), plus <code>Order Status</code>, <code>On Hold Reason</code>, <code>Contract End Date</code>.</li>'
+      + '<li><strong>"5_Wohnorte"</strong> — <code>Name</code>, <code>Land</code>, <code>Stadt</code> (no ZIP included — resolved automatically via <code>pgeocode</code>).</li>'
+      + '</ul>'
+      + '<div class="example-box"><div class="ex-label">Note</div>The real SMax export sometimes contains further columns on Closed/Open Jobs (e.g. <code>Contract Category</code>, <code>Contract Type</code>) — these may be present but are currently not evaluated by the import and are simply ignored.</div>'
+      + '<h3>Import steps</h3>'
+      + '<ol>'
+      + '<li>Copy the Excel file to <code>C:\\Projekte\\FieldServiceAI\\data\\</code>, named exactly <code>KI_gestuetzte_Planung.xlsx</code> — the filename and path are hardcoded. If it has a different name/path, just tell Claude Code, which will rename/move it.</li>'
+      + '<li>Start Claude Code in the project folder <code>C:\\Projekte\\FieldServiceAI</code>.</li>'
+      + '<li>Run the import: <code>python -m api.smax_cache</code> — reads the full XLSX (internally fixed at <code>sample_limit=None</code>, no sampling limit) and rewrites <code>data/smax_dashboard_data.json</code>. The console output shows technician, skill, and order counts plus the ZIP resolution rate for verification.</li>'
+      + '<li>Regenerate the dashboard: <code>python -m reporting.dashboard</code> — rebuilds <code>reporting/dashboard.html</code> and the root copy <code>dashboard.html</code> (the GitHub Pages version), both identical afterwards.</li>'
+      + '<li>Run <code>pytest tests/</code> — all tests must stay green before adopting the new state.</li>'
+      + '<li>If green: <code>git add</code>, <code>commit</code>, <code>push</code> for the live state.</li>'
+      + '</ol>'
+      + '<h3>What happens automatically during import</h3>'
+      + '<ul>'
+      + '<li>Only technicians with <code>Land = Germany</code> are imported.</li>'
+      + '<li>3 managers (Stefan Theuerkorn, Rolf Gieling, Jürgen Lehmann) are <strong>not</strong> imported as active technicians — their historical job data (as <code>Technician</code> on Closed Jobs) is retained and still feeds into the order history.</li>'
+      + '<li>Skills matrix: <code>JA</code> → qualification "PM". Whether repair authorization is additionally granted depends on the model code\'s cluster mapping (see "If the format changes" below), not on the technician entry itself.</li>'
+      + '<li>ZIP resolution for job locations via <code>pgeocode</code> — about 70% coverage for Germany; Austria/Switzerland are deliberately left unresolved (out of scope).</li>'
+      + '<li>SC/year normalization: Closed Jobs are divided by the actual observation period (earliest to latest <code>Actual Resolution</code>) and annualized; Open Jobs are added undivided as the current backlog.</li>'
+      + '</ul>'
+      + '<h3>If the format changes</h3>'
+      + '<p>If SMax delivers new, renamed, or differently structured columns, a plain data swap is no longer enough — the mapping logic in <code>api/import_real_data.py</code> (functions <code>map_closed_job_row()</code>, <code>map_open_job_row()</code>, etc.) then needs to be adapted to the new column names. That is no longer a simple data import but a code change.</p>'
+      + '<p><strong>Cluster mapping</strong> (model code → device cluster → repair authorization) is <strong>manually</strong> maintained in <code>data/model_code_cluster_mapping.json</code>. New model codes without an entry there are silently ignored on import (no error, no crash — they are simply missing from the qualification traffic light and cross-training). Process for new codes: compare the model codes list (<code>data/model_codes_liste.txt</code>) against the currently mapped codes, send the difference to the responsible subject-matter expert (Rebecca, see sheet assignment in coordinator_import.html) for cluster classification, and add the answer as new <code>exact</code> or <code>prefixes</code> entries in the JSON file.</p>'
+      + '<h3>Common pitfalls</h3>'
+      + '<details class="faq-item"><summary>Sheet names differ from the expected name</summary>'
+      + '<div class="faq-a">The import silently skips the affected sheet (a warning appears in the console output of <code>python -m api.smax_cache</code>, not a hard error) — the corresponding data is then completely missing from the result. Use the sheet names exactly as listed above under "Source format".</div></details>'
+      + '<details class="faq-item"><summary>Model codes without cluster mapping</summary>'
+      + '<div class="faq-a">Ignored in the qualification traffic light and cross-training recommendations — not shown as an error, simply not considered. Regularly check <code>data/model_codes_liste.txt</code> against <code>data/model_code_cluster_mapping.json</code> (see "If the format changes" above).</div></details>'
+      + '<details class="faq-item"><summary>Technician names in the skills matrix differ from sheet 5</summary>'
+      + '<div class="faq-a">Name matching between sheet 1 and sheet 5 only normalizes umlauts (ä→ae, ö→oe, ü→ue, ß→ss) — there is <strong>no</strong> fuzzy matching with tolerance for typos or different spellings. On real mismatches (missing middle name, different spelling) the system will not link the skill entry to the technician. Diagnosis: check the console output of <code>python -m api.smax_cache</code> — technicians without linked skills are marked <code>[keine Skills]</code> there.</div></details>',
+
+    'ch1.4.h': 'Understanding the dashboard',
+    'ch1.4.screenshot': '[Placeholder: screenshot of the Overview tab with qualification traffic lights]',
+    'ch1.4.body':
       '<p>The dashboard is organized into 7 tabs:</p>'
       + '<ul>'
       + '<li><strong>Overview</strong> — qualification traffic light per technician (green/yellow/red by L3 coverage), sortable, with detail cards per technician.</li>'
@@ -519,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<li><strong>Cross-Training</strong> — which technician should be trained on which product family, including economic metrics.</li>'
       + '<li><strong>Workflow</strong> — the 7-step automation pipeline from order intake to customer email.</li>'
       + '<li><strong>Business Case</strong> — metrics on the economic benefit (time savings, cross-training ROI, travel time savings).</li>'
-      + '<li><strong>Territory Optimization</strong> — Current/Optimized Territories and Gaps &amp; Overlaps (see chapter 1.4).</li>'
+      + '<li><strong>Territory Optimization</strong> — Current/Optimized Territories and Gaps &amp; Overlaps (see chapter 1.5).</li>'
       + '<li><strong>Hiring Needs</strong> — ZIP code coverage map with recommendations for new locations.</li>'
       + '</ul>'
       + '<h3>Metrics in detail</h3>'
@@ -532,9 +634,9 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<p><strong>SC/year</strong>: estimated potential for safety checks per year, derived from the device inventory in the technician\'s territory.</p>'
       + '<p><strong>Hourly rates</strong> (Business Case &amp; Cross-Training): the internal technician cost rate (<code>&euro;45/h</code>) and the external customer billing rate (<code>&euro;150/h</code>) are starting values kept centrally in <code>config.py</code>, explicitly marked as an estimate — not a figure confirmed by Medtronic T&amp;E. They replace the previous "T&amp;E enquire" placeholders with concrete euro amounts and can be adjusted centrally as needed.</p>',
 
-    'ch1.4.h': 'Territory optimization in detail',
-    'ch1.4.screenshot': '[Placeholder: screenshot of the territory map with Hugo core-territory circles]',
-    'ch1.4.body':
+    'ch1.5.h': 'Territory optimization in detail',
+    'ch1.5.screenshot': '[Placeholder: screenshot of the territory map with Hugo core-territory circles]',
+    'ch1.5.body':
       '<p>The "Territory Optimization" tab has 3 sub-tabs:</p>'
       + '<ul>'
       + '<li><strong>Current Territories</strong> — the as-is territory split based on current technician home locations and the historically assigned clinic ZIP areas.</li>'
@@ -546,8 +648,8 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<h3>Hugo core-territory concept</h3>'
       + '<p>Hugo systems (robotics) are located at a few sites, sometimes far from the responsible technician\'s home — that is normal and not restricted. What IS restricted is the <strong>everyday core territory</strong> (small-capital devices, day trips) around the Hugo technician\'s home: a 90-minute radius as an availability guarantee, so they return home daily and have their equipment on hand in case of a Hugo malfunction. This view can optionally be shown via a toggle (default: off).</p>',
 
-    'ch1.5.h': 'Using the workflow demo',
-    'ch1.5.body':
+    'ch1.6.h': 'Using the workflow demo',
+    'ch1.6.body':
       '<p>On <strong>workflow_demo.html</strong> you can step through a sample order. The 7 steps:</p>'
       + '<ol>'
       + '<li>Order intake</li><li>AI scoring</li><li>Visit planning</li><li>Technician info</li>'
@@ -555,8 +657,8 @@ document.addEventListener('DOMContentLoaded', function() {
       + '</ol>'
       + '<p>Click through each step to see what happens automatically and where a human (usually the dispatcher) reviews or confirms a decision — the demo makes the "copilot, not autopilot" philosophy tangible.</p>',
 
-    'ch1.6.h': 'Tips & tricks',
-    'ch1.6.body':
+    'ch1.7.h': 'Tips & tricks',
+    'ch1.7.body':
       '<ul>'
       + '<li><strong>Use the ⓘ icons:</strong> throughout the dashboard, small ⓘ icons explain the derivation of a metric on hover or focus.</li>'
       + '<li><strong>AI explanation panel:</strong> in the right-hand panel, pick a technician and question type, click "Explain" — template-based, usable without an API key. For free-form questions you can optionally connect your own Claude API key (stored locally in the browser only).</li>'
@@ -564,14 +666,14 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<li><strong>Click a technician on the map:</strong> highlights their territory and shows a detail view — click "Reset" to clear the highlight.</li>'
       + '</ul>',
 
-    'ch1.7.h': 'FAQ',
-    'ch1.7.body':
+    'ch1.8.h': 'FAQ',
+    'ch1.8.body':
       '<details class="faq-item"><summary>Why doesn\'t utilization change immediately?</summary>'
       + '<div class="faq-a">Utilization is calculated from historical actuals (closed + open orders from the last import), not re-measured live on every page load. It only updates with the next data import.</div></details>'
       + '<details class="faq-item"><summary>What does demo mode vs. real data mean?</summary>'
       + '<div class="faq-a">Demo mode shows 14 sample technicians (T1–T14) with synthetic data. Real-data mode shows the actually imported SMax data — names appear as real names or pseudonyms depending on the privacy setting.</div></details>'
       + '<details class="faq-item"><summary>How do I update the data?</summary>'
-      + '<div class="faq-a">Import a new export of the 5 sheets via coordinator_import.html (see chapter 1.2). The dashboard is then regenerated with the current data.</div></details>',
+      + '<div class="faq-a">The production import currently runs via Claude Code and two Python scripts, not via the save button in coordinator_import.html (that is a browser prototype without backend wiring, see chapter 1.3). Full step-by-step guide: chapter 1.3 "Data import in detail".</div></details>',
 
     'ch2.1.h': 'Receiving assignments',
     'ch2.1.body':
