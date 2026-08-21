@@ -31,13 +31,16 @@ body{
   display:flex;align-items:center;gap:.3rem;transition:color .2s;
 }
 .back-link:hover{color:#005195}
-.wf-demo-link{
+.top-right-links{
   position:fixed;top:1rem;right:1.5rem;z-index:100;
+  display:flex;align-items:center;gap:1rem;
+}
+.wf-demo-link,.manual-link{
   font-size:.72rem;color:#666666;background:none;border:none;
   cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
   display:flex;align-items:center;gap:.3rem;transition:color .2s;
 }
-.wf-demo-link:hover{color:#005195}
+.wf-demo-link:hover,.manual-link:hover{color:#005195}
 
 /* Container */
 .wrap{width:100%;max-width:540px;position:relative;z-index:1}
@@ -192,7 +195,10 @@ body{
 <body>
 
 <button class="back-link" onclick="location.href='index.html'">← Home</button>
-<button class="wf-demo-link" onclick="location.href='workflow_demo.html'">Workflow Demo →</button>
+<div class="top-right-links">
+  <button class="manual-link" onclick="location.href='manual.html'">Handbuch</button>
+  <button class="wf-demo-link" onclick="location.href='workflow_demo.html'">Workflow Demo →</button>
+</div>
 
 <div class="wrap">
 
@@ -244,7 +250,7 @@ body{
 <!-- F1 -->
 <div class="frame" id="f1">
   <div class="step-title">Schritt 2 — KI berechnet Techniker-Empfehlung</div>
-  <div class="info info-blue">Kompetenz 40% + Fahrzeit 35% + Auslastung 25% · 897 Tests grün</div>
+  <div class="info info-blue">Kompetenz 40% + Fahrzeit 35% + Auslastung 25% · 1131 Tests grün</div>
   <div class="card">
     <div class="tech-r">
       <div class="t-av">T5</div>
@@ -398,7 +404,7 @@ body{
 
 </div><!-- /wrap -->
 
-<div class="footer">AI Assisted Field Service Assistant · Medtronic GmbH Service &amp; Repair · 897 Tests grün</div>
+<div class="footer">AI Assisted Field Service Assistant · Medtronic GmbH Service &amp; Repair · 1131 Tests grün</div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const AT = {
@@ -406,7 +412,7 @@ de:{
   'brand':'Medtronic · Field Service AI',
   'step':'Schritt',
   'back':'← Home',
-  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · 897 Tests grün',
+  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · 1131 Tests grün',
   'auto':'▶ Auto','pause':'⏸ Pause','auto-lbl':'Läuft automatisch','manual-lbl':'Manuell',
   'prev':'← Zurück','next-btn':'Weiter →','restart':'↺ Neu starten',
   'frames':[
@@ -415,7 +421,7 @@ de:{
      card:'Work Order automatisch generiert',
      sub:'6.569 Vertragsgeräte · täglich geprüft · kein manuelles Nachschauen'},
     {title:'Schritt 2 — KI berechnet Techniker-Empfehlung',
-     info:'Kompetenz 40% + Fahrzeit 35% + Auslastung 25% · 897 Tests grün'},
+     info:'Kompetenz 40% + Fahrzeit 35% + Auslastung 25% · 1131 Tests grün'},
     {title:'Schritt 3 — Disponent bestätigt (Copilot, kein Autopilot)',
      info:'KI empfiehlt · Mensch entscheidet · SMax Go bleibt Kernsystem',
      sub:'Tour-Empfehlung: EC300 + NIM4CM01 gebündelt · 1 Fahrt statt 2'},
@@ -441,7 +447,7 @@ en:{
   'brand':'Medtronic · Field Service AI',
   'step':'Step',
   'back':'← Home',
-  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · 897 Tests passed',
+  'ftr':'AI Assisted Field Service Assistant · Medtronic GmbH Service & Repair · 1131 Tests passed',
   'auto':'▶ Auto','pause':'⏸ Pause','auto-lbl':'Running automatically','manual-lbl':'Manual',
   'prev':'← Back','next-btn':'Next →','restart':'↺ Restart',
   'frames':[
@@ -450,7 +456,7 @@ en:{
      card:'Work order automatically generated',
      sub:'6,569 contract devices · checked daily · no manual lookup'},
     {title:'Step 2 — AI calculates technician recommendation',
-     info:'Competency 40% + Travel 35% + Utilization 25% · 897 tests passed'},
+     info:'Competency 40% + Travel 35% + Utilization 25% · 1131 tests passed'},
     {title:'Step 3 — Dispatcher confirms (copilot, not autopilot)',
      info:'AI recommends · Human decides · SMax Go remains core system',
      sub:'Tour recommendation: EC300 + NIM4CM01 bundled · 1 trip instead of 2'},

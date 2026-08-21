@@ -261,6 +261,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
             1.200 h Vor-Ort-Zeit ÷ 1.472 h Jahreskapazität = <code>82&thinsp;%</code> → im Korridor.
           </div>
           <p><strong>STK/Jahr</strong>: geschätztes Potenzial an Sicherheitstechnischen Kontrollen pro Jahr, abgeleitet aus dem Gerätebestand im Gebiet des Technikers.</p>
+          <p><strong>Stundensätze</strong> (Business Case &amp; Cross-Training): Der interne Techniker-Kostensatz (<code>45&thinsp;&euro;/h</code>) und der externe Kunden-Verrechnungssatz (<code>150&thinsp;&euro;/h</code>) sind zentral in <code>config.py</code> hinterlegte Startwerte, ausdrücklich als Schätzung gekennzeichnet — keine von Medtronic T&amp;E bestätigten Ist-Zahlen. Sie ersetzen die bisherigen „T&amp;E anfragen"-Platzhalter durch konkrete Euro-Beträge und sind bei Bedarf zentral anpassbar.</p>
         </div>
         <div class="screenshot-placeholder" data-i18n="ch1.3.screenshot">[Platzhalter: Screenshot Übersicht-Tab mit Qualifikations-Ampel]</div>
       </section>
@@ -528,7 +529,8 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<div class="example-box"><div class="ex-label">Example: L3 coverage</div>8 of 12 regionally required product families qualified at L3 = <code>67%</code>.</div>'
       + '<p><strong>Utilization corridor</strong>: on-site time ÷ annual capacity (excluding travel time), reference range 80–95% — a guideline, not a hard rule, since full utilization is structurally below 100% because travel time is not included.</p>'
       + '<div class="example-box"><div class="ex-label">Example: utilization corridor</div>1,200 h on-site time ÷ 1,472 h annual capacity = <code>82%</code> → within the corridor.</div>'
-      + '<p><strong>SC/year</strong>: estimated potential for safety checks per year, derived from the device inventory in the technician\'s territory.</p>',
+      + '<p><strong>SC/year</strong>: estimated potential for safety checks per year, derived from the device inventory in the technician\'s territory.</p>'
+      + '<p><strong>Hourly rates</strong> (Business Case &amp; Cross-Training): the internal technician cost rate (<code>&euro;45/h</code>) and the external customer billing rate (<code>&euro;150/h</code>) are starting values kept centrally in <code>config.py</code>, explicitly marked as an estimate — not a figure confirmed by Medtronic T&amp;E. They replace the previous "T&amp;E enquire" placeholders with concrete euro amounts and can be adjusted centrally as needed.</p>',
 
     'ch1.4.h': 'Territory optimization in detail',
     'ch1.4.screenshot': '[Placeholder: screenshot of the territory map with Hugo core-territory circles]',
