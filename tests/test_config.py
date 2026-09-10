@@ -70,6 +70,10 @@ from config import (
     OPTIMIERUNG_AUSLASTUNGS_SCHWELLE,
     OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN,
     ARBEITSWOCHEN_PRO_JAHR,
+    MODUL_1_AKTIV,
+    MODUL_2_AKTIV,
+    MODUL_3_AKTIV,
+    KOMMUNIKATION_AUTOMATISCH_AKTIV,
 )
 
 
@@ -320,6 +324,21 @@ class TestConfigWerte:
         """Letzter erlaubter Ausseneinsatz-Tag = Donnerstag (Wochentag 3)."""
         assert LETZTER_AUSSENEINSATZ_WOCHENTAG == 3   # Do = Python weekday 3
         assert KEIN_WOCHENENDEINSATZ is True
+
+    # ─── Modulaufbau (Pilotphase) ──────────────────
+    def test_modul_1_aktiv_modul_2_3_inaktiv(self):
+        """Pilotphase: nur Modul 1 (Planung/Gebietsoptimierung/Kostenersparnis)
+        ist scharf geschaltet, Modul 2 (Crosstraining) und Modul 3 (Workflow)
+        folgen erst spaeter."""
+        assert MODUL_1_AKTIV is True
+        assert MODUL_2_AKTIV is False
+        assert MODUL_3_AKTIV is False
+
+    # ─── Kommunikations-Infrastruktur (Sicherheitsschalter) ──
+    def test_kommunikation_automatisch_standardmaessig_deaktiviert(self):
+        """Sicherheitsschalter muss per Default False sein -- kein
+        versehentlicher echter Mail-/Push-Versand."""
+        assert KOMMUNIKATION_AUTOMATISCH_AKTIV is False
 
     # ─── STK/PM Wartungszyklen ─────────────────────
     def test_stk_pm_zyklen_vollstaendig(self):

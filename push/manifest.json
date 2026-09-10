@@ -1,0 +1,12 @@
+{
+  "_status": "STATUS: Grundgeruest, nicht aktiv. Benoetigt fuer Scharfschaltung: 1) Backend-Entscheidung (interner Server vs. Cloud-Dienst -- offene Frage, siehe manual.html), 2) VAPID-Schluessel, 3) IT-Freigabe.",
+  "name": "Field Service AI",
+  "short_name": "FieldServiceAI",
+  "description": "KI-gestuetztes Field Service Planning System (Pilotphase) -- Grundgeruest fuer 'Zum Home-Bildschirm hinzufuegen', noch nicht produktiv verdrahtet.",
+  "start_url": "/dashboard.html",
+  "display": "standalone",
+  "background_color": "#000810",
+  "theme_color": "#0072CE",
+  "lang": "de",
+  "icons": []
+}

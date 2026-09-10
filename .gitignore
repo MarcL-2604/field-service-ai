@@ -42,3 +42,9 @@ data/*.xls
 
 # Interne Korrekturliste — nicht oeffentlich
 data/skill_korrekturen.json
+
+# Techniker-Kontaktdaten (E-Mail-Adressen) — niemals committen
+data/techniker_kontakte.json
+
+# Kommunikations-Log (Simulation/Test-Versand) — lokal, nicht oeffentlich
+data/kommunikation_log.jsonl

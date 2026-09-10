@@ -163,7 +163,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
 
   <div class="manual-gold-hint">
     <span class="star">&#9733;</span>
-    <span data-i18n="page.goldhint">Dieses Handbuch wird kontinuierlich aktualisiert. Stand: 21.08.2026.</span>
+    <span data-i18n="page.goldhint">Dieses Handbuch wird kontinuierlich aktualisiert. Stand: 10.09.2026.</span>
   </div>
 
   <div class="manual-layout">
@@ -178,6 +178,8 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
       <a href="#ch1-6" data-i18n="toc.ch1.6">6. Workflow-Demo nutzen</a>
       <a href="#ch1-7" data-i18n="toc.ch1.7">7. Tipps &amp; Tricks</a>
       <a href="#ch1-8" data-i18n="toc.ch1.8">8. Häufige Fragen</a>
+      <a href="#ch1-9" data-i18n="toc.ch1.9">9. Modulaufbau des Projekts</a>
+      <a href="#ch1-10" data-i18n="toc.ch1.10">10. Kommunikations-Infrastruktur (Vorbereitung)</a>
       <div class="toc-chapter" data-i18n="toc.ch2">Kapitel 2 — Für Techniker</div>
       <a href="#ch2-1" data-i18n="toc.ch2.1">1. Aufträge erhalten</a>
       <a href="#ch2-2" data-i18n="toc.ch2.2">2. Auftragsdetails verstehen</a>
@@ -390,6 +392,36 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
         </div>
       </section>
 
+      <section class="manual-section" id="ch1-9">
+        <h2><span class="section-num">9.</span><span data-i18n="ch1.9.h">Modulaufbau des Projekts</span></h2>
+        <div data-i18n-html="ch1.9.body">
+          <p>Field Service AI ist in drei Module gegliedert, die schrittweise scharf geschaltet werden:</p>
+          <ul>
+            <li><strong>Modul 1 — Pilotphase (aktiv):</strong> Planung, Gebietsoptimierung, Kostenersparnis. Die Tabs Übersicht, Aufträge, Business Case, Gebietsoptimierung und Einstellungsbedarf sind im aktuellen Pilotbetrieb voll nutzbar.</li>
+            <li><strong>Modul 2 (folgt):</strong> Crosstraining/Hugo-Kerngebiet. Der Tab „Cross-Training" bleibt für die Management-Demo sichtbar, trägt aber den Hinweis-Badge „Modul 2/3 — folgt nach Pilotphase".</li>
+            <li><strong>Modul 3 (folgt):</strong> Operativer Workflow. Der Tab „Workflow" trägt aus demselben Grund denselben Hinweis-Badge.</li>
+          </ul>
+          <p>Technisch gesteuert über <code>MODUL_1_AKTIV</code>/<code>MODUL_2_AKTIV</code>/<code>MODUL_3_AKTIV</code> in <code>config.py</code> — die betroffenen Tabs werden bewusst nicht entfernt, damit der geplante Gesamtfunktionsumfang im Dashboard sichtbar bleibt.</p>
+        </div>
+      </section>
+
+      <section class="manual-section" id="ch1-10">
+        <h2><span class="section-num">10.</span><span data-i18n="ch1.10.h">Kommunikations-Infrastruktur (Vorbereitung)</span></h2>
+        <div data-i18n-html="ch1.10.body">
+          <p>Für Modul 3 (automatisierte Techniker-Benachrichtigung) ist ein technisches Grundgerüst vorbereitet, aber standardmäßig deaktiviert:</p>
+          <ul>
+            <li><strong>Mail-Versand</strong> (<code>api/kommunikation.py</code>): Solange <code>KOMMUNIKATION_AUTOMATISCH_AKTIV = False</code> ist, wird kein echter Versand ausgelöst — jeder Aufruf schreibt stattdessen einen Log-Eintrag („Würde senden an: ..."). Platzhalter-Adressen (23 der 24 Techniker) lösen niemals einen Versandversuch aus, auch nicht bei aktiviertem Schalter — ein bewusstes Sicherheitsnetz gegen Versand an nicht-existente Adressen.</li>
+            <li><strong>Push-Benachrichtigungen</strong> (<code>push/service-worker.js</code>, <code>push/manifest.json</code>): rein clientseitige PWA-Grundstruktur, kein echter Push-Server angebunden.</li>
+          </ul>
+          <p><strong>Für die Aktivierung im Regelbetrieb fehlt noch:</strong></p>
+          <ol>
+            <li>Backend-Entscheidung: interner Server vs. Cloud-Dienst</li>
+            <li>VAPID-Schlüssel für Web Push</li>
+            <li>IT-Freigabe für echte E-Mail-Adressen aller 24 Techniker</li>
+          </ol>
+        </div>
+      </section>
+
       <div class="manual-chapter-title" data-i18n="toc.ch2">Kapitel 2 — Für Techniker</div>
 
       <section class="manual-section" id="ch2-1">
@@ -524,12 +556,14 @@ document.addEventListener('DOMContentLoaded', function() {
     'nav.import': 'Import', 'nav.workflowdemo': 'Workflow Demo', 'nav.manual': 'Manual',
     'page.title': 'Field Service AI <span>Manual</span>',
     'page.sub': 'Guide for coordinators and technicians — from data import to a completed visit.',
-    'page.goldhint': 'This manual is continuously updated. Last updated: 2026-08-21.',
+    'page.goldhint': 'This manual is continuously updated. Last updated: 2026-09-10.',
     'toc.ch1': 'Chapter 1 — For Coordinators',
     'toc.ch1.1': '1. Getting started', 'toc.ch1.2': '2. Data import',
     'toc.ch1.3': '3. Data import in detail', 'toc.ch1.4': '4. Understanding the dashboard',
     'toc.ch1.5': '5. Territory optimization in detail', 'toc.ch1.6': '6. Using the workflow demo',
     'toc.ch1.7': '7. Tips & tricks', 'toc.ch1.8': '8. FAQ',
+    'toc.ch1.9': '9. Project module structure',
+    'toc.ch1.10': '10. Communication infrastructure (preparation)',
     'toc.ch2': 'Chapter 2 — For Technicians',
     'toc.ch2.1': '1. Receiving assignments', 'toc.ch2.2': '2. Understanding assignment details',
     'toc.ch2.3': '3. Confirm appointment/ask a question', 'toc.ch2.4': '4. Completing a visit',
@@ -674,6 +708,30 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<div class="faq-a">Demo mode shows 14 sample technicians (T1–T14) with synthetic data. Real-data mode shows the actually imported SMax data — names appear as real names or pseudonyms depending on the privacy setting.</div></details>'
       + '<details class="faq-item"><summary>How do I update the data?</summary>'
       + '<div class="faq-a">The production import currently runs via Claude Code and two Python scripts, not via the save button in coordinator_import.html (that is a browser prototype without backend wiring, see chapter 1.3). Full step-by-step guide: chapter 1.3 "Data import in detail".</div></details>',
+
+    'ch1.9.h': 'Project module structure',
+    'ch1.9.body':
+      '<p>Field Service AI is structured into three modules, rolled out one at a time:</p>'
+      + '<ul>'
+      + '<li><strong>Module 1 — pilot phase (active):</strong> planning, territory optimization, cost savings. The Overview, Orders, Business Case, Territory Optimization, and Hiring Needs tabs are fully usable in the current pilot.</li>'
+      + '<li><strong>Module 2 (coming):</strong> cross-training / Hugo core territory. The "Cross-Training" tab stays visible for management demos but carries the "Module 2/3 — coming after pilot phase" badge.</li>'
+      + '<li><strong>Module 3 (coming):</strong> operational workflow. The "Workflow" tab carries the same badge for the same reason.</li>'
+      + '</ul>'
+      + '<p>Controlled technically via <code>MODUL_1_AKTIV</code>/<code>MODUL_2_AKTIV</code>/<code>MODUL_3_AKTIV</code> in <code>config.py</code> — the affected tabs are deliberately kept rather than removed, so the full planned scope stays visible in the dashboard.</p>',
+
+    'ch1.10.h': 'Communication infrastructure (preparation)',
+    'ch1.10.body':
+      '<p>A technical foundation for module 3 (automated technician notifications) is in place but disabled by default:</p>'
+      + '<ul>'
+      + '<li><strong>Mail sending</strong> (<code>api/kommunikation.py</code>): as long as <code>KOMMUNIKATION_AUTOMATISCH_AKTIV = False</code>, no real message is ever sent — every call instead writes a log entry ("Would send to: ..."). Placeholder addresses (23 of the 24 technicians) never trigger a send attempt, even with the switch enabled — a deliberate safety net against sending to non-existent addresses.</li>'
+      + '<li><strong>Push notifications</strong> (<code>push/service-worker.js</code>, <code>push/manifest.json</code>): a purely client-side PWA scaffold, not wired to a real push server.</li>'
+      + '</ul>'
+      + '<p><strong>Still needed for production activation:</strong></p>'
+      + '<ol>'
+      + '<li>Backend decision: internal server vs. cloud service</li>'
+      + '<li>VAPID keys for Web Push</li>'
+      + '<li>IT sign-off for real email addresses of all 24 technicians</li>'
+      + '</ol>',
 
     'ch2.1.h': 'Receiving assignments',
     'ch2.1.body':

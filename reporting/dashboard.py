@@ -55,6 +55,8 @@ from config import (  # noqa: E402
     AUSLASTUNG_ZIEL_MAX_PCT,
     TECHNIKER_KOSTENSATZ_EUR_STUNDE,
     KUNDEN_VERRECHNUNGSSATZ_EUR_STUNDE,
+    MODUL_2_AKTIV,
+    MODUL_3_AKTIV,
 )
 from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
@@ -4219,6 +4221,19 @@ _CSS = """\
       color: rgba(255,255,255,.97);
       border-bottom-color: rgba(255,255,255,.9);
     }
+    .modul-badge {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 7px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      text-transform: none;
+      color: #1a1200;
+      background: #FFD060;
+      border-radius: 999px;
+      vertical-align: middle;
+    }
     .tab-content { display: none; opacity: 0; transition: opacity .3s ease; }
     .tab-content.active { display: block; opacity: 1; }
 
@@ -4854,6 +4869,12 @@ def render_html(
         is_echtdaten, len(techniker), erstellt_am.strftime("%d.%m.%Y"))
     overview_hint_text_de, overview_hint_text_en = _overview_hint_texte(len(techniker))
 
+    # ── Modulaufbau Pilotphase (config.MODUL_2_AKTIV/MODUL_3_AKTIV): Tabs
+    # spaeterer Module bleiben sichtbar, erhalten aber einen Hinweis-Badge ──
+    _modul_badge = '<span class="modul-badge" data-i18n="tab.modulBadge">Modul 2/3 &mdash; folgt nach Pilotphase</span>'
+    modul2_badge = "" if MODUL_2_AKTIV else _modul_badge
+    modul3_badge = "" if MODUL_3_AKTIV else _modul_badge
+
     html = f"""<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -4894,13 +4915,13 @@ def render_html(
 </header>
 
 <nav class="nav-tabs">
-  <button class="nav-tab active" data-tab="tab-uebersicht" data-i18n="tab.overview">&Uuml;bersicht</button>
-  <button class="nav-tab" data-tab="tab-auftraege" data-i18n="tab.orders">Auftr&auml;ge</button>
-  <button class="nav-tab" data-tab="tab-crosstraining" data-i18n="tab.crosstraining">Cross-Training</button>
-  <button class="nav-tab" data-tab="tab-workflow" data-i18n="tab.workflow">Workflow</button>
-  <button class="nav-tab" data-tab="tab-business" data-i18n="tab.business">Business Case</button>
-  <button class="nav-tab" data-tab="tab-gebietsopt" data-i18n="tab.territory">Gebietsoptimierung</button>
-  <button class="nav-tab" data-tab="tab-einstellung" data-i18n="tab.hiring">Einstellungsbedarf</button>
+  <button class="nav-tab active" data-tab="tab-uebersicht"><span data-i18n="tab.overview">&Uuml;bersicht</span></button>
+  <button class="nav-tab" data-tab="tab-auftraege"><span data-i18n="tab.orders">Auftr&auml;ge</span></button>
+  <button class="nav-tab" data-tab="tab-crosstraining"><span data-i18n="tab.crosstraining">Cross-Training</span>{modul2_badge}</button>
+  <button class="nav-tab" data-tab="tab-workflow"><span data-i18n="tab.workflow">Workflow</span>{modul3_badge}</button>
+  <button class="nav-tab" data-tab="tab-business"><span data-i18n="tab.business">Business Case</span></button>
+  <button class="nav-tab" data-tab="tab-gebietsopt"><span data-i18n="tab.territory">Gebietsoptimierung</span></button>
+  <button class="nav-tab" data-tab="tab-einstellung"><span data-i18n="tab.hiring">Einstellungsbedarf</span></button>
 </nav>
 
 <div class="summary-bar">
@@ -5126,6 +5147,7 @@ var _I18N = {{
     'tab.business': 'Business Case',
     'tab.territory': 'Gebietsoptimierung',
     'tab.hiring': 'Einstellungsbedarf',
+    'tab.modulBadge': 'Modul 2/3 \u2014 folgt nach Pilotphase',
     'summary.green': 'Gr\u00fcn',
     'summary.yellow': 'Gelb',
     'summary.red': 'Rot',
@@ -5232,6 +5254,7 @@ var _I18N = {{
     'tab.business': 'Business Case',
     'tab.territory': 'Territory Optimization',
     'tab.hiring': 'Hiring Needs',
+    'tab.modulBadge': 'Module 2/3 — coming after pilot phase',
     'summary.green': 'Green',
     'summary.yellow': 'Yellow',
     'summary.red': 'Red',

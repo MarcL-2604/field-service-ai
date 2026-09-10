@@ -194,7 +194,24 @@ KALENDER_INTEGRIERT = False       # Prototyp-Flag
 # ─── Test-Suite (Dashboard-Footer) ─────────────────
 # Manuell bei jedem pytest-Lauf/Release aktualisieren (`pytest --collect-only -q`).
 # Einzige Stelle im Code -- dashboard.py liest von hier, nicht hardcodiert.
-TESTS_ANZAHL = 1131
+TESTS_ANZAHL = 1163
+
+# ─── Modulaufbau (Pilotphase) ───────────────────────
+# Grenzt ab, welche Dashboard-Bereiche im aktuellen Pilotbetrieb scharf
+# geschaltet sind. Tabs spaeterer Module bleiben sichtbar (Management-Demo),
+# erhalten aber einen Hinweis-Badge statt entfernt zu werden.
+# Siehe reporting/dashboard.py (Nav-Tabs) und manual.html (Kapitel 1.9).
+MODUL_1_AKTIV = True   # Pilotphase: Planung, Gebietsoptimierung, Kostenersparnis
+MODUL_2_AKTIV = False  # Crosstraining/Hugo-Kerngebiet (spaeter)
+MODUL_3_AKTIV = False  # Operativer Workflow (spaeter)
+
+# ─── Kommunikations-Infrastruktur (Vorbereitung) ───
+# Sicherheitsschalter: solange False, findet KEIN echter Mail-/Push-Versand
+# statt, nur Simulation/Log (data/kommunikation_log.jsonl). Siehe
+# api/kommunikation.py. Platzhalter-Adressen (siehe data/techniker_kontakte.json,
+# gitignored) loesen NIEMALS einen Versandversuch aus, unabhaengig von diesem
+# Schalter.
+KOMMUNIKATION_AUTOMATISCH_AKTIV = False
 
 # ─── Projekt-Kennzahlen (Landingpage index.html) ───
 # Einzige Quelle fuer die auf index.html beworbenen Kennzahlen. Bei neuem
