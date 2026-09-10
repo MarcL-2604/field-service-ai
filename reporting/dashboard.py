@@ -420,6 +420,7 @@ LABEL_MAP_EN: dict[str, str] = {
     "Ersatzteil pruefen": "Checking spare part", "Ersatzteil bestellt": "Part ordered",
     "Ersatzteil verfuegbar": "Part available", "Repair in Arbeit": "Repair in progress",
     "Abgeschlossen": "Completed",
+    "Repair (Geraet reparaturfaehig)": "Repair (device repair-capable)",
     "Auslastungs-Zielkorridor 80–95% aus echter Einsatzhistorie (Vor-Ort-Zeit ÷ Jahreskapazität) — "
     "Referenzwert, keine harte Regel. Fahrzeit ist nicht enthalten, daher "
     "liegt Vollauslastung strukturell unter 100%.":
@@ -740,6 +741,220 @@ def _render_repair_tabelle(repair_rows: list[dict]) -> str:
             f"</tr>"
         )
     return "\n".join(zeilen)
+
+
+# ---------------------------------------------------------------------------
+# Echte offene Auftraege (SMax Open Jobs) -- Aufraege-Tab im Echtdaten-Modus
+# ---------------------------------------------------------------------------
+# SMax liefert kein Auftragstyp-Feld fuer offene Jobs (SMaxOffenerAuftrag.
+# auftragstyp bleibt immer "UNBEKANNT", siehe api/import_real_data.py). Daher:
+#   - Abschnitt 1 zeigt ALLE offenen Auftraege sortiert nach Faelligkeit,
+#     gleiche Spaltenstruktur wie die Demo-STK-Tabelle (_render_stk_tabelle),
+#     aber ohne automatische Terminvorschlaege (schlage_termine_vor()
+#     benoetigt einen typisierten Auftrag).
+#   - Abschnitt 2 zeigt die Teilmenge, deren Geraet laut Cluster-Mapping
+#     reparaturfaehig ist (api/smax_cache.py 'repair_kandidat') -- eine
+#     Heuristik nach Geraetefaehigkeit, keine echte Auftragstyp-Klassifikation.
+
+def _baue_stk_rows_echtdaten(offene_auftraege: list[dict], heute: date, n: int = 10) -> list[dict]:
+    """Baut STK-Tabellenzeilen (gleiches Schema wie die Demo-Tabelle) aus
+    echten offenen SMax-Auftraegen. Auftraege mit bekannter Faelligkeit
+    zuerst (aufsteigend), Rest dahinter."""
+    mit_datum = [o for o in offene_auftraege if o.get("faellig_iso")]
+    ohne_datum = [o for o in offene_auftraege if not o.get("faellig_iso")]
+    mit_datum.sort(key=lambda o: o["faellig_iso"])
+    ausgewaehlt = (mit_datum + ohne_datum)[:n]
+
+    rows: list[dict] = []
+    for o in ausgewaehlt:
+        if o.get("faellig_iso"):
+            faelligkeitsdatum = date.fromisoformat(o["faellig_iso"])
+            d = _berechne_dringlichkeit(faelligkeitsdatum, heute)
+            tage = d.tage_bis_faelligkeit
+            tage_str = f"{tage}" if tage >= 0 else f"<span style='color:var(--critical-text)'>{tage}</span>"
+            faelligkeit_str = faelligkeitsdatum.strftime("%d.%m.%Y")
+            dringlichkeit = d.stufe
+        else:
+            tage_str = "&ndash;"
+            faelligkeit_str = "&ndash;"
+            dringlichkeit = "NORMAL"
+        rows.append({
+            "auftrag_id": o["auftragsnummer"],
+            "klinik": o["klinik"] or "&ndash;",
+            "geraet": o["model_code"],
+            "produkt": o["produktfamilie"],
+            "faelligkeit": faelligkeit_str,
+            "termine_vorschlag": "&ndash;",
+            "dringlichkeit": dringlichkeit,
+            "tage": tage_str,
+        })
+    return rows
+
+
+def _baue_repair_verdacht_rows_echtdaten(offene_auftraege: list[dict], n: int = 10) -> list[dict]:
+    """Filtert echte offene Auftraege auf Repair-Verdacht (repair_kandidat)
+    und baut Tabellenzeilen -- sortiert nach Faelligkeit wenn bekannt."""
+    kandidaten = [o for o in offene_auftraege if o.get("repair_kandidat")]
+    mit_datum = [o for o in kandidaten if o.get("faellig_iso")]
+    ohne_datum = [o for o in kandidaten if not o.get("faellig_iso")]
+    mit_datum.sort(key=lambda o: o["faellig_iso"])
+    ausgewaehlt = (mit_datum + ohne_datum)[:n]
+
+    return [
+        {
+            "auftrag_id": o["auftragsnummer"],
+            "klinik": o["klinik"] or "&ndash;",
+            "geraet": o["model_code"],
+            "produkt": o["produktfamilie"],
+            "status": o.get("status") or "&ndash;",
+            "typ_hinweis": "Repair (Geraet reparaturfaehig)",
+        }
+        for o in ausgewaehlt
+    ]
+
+
+def _render_offene_echtdaten_tabelle(rows: list[dict]) -> str:
+    """Rendert die Repair-Verdacht-Tabelle (Abschnitt 2, Echtdaten-Modus)."""
+    if not rows:
+        return "<p style='color:var(--text-muted);font-style:italic;'>Keine offenen Auftr&auml;ge mit Repair-Verdacht.</p>"
+    zeilen = []
+    for row in rows:
+        zeilen.append(
+            f"      <tr>"
+            f"<td><code>{row['auftrag_id']}</code></td>"
+            f"<td>{row['klinik']}</td>"
+            f"<td>{row['geraet']}</td>"
+            f"<td>{row['produkt']}</td>"
+            f"<td>{row['status']}</td>"
+            f"<td><span class='badge badge-hoch'>{_label(row['typ_hinweis'])}</span></td>"
+            f"</tr>"
+        )
+    return "\n".join(zeilen)
+
+
+def _stk_section_texte(is_echtdaten: bool) -> tuple[str, str, str, str]:
+    """(h_de, h_en, hint_de, hint_en) fuer Abschnitt 1 im Auftraege-Tab --
+    EIN Wertepaar speist sowohl den initialen Render als auch den
+    i18n-Dict-Eintrag (siehe _demo_hint_texte-Docstring fuer das Muster)."""
+    if is_echtdaten:
+        return (
+            "Offene Aufträge (Top 10 nach Fälligkeit)",
+            "Open Orders (Top 10 by Due Date)",
+            "Quelle: SMax-Import (Open Jobs) · Auftragstyp im SMax-Export nicht "
+            "enthalten, daher keine automatische Terminvorschlags-Berechnung",
+            "Source: SMax import (Open Jobs) · Order type is not part of the "
+            "SMax export, so no automatic appointment suggestions",
+        )
+    return (
+        "STK-Aufträge (Top 10)",
+        "Safety Checks (Top 10)",
+        "Quelle: daten/geraete.csv · Aufsteigend nach Fälligkeitsdatum",
+        "Source: daten/geraete.csv · Ascending by due date",
+    )
+
+
+def _repair_section_texte(is_echtdaten: bool) -> tuple[str, str, str, str]:
+    """(h_de, h_en, hint_de, hint_en) fuer Abschnitt 2 im Auftraege-Tab."""
+    if is_echtdaten:
+        return (
+            "Offene Aufträge — Repair-Verdacht",
+            "Open Orders — Suspected Repairs",
+            "Heuristisch nach Gerätefähigkeit eingeordnet (kein Auftragstyp-Feld "
+            "in SMax) · Status wie im SMax-Export",
+            "Classified heuristically by device capability (SMax has no order-type "
+            "field) · Status as in the SMax export",
+        )
+    return (
+        "Offene Repair-Aufträge",
+        "Open Repair Orders",
+        "SLA: Kundenkontakt innerhalb 48h · Internes Ziel: 24h",
+        "SLA: Customer contact within 48h · Internal target: 24h",
+    )
+
+
+def _render_auftraege_abschnitt1(
+    stk_tbody_html: str,
+    dringlichkeit_tip: str,
+    h_de: str,
+    hint_de: str,
+) -> str:
+    """Abschnitt 1 im Auftraege-Tab -- gleiche Spaltenstruktur in Demo- und
+    Echtdaten-Modus, nur Kopftext/Hinweistext und Datenquelle unterscheiden
+    sich (siehe _stk_section_texte)."""
+    return f"""  <section>
+    <h2 data-i18n="h.stk">{h_de}</h2>
+    <p class="section-hint" data-i18n="hint.stk">{hint_de}</p>
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="th.orderId">Auftrag-ID</th>
+          <th data-i18n="th.clinic">Klinik</th>
+          <th data-i18n="th.device">Ger&auml;t</th>
+          <th data-i18n="th.productFamily">Produktfamilie</th>
+          <th data-i18n="th.dueDate">F&auml;lligkeit</th>
+          <th data-i18n="th.suggestedDates">Vorgeschlagene Termine</th>
+          <th><span data-i18n="th.urgency">Dringlichkeit</span>{dringlichkeit_tip}</th>
+          <th data-i18n="th.days">Tage</th>
+        </tr>
+      </thead>
+      <tbody>
+{stk_tbody_html}
+      </tbody>
+    </table>
+  </section>"""
+
+
+def _render_auftraege_abschnitt2(
+    is_echtdaten: bool,
+    tbody_html: str,
+    h_de: str,
+    hint_de: str,
+    sla_status_tip: str,
+) -> str:
+    """Abschnitt 2 im Auftraege-Tab -- SLA-/Phasen-Tabelle im Demo-Modus
+    (fiktive Repair-Auftraege), Repair-Verdacht-Tabelle im Echtdaten-Modus
+    (echte offene Auftraege, heuristisch nach Geraetefaehigkeit gefiltert --
+    andere Spaltenstruktur, da SMax keine SLA-Phasen-Daten liefert)."""
+    if is_echtdaten:
+        return f"""  <section>
+    <h2 data-i18n="h.repair">{h_de}</h2>
+    <p class="section-hint" data-i18n="hint.repair">{hint_de}</p>
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="th.orderId">Auftrag-ID</th>
+          <th data-i18n="th.clinic">Klinik</th>
+          <th data-i18n="th.device">Ger&auml;t</th>
+          <th data-i18n="th.productFamily">Produktfamilie</th>
+          <th data-i18n="th.status">Status</th>
+          <th data-i18n="th.typeHint">Typ-Hinweis</th>
+        </tr>
+      </thead>
+      <tbody>
+{tbody_html}
+      </tbody>
+    </table>
+  </section>"""
+    return f"""  <section>
+    <h2 data-i18n="h.repair">{h_de}</h2>
+    <p class="section-hint" data-i18n="hint.repair">{hint_de}</p>
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="th.orderId">Auftrag-ID</th>
+          <th data-i18n="th.clinic">Klinik</th>
+          <th data-i18n="th.device">Ger&auml;t</th>
+          <th data-i18n="th.received">Eingang</th>
+          <th><span data-i18n="th.slaStatus">SLA-Status</span>{sla_status_tip}</th>
+          <th data-i18n="th.phase">Phase</th>
+          <th data-i18n="th.sparePart">Ersatzteil</th>
+        </tr>
+      </thead>
+      <tbody>
+{tbody_html}
+      </tbody>
+    </table>
+  </section>"""
 
 
 _DEFAULT_EINSATZDAUER_STUNDEN = 4.0  # Fallback: siehe crosstraining_analyse.py Kapazitaetsbasis
@@ -4753,10 +4968,12 @@ def render_html(
     hugo_kerngebiete: list[dict] | None = None,
     hugo_standorte_marker: list[dict] | None = None,
     gebiete_status: dict[str, dict] | None = None,
+    repair_verdacht_rows: list[dict] | None = None,
 ) -> str:
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten, techniker)
     stk_html      = _render_stk_tabelle(stk_rows)
-    repair_html   = _render_repair_tabelle(repair_rows or [])
+    h_stk_de, h_stk_en, hint_stk_de, hint_stk_en = _stk_section_texte(is_echtdaten)
+    h_repair_de, h_repair_en, hint_repair_de, hint_repair_en = _repair_section_texte(is_echtdaten)
     ct_html       = _render_ct_tabelle(ct_top5, techniker, labor_zeiten or [])
     ct_ausschluss_html = _render_ct_ausschluss_hint(ct_rows or [])
     warnung_html  = _render_nrw_warnung(nrw_warnung)
@@ -4869,6 +5086,18 @@ def render_html(
         is_echtdaten, len(techniker), erstellt_am.strftime("%d.%m.%Y"))
     overview_hint_text_de, overview_hint_text_en = _overview_hint_texte(len(techniker))
 
+    # ── Auftraege-Tab, Abschnitt 2: Demo-SLA-Tabelle vs. Echtdaten-
+    # Repair-Verdacht-Tabelle (unterschiedliche Spaltenstruktur, siehe
+    # _render_auftraege_abschnitt2-Docstring) ──
+    if is_echtdaten:
+        abschnitt2_tbody_html = _render_offene_echtdaten_tabelle(repair_verdacht_rows or [])
+    else:
+        abschnitt2_tbody_html = _render_repair_tabelle(repair_rows or [])
+    auftraege_abschnitt1_html = _render_auftraege_abschnitt1(
+        stk_html, dringlichkeit_tip, h_stk_de, hint_stk_de)
+    auftraege_abschnitt2_html = _render_auftraege_abschnitt2(
+        is_echtdaten, abschnitt2_tbody_html, h_repair_de, hint_repair_de, sla_status_tip)
+
     # ── Modulaufbau Pilotphase (config.MODUL_2_AKTIV/MODUL_3_AKTIV): Tabs
     # spaeterer Module bleiben sichtbar, erhalten aber einen Hinweis-Badge ──
     _modul_badge = '<span class="modul-badge" data-i18n="tab.modulBadge">Modul 2/3 &mdash; folgt nach Pilotphase</span>'
@@ -4957,49 +5186,10 @@ def render_html(
   </section>
   </div>
 
-  <!-- Tab 2: Auftraege (STK + Repair) -->
+  <!-- Tab 2: Auftraege (STK/offene Auftraege + Repair) -->
   <div id="tab-auftraege" class="tab-content">
-  <section>
-    <h2 data-i18n="h.stk">STK-Auftr&auml;ge (Top 10)</h2>
-    <p class="section-hint" data-i18n="hint.stk">Quelle: daten/geraete.csv &middot; Aufsteigend nach F&auml;lligkeitsdatum</p>
-    <table>
-      <thead>
-        <tr>
-          <th data-i18n="th.orderId">Auftrag-ID</th>
-          <th data-i18n="th.clinic">Klinik</th>
-          <th data-i18n="th.device">Ger&auml;t</th>
-          <th data-i18n="th.productFamily">Produktfamilie</th>
-          <th data-i18n="th.dueDate">F&auml;lligkeit</th>
-          <th data-i18n="th.suggestedDates">Vorgeschlagene Termine</th>
-          <th><span data-i18n="th.urgency">Dringlichkeit</span>{dringlichkeit_tip}</th>
-          <th data-i18n="th.days">Tage</th>
-        </tr>
-      </thead>
-      <tbody>
-{stk_html}
-      </tbody>
-    </table>
-  </section>
-  <section>
-    <h2 data-i18n="h.repair">Offene Repair-Auftr&auml;ge</h2>
-    <p class="section-hint" data-i18n="hint.repair">SLA: Kundenkontakt innerhalb 48h &middot; Internes Ziel: 24h</p>
-    <table>
-      <thead>
-        <tr>
-          <th data-i18n="th.orderId">Auftrag-ID</th>
-          <th data-i18n="th.clinic">Klinik</th>
-          <th data-i18n="th.device">Ger&auml;t</th>
-          <th data-i18n="th.received">Eingang</th>
-          <th><span data-i18n="th.slaStatus">SLA-Status</span>{sla_status_tip}</th>
-          <th data-i18n="th.phase">Phase</th>
-          <th data-i18n="th.sparePart">Ersatzteil</th>
-        </tr>
-      </thead>
-      <tbody>
-{repair_html}
-      </tbody>
-    </table>
-  </section>
+{auftraege_abschnitt1_html}
+{auftraege_abschnitt2_html}
   </div>
 
   <!-- Tab 3: Cross-Training + NRW -->
@@ -5162,8 +5352,8 @@ var _I18N = {{
     'sort.portfolio': 'Ger\u00e4te-Portfolio (meiste L3-Familien zuerst)',
     'sort.area': 'Gebietsgr\u00f6\u00dfe',
     'hint.demo': {json.dumps(demo_hint_text_de, ensure_ascii=False)},
-    'h.stk': 'STK-Auftr\u00e4ge (Top 10)',
-    'hint.stk': 'Quelle: daten/geraete.csv \u00b7 Aufsteigend nach F\u00e4lligkeitsdatum',
+    'h.stk': {json.dumps(h_stk_de, ensure_ascii=False)},
+    'hint.stk': {json.dumps(hint_stk_de, ensure_ascii=False)},
     'th.orderId': 'Auftrag-ID',
     'th.clinic': 'Klinik',
     'th.device': 'Ger\u00e4t',
@@ -5172,12 +5362,13 @@ var _I18N = {{
     'th.suggestedDates': 'Vorgeschlagene Termine',
     'th.urgency': 'Dringlichkeit',
     'th.days': 'Tage',
-    'h.repair': 'Offene Repair-Auftr\u00e4ge',
-    'hint.repair': 'SLA: Kundenkontakt innerhalb 48h \u00b7 Internes Ziel: 24h',
+    'h.repair': {json.dumps(h_repair_de, ensure_ascii=False)},
+    'hint.repair': {json.dumps(hint_repair_de, ensure_ascii=False)},
     'th.received': 'Eingang',
     'th.slaStatus': 'SLA-Status',
     'th.phase': 'Phase',
     'th.sparePart': 'Ersatzteil',
+    'th.typeHint': 'Typ-Hinweis',
     'h.ct': 'Crosstraining Top 5',
     'hint.ct': 'Nur Techniker mit wirtschaftlich sinnvollem Crosstraining (Ger\u00e4tedichte & STK-Potenzial \u00fcber Schwellwert) \u00b7 sortiert nach STK-Potenzial pro Jahr',
     'th.technician': 'Techniker',
@@ -5269,8 +5460,8 @@ var _I18N = {{
     'sort.portfolio': 'Device portfolio (most L3 families first)',
     'sort.area': 'Territory size',
     'hint.demo': {json.dumps(demo_hint_text_en, ensure_ascii=False)},
-    'h.stk': 'Safety Checks (Top 10)',
-    'hint.stk': 'Source: daten/geraete.csv \u00b7 Ascending by due date',
+    'h.stk': {json.dumps(h_stk_en, ensure_ascii=False)},
+    'hint.stk': {json.dumps(hint_stk_en, ensure_ascii=False)},
     'th.orderId': 'Order ID',
     'th.clinic': 'Hospital',
     'th.device': 'Device',
@@ -5279,12 +5470,13 @@ var _I18N = {{
     'th.suggestedDates': 'Suggested Dates',
     'th.urgency': 'Urgency',
     'th.days': 'Days',
-    'h.repair': 'Open Repair Orders',
-    'hint.repair': 'SLA: Customer contact within 48h \u00b7 Internal target: 24h',
+    'h.repair': {json.dumps(h_repair_en, ensure_ascii=False)},
+    'hint.repair': {json.dumps(hint_repair_en, ensure_ascii=False)},
     'th.received': 'Received',
     'th.slaStatus': 'SLA Status',
     'th.phase': 'Phase',
     'th.sparePart': 'Spare Part',
+    'th.typeHint': 'Type Hint',
     'h.ct': 'Cross-Training Top 5',
     'hint.ct': 'Only technicians with an economically viable crosstraining case (device density & STK potential above threshold) \u00b7 sorted by STK potential per year',
     'th.technician': 'Technician',
@@ -5700,8 +5892,8 @@ def _vollstaendigkeits_pruefung(html: str) -> list[tuple[str, bool]]:
          'nav-tabs' in html and html.count('class="nav-tab') >= 7),
         ("Tab 1: Uebersicht – Qualifikations-Ampel 14 Kacheln",
          'id="tab-uebersicht"' in html and html.count('class="ampel-karte') >= 14),
-        ("Tab 2: Auftraege – STK + Repair",
-         'id="tab-auftraege"' in html and 'STK-Auftr' in html),
+        ("Tab 2: Auftraege – STK/offene Auftraege + Repair",
+         'id="tab-auftraege"' in html and ('STK-Auftr' in html or 'Offene Auftr' in html)),
         ("Tab 3: Cross-Training + NRW-Warnung",
          'id="tab-crosstraining"' in html and 'cluster-badge' in html),
         ("Tab 4: Workflow (7 Schritte) + Puffer",
@@ -5816,104 +6008,114 @@ def main() -> None:
         ampeln      = _berechne_ampeln(ct_rows, techniker)
         nrw_warnung = _berechne_nrw_warnung(ct_rows)
 
-    print("Berechne Dringlichkeiten fuer naechste 10 STK-Auftraege...")
-    auftraege = naechste_faellige_auftraege(n=10)
+    repair_verdacht_rows: list[dict] = []
+    if _ECHTDATEN:
+        print("Lade echte offene Auftraege (SMax Open Jobs)...")
+        from api.smax_cache import load_dashboard_data as _smax_load_offen
+        _smax_offen = (_smax_load_offen() or {}).get("offene_auftraege", []) or []
+        print(f"  {len(_smax_offen)} offene Auftraege geladen")
+        stk_rows = _baue_stk_rows_echtdaten(_smax_offen, heute=_HEUTE, n=10)
+        repair_verdacht_rows = _baue_repair_verdacht_rows_echtdaten(_smax_offen, n=10)
+        repair_rows: list[dict] = []  # ungenutzt im Echtdaten-Pfad, siehe repair_verdacht_rows
+    else:
+        print("Berechne Dringlichkeiten fuer naechste 10 STK-Auftraege (Demo)...")
+        auftraege = naechste_faellige_auftraege(n=10)
 
-    _DEMO_OFFSETS = [
-        -65, -45, -20,
-        5, 12, 18, 25,
-        35, 48, 58,
-    ]
-    for i, a in enumerate(auftraege):
-        offset = _DEMO_OFFSETS[i] if i < len(_DEMO_OFFSETS) else 30 + i * 5
-        a.faelligkeitsdatum = _HEUTE + timedelta(days=offset)
+        _DEMO_OFFSETS = [
+            -65, -45, -20,
+            5, 12, 18, 25,
+            35, 48, 58,
+        ]
+        for i, a in enumerate(auftraege):
+            offset = _DEMO_OFFSETS[i] if i < len(_DEMO_OFFSETS) else 30 + i * 5
+            a.faelligkeitsdatum = _HEUTE + timedelta(days=offset)
 
-    stk_rows: list[dict] = []
-    for a in auftraege:
-        d = _berechne_dringlichkeit(a.faelligkeitsdatum, _HEUTE)
-        tage = d.tage_bis_faelligkeit
-        tage_str = f"{tage}" if tage >= 0 else f"<span style='color:var(--critical-text)'>{tage}</span>"
+        stk_rows = []
+        for a in auftraege:
+            d = _berechne_dringlichkeit(a.faelligkeitsdatum, _HEUTE)
+            tage = d.tage_bis_faelligkeit
+            tage_str = f"{tage}" if tage >= 0 else f"<span style='color:var(--critical-text)'>{tage}</span>"
 
-        vorschlaege = schlage_termine_vor(a, heute=_HEUTE)
-        if vorschlaege:
-            termine_parts = []
-            for v in vorschlaege:
-                badge_css = {"optimal": "badge-normal", "moeglich": "badge-hoch", "knapp": "badge-kritisch"}
-                css_cls = badge_css.get(v.bewertung, "badge-normal")
-                termine_parts.append(
-                    f"<span class='badge {css_cls}' title='{v.bewertung}'>"
-                    f"{_label(v.wochentag)} {v.datum.strftime('%d.%m.')}</span>"
-                )
-            termine_html = " / ".join(termine_parts)
-        else:
-            termine_html = "&ndash;"
+            vorschlaege = schlage_termine_vor(a, heute=_HEUTE)
+            if vorschlaege:
+                termine_parts = []
+                for v in vorschlaege:
+                    badge_css = {"optimal": "badge-normal", "moeglich": "badge-hoch", "knapp": "badge-kritisch"}
+                    css_cls = badge_css.get(v.bewertung, "badge-normal")
+                    termine_parts.append(
+                        f"<span class='badge {css_cls}' title='{v.bewertung}'>"
+                        f"{_label(v.wochentag)} {v.datum.strftime('%d.%m.')}</span>"
+                    )
+                termine_html = " / ".join(termine_parts)
+            else:
+                termine_html = "&ndash;"
 
-        stk_rows.append({
-            "auftrag_id":   a.auftrag_id,
-            "klinik":       a.klinik_name,
-            "geraet":       a.geraet_id,
-            "produkt":      a.produkt_familie,
-            "faelligkeit":  a.faelligkeitsdatum.strftime("%d.%m.%Y"),
-            "termine_vorschlag": termine_html,
-            "dringlichkeit": d.stufe,
-            "tage":         tage_str,
-        })
+            stk_rows.append({
+                "auftrag_id":   a.auftrag_id,
+                "klinik":       a.klinik_name,
+                "geraet":       a.geraet_id,
+                "produkt":      a.produkt_familie,
+                "faelligkeit":  a.faelligkeitsdatum.strftime("%d.%m.%Y"),
+                "termine_vorschlag": termine_html,
+                "dringlichkeit": d.stufe,
+                "tage":         tage_str,
+            })
 
-    print("Generiere Demo-Repair-Auftraege...")
-    from auftraege.models import RepairPhase as _RP
+        print("Generiere Demo-Repair-Auftraege...")
+        from auftraege.models import RepairPhase as _RP
 
-    _DEMO_REPAIRS = [
-        {"aid": "REP-2026-0042", "klinik": "UKE Hamburg", "geraet": "HugoRAS",
-         "stunden_offset": -7, "phase": _RP.KONTAKT_AUSSTEHEND, "kontakt": False,
-         "ersatzteil": "&ndash;"},
-        {"aid": "REP-2026-0041", "klinik": "Uniklinikum Ulm", "geraet": "EC300_Legend",
-         "stunden_offset": -31, "phase": _RP.KONTAKT_AUSSTEHEND, "kontakt": False,
-         "ersatzteil": "&ndash;"},
-        {"aid": "REP-2026-0040", "klinik": "Uni Bonn", "geraet": "NIM4CM01",
-         "stunden_offset": -50, "phase": _RP.KONTAKT_AUSSTEHEND, "kontakt": False,
-         "ersatzteil": "&ndash;"},
-        {"aid": "REP-2026-0039", "klinik": "Klinikum Bochum", "geraet": "HugoRAS",
-         "stunden_offset": -20, "phase": _RP.KONTAKT_HERGESTELLT, "kontakt": True,
-         "ersatzteil": "Im Fahrzeug"},
-        {"aid": "REP-2026-0038", "klinik": "Charit&eacute; Berlin", "geraet": "O-arm",
-         "stunden_offset": -36, "phase": _RP.ERSATZTEIL_BESTELLT, "kontakt": True,
-         "ersatzteil": "Bestellt (3-5 Tage)"},
-    ]
-    _JETZT = datetime.now()
-    repair_rows: list[dict] = []
-    for rd in _DEMO_REPAIRS:
-        eingang = _JETZT + timedelta(hours=rd["stunden_offset"])
-        stunden = abs(rd["stunden_offset"])
-        verbleibend = 48 - stunden
-        if rd["kontakt"]:
-            if rd["phase"] == _RP.ERSATZTEIL_BESTELLT:
-                sla_status = "Blau"
+        _DEMO_REPAIRS = [
+            {"aid": "REP-2026-0042", "klinik": "UKE Hamburg", "geraet": "HugoRAS",
+             "stunden_offset": -7, "phase": _RP.KONTAKT_AUSSTEHEND, "kontakt": False,
+             "ersatzteil": "&ndash;"},
+            {"aid": "REP-2026-0041", "klinik": "Uniklinikum Ulm", "geraet": "EC300_Legend",
+             "stunden_offset": -31, "phase": _RP.KONTAKT_AUSSTEHEND, "kontakt": False,
+             "ersatzteil": "&ndash;"},
+            {"aid": "REP-2026-0040", "klinik": "Uni Bonn", "geraet": "NIM4CM01",
+             "stunden_offset": -50, "phase": _RP.KONTAKT_AUSSTEHEND, "kontakt": False,
+             "ersatzteil": "&ndash;"},
+            {"aid": "REP-2026-0039", "klinik": "Klinikum Bochum", "geraet": "HugoRAS",
+             "stunden_offset": -20, "phase": _RP.KONTAKT_HERGESTELLT, "kontakt": True,
+             "ersatzteil": "Im Fahrzeug"},
+            {"aid": "REP-2026-0038", "klinik": "Charit&eacute; Berlin", "geraet": "O-arm",
+             "stunden_offset": -36, "phase": _RP.ERSATZTEIL_BESTELLT, "kontakt": True,
+             "ersatzteil": "Bestellt (3-5 Tage)"},
+        ]
+        _JETZT = datetime.now()
+        repair_rows = []
+        for rd in _DEMO_REPAIRS:
+            eingang = _JETZT + timedelta(hours=rd["stunden_offset"])
+            stunden = abs(rd["stunden_offset"])
+            verbleibend = 48 - stunden
+            if rd["kontakt"]:
+                if rd["phase"] == _RP.ERSATZTEIL_BESTELLT:
+                    sla_status = "Blau"
+                else:
+                    sla_status = "Gruen"
+                sla_text = "&#10003; Kontakt"
+            elif stunden >= 48:
+                sla_status = "Kritisch"
+                sla_text = "SLA VERLETZT"
+            elif stunden >= 40:
+                sla_status = "Rot"
+                sla_text = f"SLA: noch {round(verbleibend)}h"
+            elif stunden >= 24:
+                sla_status = "Gelb"
+                sla_text = f"SLA: noch {round(verbleibend)}h"
             else:
                 sla_status = "Gruen"
-            sla_text = "&#10003; Kontakt"
-        elif stunden >= 48:
-            sla_status = "Kritisch"
-            sla_text = "SLA VERLETZT"
-        elif stunden >= 40:
-            sla_status = "Rot"
-            sla_text = f"SLA: noch {round(verbleibend)}h"
-        elif stunden >= 24:
-            sla_status = "Gelb"
-            sla_text = f"SLA: noch {round(verbleibend)}h"
-        else:
-            sla_status = "Gruen"
-            sla_text = f"SLA: noch {round(verbleibend)}h"
+                sla_text = f"SLA: noch {round(verbleibend)}h"
 
-        repair_rows.append({
-            "auftrag_id": rd["aid"],
-            "klinik": rd["klinik"],
-            "geraet": rd["geraet"],
-            "eingang": eingang.strftime("%d.%m. %H:%M"),
-            "sla_status": sla_status,
-            "sla_text": sla_text,
-            "phase": rd["phase"].value,
-            "ersatzteil": rd["ersatzteil"],
-        })
+            repair_rows.append({
+                "auftrag_id": rd["aid"],
+                "klinik": rd["klinik"],
+                "geraet": rd["geraet"],
+                "eingang": eingang.strftime("%d.%m. %H:%M"),
+                "sla_status": sla_status,
+                "sla_text": sla_text,
+                "phase": rd["phase"].value,
+                "ersatzteil": rd["ersatzteil"],
+            })
 
     print("Filtere Crosstraining nach Wirtschaftlichkeit und sortiere Top-5...")
     ct_wirtschaftlich = [r for r in ct_rows if r.get("wirtschaftlich_sinnvoll") == "Ja"]
@@ -5987,6 +6189,7 @@ def main() -> None:
         hugo_kerngebiete=hugo_kerngebiete,
         hugo_standorte_marker=hugo_standorte_marker_daten,
         gebiete_status=gebiete_status,
+        repair_verdacht_rows=repair_verdacht_rows,
     )
 
     _OUT_PATH.write_text(html, encoding="utf-8")

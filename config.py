@@ -194,7 +194,7 @@ KALENDER_INTEGRIERT = False       # Prototyp-Flag
 # ─── Test-Suite (Dashboard-Footer) ─────────────────
 # Manuell bei jedem pytest-Lauf/Release aktualisieren (`pytest --collect-only -q`).
 # Einzige Stelle im Code -- dashboard.py liest von hier, nicht hardcodiert.
-TESTS_ANZAHL = 1199
+TESTS_ANZAHL = 1219
 
 # ─── Modulaufbau (Pilotphase) ───────────────────────
 # Grenzt ab, welche Dashboard-Bereiche im aktuellen Pilotbetrieb scharf

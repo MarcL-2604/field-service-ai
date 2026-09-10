@@ -250,6 +250,37 @@ def build_dashboard_data() -> dict:
     ergebnis = parse_smax_xlsx(_XLSX.read_bytes(), sample_limit=None)
     korrekturen = _lade_korrekturen()
 
+    # Echte offene Auftraege (SMax Open Jobs) einzeln fuer den Aufraege-Tab im
+    # Dashboard -- vorher wurden diese nur aggregiert (job_standorte), jetzt
+    # zusaetzlich als Liste persistiert. auftragstyp bleibt "UNBEKANNT" (kein
+    # Feld in den SMax-Rohdaten, siehe api/import_real_data.py) -- repair_kandidat
+    # ist eine Heuristik nach Geraetefaehigkeit (finde_repair_familie), keine
+    # echte Auftragstyp-Klassifikation. Bewusst NICHT enthalten: seriennummer,
+    # warranty_date, contract_end_date (nicht fuer Buendelung/Scoring benoetigt).
+    # "Work Order Number" ist im SMax-Export durchgaengig leer (Closed UND
+    # Open Jobs betroffen, kein neues Problem) -- ohne Fallback waeren alle
+    # Auftrag-ID-Zellen im Dashboard leer. Synthetische, stabile Ersatz-ID
+    # statt Leerstring; deutlich als "SMAX-" gekennzeichnet, keine echte
+    # SMax-Referenznummer.
+    offene_auftraege_liste: list[dict] = []
+    for i, auftrag in enumerate(ergebnis.offene_auftraege, start=1):
+        cluster_info = finde_cluster(auftrag.model_code)
+        repair_familie = finde_repair_familie(auftrag.model_code)
+        faellig_dt = _parse_datum(auftrag.next_pm_due_date)
+        offene_auftraege_liste.append({
+            "auftragsnummer": auftrag.auftragsnummer or f"SMAX-{i:04d}",
+            "klinik": auftrag.account,
+            "ort": auftrag.ort,
+            "plz": auftrag.plz or "",
+            "model_code": auftrag.model_code,
+            "produktfamilie": cluster_info.cluster if cluster_info else "Unbekannt",
+            "faellig_iso": faellig_dt.date().isoformat() if faellig_dt else None,
+            "status": auftrag.auftrags_status,
+            "on_hold_grund": auftrag.on_hold_grund,
+            "auftragstyp": auftrag.auftragstyp,
+            "repair_kandidat": repair_familie is not None,
+        })
+
     # Skill-Map: normalisierter Name → {PM-Codes, Alle-Codes}
     # Normalisierung notwendig: Skills-Sheet hat "Dirk Haebel", Wohnorte "Dirk Hübel"
     skill_pm:     dict[str, set[str]] = {}
@@ -474,6 +505,7 @@ def build_dashboard_data() -> dict:
         "beobachtungszeitraum_jahre": round(beobachtungszeitraum_jahre, 2),
         "einsaetze_je_cluster_gesamt": einsaetze_je_cluster_gesamt,
         "auftragstyp_unterscheidbar": False,  # kein Auftragstyp-Feld in Closed/Open Jobs (siehe api/auslastung_analyse.py)
+        "offene_auftraege":           offene_auftraege_liste,
         "generated_at":               datetime.now().isoformat(timespec="seconds"),
     }
 
