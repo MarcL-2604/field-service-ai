@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Techniker-App — Field Service AI</title>
+<meta name="theme-color" content="#0072CE">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FSA Techniker">
+<link rel="manifest" href="push/manifest.json">
+<link rel="icon" href="push/icon.svg">
+<link rel="apple-touch-icon" href="push/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #FFFFFF;
+  --bg2:     #F5F5F5;
+  --glass:   rgba(0,81,149,0.05);
+  --glass2:  rgba(0,81,149,0.08);
+  --border:  rgba(0,81,149,0.18);
+  --border2: rgba(0,81,149,0.30);
+  --primary: #005195;
+  --accent:  #0066CC;
+  --text:    #1A1A1A;
+  --muted:   #666666;
+  --success: #00857C;
+  --warn:    #f5a623;
+  --error:   #e05252;
+  --gold:    #f5a623;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg2);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;overflow-x:hidden}
+
+/* PASSWORD OVERLAY (identisch zu allen anderen Seiten) */
+#pw-overlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+.pw-card{background:var(--glass2);border:1px solid var(--border2);border-radius:16px;padding:36px 30px;width:320px;text-align:center;backdrop-filter:blur(20px)}
+.pw-card h2{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;margin-bottom:8px}
+.pw-card p{color:var(--muted);font-size:13px;margin-bottom:22px}
+.pw-card input{width:100%;background:rgba(0,81,149,0.06);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;color:var(--text);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;letter-spacing:2px;text-align:center;margin-bottom:12px}
+.pw-card input:focus{border-color:var(--primary)}
+.pw-btn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background .2s}
+.pw-btn:hover{background:var(--accent)}
+.pw-error{color:var(--error);font-size:12px;margin-top:8px;display:none}
+
+/* APP SHELL */
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,20,40,0.08)}
+
+/* APP BAR */
+.app-bar{position:sticky;top:0;z-index:50;background:rgba(0,81,149,0.97);backdrop-filter:blur(20px);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.app-bar-title{display:flex;align-items:center;gap:8px;min-width:0}
+.app-bar-back{background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:2px 4px;line-height:1;flex-shrink:0}
+.app-bar h1{font-family:'Syne',sans-serif;font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-bar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.lang-btn{font-size:10.5px;color:rgba(255,255,255,.9);cursor:pointer;letter-spacing:.06em;border:1px solid rgba(255,255,255,.4);padding:4px 9px;border-radius:6px;background:none;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700}
+.badge-demo-mini{background:rgba(245,166,35,0.22);border:1px solid rgba(245,166,35,0.55);color:#fff;font-size:9.5px;font-weight:800;padding:3px 7px;border-radius:5px;letter-spacing:.05em;white-space:nowrap}
+
+/* CONTENT */
+.app-content{flex:1;padding:14px 16px 90px;overflow-y:auto}
+.screen{display:none}
+.screen.active{display:block;animation:fadein .2s ease}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+/* GOLD DEMO BANNER */
+.demo-banner{background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.4);border-radius:10px;padding:11px 13px;font-size:12px;color:#8a6100;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start;line-height:1.5}
+.demo-banner .star{flex-shrink:0}
+
+/* PERMISSION / INSTALL CARDS */
+.hint-card{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:14px 15px;margin-bottom:14px}
+.hint-card .hint-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.hint-card p{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:10px}
+.hint-status{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:20px}
+.hint-status.ok{background:rgba(0,133,124,0.14);color:var(--success)}
+.hint-status.pending{background:rgba(245,166,35,0.16);color:#a6690a}
+.hint-status.off{background:rgba(224,82,82,0.12);color:var(--error)}
+
+/* BUTTONS */
+.btn{padding:11px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;border:none;font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;width:100%}
+.btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--text)}
+.btn-outline:hover{border-color:var(--primary)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--accent)}
+.btn-success{background:var(--success);color:#fff}
+.btn-error-outline{background:transparent;border:1.5px solid rgba(224,82,82,0.4);color:var(--error)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:10px;margin-top:4px}
+.btn-row .btn{flex:1;width:auto}
+
+/* PILLS / AMPEL / BADGES */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700}
+.ampel{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:14px;font-size:10.5px;font-weight:800;letter-spacing:.03em}
+.ampel-gruen{background:rgba(0,133,124,0.14);color:var(--success)}
+.ampel-gelb{background:rgba(245,166,35,0.16);color:#a6690a}
+.ampel-rot{background:rgba(224,82,82,0.14);color:var(--error)}
+.badge-muster{display:inline-flex;align-items:center;gap:4px;background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.4);color:#a6690a;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.06em}
+.badge-neu{background:var(--success);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.05em}
+
+/* AUFTRAGS-LISTE */
+.auftrags-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 15px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.auftrags-card:hover{border-color:var(--primary)}
+.auftrags-card .ak-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.auftrags-card .ak-id{font-family:'Syne',sans-serif;font-weight:800;font-size:13.5px;color:var(--primary)}
+.auftrags-card .ak-klinik{font-size:12px;color:var(--muted);margin-top:2px}
+.auftrags-card .ak-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:10.5px;color:var(--muted)}
+.auftrags-card .ak-meta span{background:var(--glass);border-radius:6px;padding:2px 8px}
+
+/* DETAIL FIELD CARDS (phone-card look) */
+.f-card{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:9px}
+.f-card .k{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.f-card .v{font-size:13px;font-weight:600}
+.f-card ul{margin:2px 0 0 16px;font-size:12px;line-height:1.6}
+.status-badge{display:none;align-items:center;gap:6px;background:rgba(0,133,124,0.14);color:var(--success);font-weight:800;font-size:11.5px;padding:7px 12px;border-radius:8px;margin-top:6px;justify-content:center}
+.status-badge.show{display:flex}
+.status-badge.frage{background:rgba(245,166,35,0.16);color:#a6690a}
+
+/* ABSCHLUSS FORM */
+.device-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.device-row:last-child{border-bottom:none}
+.device-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--success);cursor:pointer;flex-shrink:0}
+textarea.ta-input{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);resize:vertical;min-height:52px;outline:none}
+textarea.ta-input:focus{border-color:var(--primary)}
+input.num-input{width:90px;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;font-size:13px;text-align:center;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);outline:none}
+input.num-input:focus{border-color:var(--primary)}
+.doc-item{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.doc-item:last-child{border-bottom:none}
+.doc-item input{width:18px;height:18px;accent-color:var(--success);cursor:pointer;flex-shrink:0}
+.doc-item label{cursor:pointer;flex:1}
+.pflicht-tag{display:none;font-size:9px;font-weight:800;color:#a6690a;background:rgba(245,166,35,0.16);padding:2px 6px;border-radius:6px}
+.pflicht-tag.show{display:inline}
+
+/* KI-ERGEBNIS */
+.ki-result{display:none;margin-top:12px}
+.ki-result.show{display:block}
+.ki-overall{margin-bottom:10px}
+.ki-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.ki-row:last-child{border-bottom:none}
+.ki-row .ampel{flex-shrink:0;height:fit-content;white-space:nowrap}
+.ki-row-faktor{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;margin-bottom:2px}
+.ki-row-text{font-size:12.5px;line-height:1.5}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:60;padding-bottom:env(safe-area-inset-bottom)}
+.bottom-nav-item{flex:1;background:none;border:none;padding:11px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:10.5px;font-weight:700}
+.bottom-nav-item .bn-icon{font-size:19px;line-height:1}
+.bottom-nav-item.active{color:var(--primary)}
+
+/* CARD (generic) */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:16px 15px;margin-bottom:12px}
+.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:6px}
+.card p{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:8px}
+.card p:last-child{margin-bottom:0}
+.card a{color:var(--accent);font-weight:600}
+
+/* TOAST */
+#toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--success);color:#fff;padding:11px 18px;border-radius:10px;font-size:12.5px;font-weight:700;z-index:9998;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+h2.screen-h{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px}
+p.screen-sub{font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD OVERLAY -->
+<div id="pw-overlay">
+  <div class="pw-card">
+    <h2 data-i18n="pw.title">Techniker-App</h2>
+    <p data-i18n="pw.sub">Field Service AI — Datenzugang</p>
+    <input type="password" id="pw-input" placeholder="Passwort" autocomplete="off">
+    <button class="pw-btn" id="pw-btn" data-i18n="pw.btn">Anmelden</button>
+    <div class="pw-error" id="pw-error" data-i18n="pw.error">Falsches Passwort</div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- APP BAR -->
+  <div class="app-bar">
+    <div class="app-bar-title">
+      <button class="app-bar-back" id="app-back-btn" onclick="gehZurueck()" style="display:none">←</button>
+      <h1 id="app-bar-h1" data-i18n="app.title">Field Service AI — Techniker</h1>
+    </div>
+    <div class="app-bar-right">
+      <span class="badge-demo-mini" data-i18n="app.demoBadge">DEMO</span>
+      <button class="lang-btn" onclick="toggleLang()" id="lang-btn">EN</button>
+    </div>
+  </div>
+
+  <div class="app-content">
+
+    <!-- ═══════════ SCREEN: AUFTRÄGE ═══════════ -->
+    <div class="screen active" id="screen-auftraege">
+      <div class="demo-banner">
+        <span class="star">&#9733;</span>
+        <span data-i18n="app.demoHint">Demo-Modus — alle Benachrichtigungen sind lokal simuliert, es werden keine echten Daten versendet.</span>
+      </div>
+
+      <div class="hint-card" id="perm-card">
+        <div class="hint-title">🔔 <span data-i18n="perm.title">Benachrichtigungen für die Demo</span></div>
+        <p data-i18n="perm.text">Damit "Neuen Auftrag simulieren" eine echte Browser-Benachrichtigung zeigen kann, braucht diese Seite deine Erlaubnis. Es wird nichts an einen Server gesendet — alles bleibt lokal in diesem Browser.</p>
+        <button class="btn btn-primary" id="perm-btn" onclick="benachrichtigungenAnfordern()" data-i18n="perm.btn">Benachrichtigungen aktivieren</button>
+        <div id="perm-status" style="margin-top:9px"></div>
+      </div>
+
+      <h2 class="screen-h" data-i18n="orders.heading">Meine Aufträge</h2>
+      <p class="screen-sub" data-i18n="orders.sub">Beispieldaten zur Vorführung — keine echten Auftragsdaten.</p>
+
+      <button class="btn btn-primary" style="margin-bottom:16px" onclick="simuliereNeuenAuftrag()" data-i18n="orders.simulateBtn">📩 Neuen Auftrag simulieren</button>
+
+      <div id="auftraege-liste"></div>
+    </div>
+
+    <!-- ═══════════ SCREEN: AUFTRAGSDETAIL ═══════════ -->
+    <div class="screen" id="screen-detail">
+      <div id="detail-content"></div>
+    </div>
+
+    <!-- ═══════════ SCREEN: ABSCHLUSS ═══════════ -->
+    <div class="screen" id="screen-abschluss">
+      <div id="abschluss-content"></div>
+    </div>
+
+    <!-- ═══════════ SCREEN: INFO ═══════════ -->
+    <div class="screen" id="screen-info">
+      <h2 class="screen-h" data-i18n="info.heading">Info &amp; Einstellungen</h2>
+
+      <div class="demo-banner">
+        <span class="star">&#9733;</span>
+        <span data-i18n="info.demoExplain">Diese App ist eine reine Client-Demo: kein Server, keine echte Kommunikations-Infrastruktur angebunden (siehe api/kommunikation.py), keine realen Techniker-Daten. Alle Benachrichtigungen entstehen lokal in diesem Browser über die Web-Notification-API.</span>
+      </div>
+
+      <div class="hint-card">
+        <div class="hint-title">🔔 <span data-i18n="info.permTitle">Benachrichtigungs-Status</span></div>
+        <div id="info-perm-status"></div>
+      </div>
+
+      <div class="hint-card">
+        <div class="hint-title">📲 <span data-i18n="info.installTitle">App installieren</span></div>
+        <p data-i18n="info.installText">Zum Home-Bildschirm hinzufügen, um die App wie eine native App zu öffnen (funktioniert danach auch offline).</p>
+        <button class="btn btn-primary" id="install-btn" onclick="appInstallieren()" style="display:none" data-i18n="info.installBtn">Jetzt installieren</button>
+        <p id="install-fallback-text" data-i18n="info.installFallback">In Chrome/Edge: Menü (⋮) → "App installieren" bzw. "Zum Startbildschirm hinzufügen". In Safari (iOS): Teilen-Symbol → "Zum Home-Bildschirm".</p>
+      </div>
+
+      <div class="hint-card">
+        <div class="hint-title">↺ <span data-i18n="info.resetTitle">Demo zurücksetzen</span></div>
+        <p data-i18n="info.resetText">Setzt alle Bestätigungen und simulierten Aufträge zurück — für eine erneute Vorführung von vorn.</p>
+        <button class="btn btn-outline" onclick="demoZuruecksetzen()" data-i18n="info.resetBtn">Demo-Daten zurücksetzen</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title" data-i18n="info.linksTitle">Mehr erfahren</div>
+        <p><a href="manual.html#ch1-10" data-i18n="info.linkManual">Handbuch: Kommunikations-Infrastruktur (Vorbereitung)</a></p>
+        <p><a href="workflow_demo.html" data-i18n="info.linkWorkflow">Vollständiger Pilotphasen-Workflow (Desktop-Demo)</a></p>
+        <p><a href="index.html" data-i18n="info.linkHome">Zurück zur Hauptseite</a></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="bottom-nav-item active" data-tab="auftraege" onclick="zeigeTab('auftraege')">
+      <span class="bn-icon">📋</span><span data-i18n="nav.orders">Aufträge</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="info" onclick="zeigeTab('info')">
+      <span class="bn-icon">ℹ️</span><span data-i18n="nav.info">Info</span>
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<div id="toast"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ───────────────────────── PASSWORT (identisch zu allen anderen Seiten) ───────────────────────── */
+  async function sha256(msg) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  const HASH = '037453db72fb8a93ebe48d4ff52b1b493cdf56ef6a28240a65c6055b76d8f360';
+  const pwOverlay = document.getElementById('pw-overlay');
+  if (localStorage.getItem('fsa_auth') === HASH) pwOverlay.style.display = 'none';
+  document.getElementById('pw-btn').addEventListener('click', async function () {
+    const pw = document.getElementById('pw-input').value;
+    const h = await sha256(pw);
+    if (h === HASH) {
+      localStorage.setItem('fsa_auth', HASH);
+      pwOverlay.style.display = 'none';
+      initApp();
+    } else {
+      document.getElementById('pw-error').style.display = 'block';
+      document.getElementById('pw-input').value = '';
+    }
+  });
+  document.getElementById('pw-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('pw-btn').click();
+  });
+
+  /* ───────────────────────── i18n ───────────────────────── */
+  let LANG = 'DE';
+  const _DE_CACHE = {};
+  document.querySelectorAll('[data-i18n]').forEach(function (el) {
+    _DE_CACHE[el.getAttribute('data-i18n')] = el.textContent;
+  });
+
+  const _EN = {
+    'pw.title': 'Technician App', 'pw.sub': 'Field Service AI — Data access',
+    'pw.btn': 'Sign in', 'pw.error': 'Incorrect password',
+    'app.title': 'Field Service AI — Technician', 'app.demoBadge': 'DEMO',
+    'app.demoHint': 'Demo mode — all notifications are simulated locally, no real data is ever sent.',
+    'perm.title': 'Notifications for the demo',
+    'perm.text': 'So "Simulate new order" can show a real browser notification, this page needs your permission. Nothing is sent to a server — everything stays local in this browser.',
+    'perm.btn': 'Enable notifications',
+    'orders.heading': 'My Orders', 'orders.sub': 'Sample data for the demo — not real order data.',
+    'orders.simulateBtn': '📩 Simulate new order',
+    'info.heading': 'Info & Settings',
+    'info.demoExplain': 'This app is a pure client-side demo: no server, no real communication infrastructure connected (see api/kommunikation.py), no real technician data. All notifications are created locally in this browser via the Web Notification API.',
+    'info.permTitle': 'Notification status',
+    'info.installTitle': 'Install the app',
+    'info.installText': 'Add to your home screen to open the app like a native app (works offline afterwards too).',
+    'info.installBtn': 'Install now',
+    'info.installFallback': 'In Chrome/Edge: menu (⋮) → "Install app" / "Add to Home screen". In Safari (iOS): Share icon → "Add to Home Screen".',
+    'info.resetTitle': 'Reset demo',
+    'info.resetText': 'Resets all confirmations and simulated orders — for a fresh run-through.',
+    'info.resetBtn': 'Reset demo data',
+    'info.linksTitle': 'Learn more',
+    'info.linkManual': 'Manual: Communication infrastructure (preparation)',
+    'info.linkWorkflow': 'Full pilot-phase workflow (desktop demo)',
+    'info.linkHome': 'Back to the homepage',
+    'nav.orders': 'Orders', 'nav.info': 'Info',
+  };
+
+  function anwendenSprache() {
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      const key = el.getAttribute('data-i18n');
+      const val = LANG === 'EN' ? (_EN[key] !== undefined ? _EN[key] : _DE_CACHE[key]) : _DE_CACHE[key];
+      if (val !== undefined) {
+        if (val.indexOf('<') !== -1) el.innerHTML = val; else el.textContent = val;
+      }
+    });
+    document.getElementById('lang-btn').textContent = LANG === 'DE' ? 'EN' : 'DE';
+    document.documentElement.lang = LANG.toLowerCase();
+  }
+  window.toggleLang = function () {
+    LANG = LANG === 'DE' ? 'EN' : 'DE';
+    localStorage.setItem('fsa_app_lang', LANG);
+    anwendenSprache();
+    renderAuftraegeListe();
+    renderPermStatus();
+    if (window._aktuellerAuftrag) zeigeDetail(window._aktuellerAuftrag.id);
+    if (window._letztesKiErgebnis) renderKiErgebnis(window._letztesKiErgebnis);
+  };
+
+  /* ───────────────────────── DEMO-AUFTRAGSDATEN (fiktiv, klar gekennzeichnet) ───────────────────────── */
+  const DEMO_AUFTRAEGE = [
+    {
+      id: 'WO-2026-D001', klinik: 'Klinikum Musterstadt', plz: '72072', ort: 'Tübingen',
+      geraet: 'MC-FT10', geraetName: 'FT10 (Elektrochirurgie)', anzahl: 3, typ: 'STK',
+      faelligLabel: '29.07.2026', ansprechpartner: 'Fr. Dr. Weber', ansprechpartnerRolle: 'MTech',
+      telefon: '+49 7071 000-0000', distanzKm: 35, anfahrtMin: 45,
+      zugang: 'Anmeldung Pforte Haupteingang → Medizintechnik, Ebene −1',
+      messmittel: ['Sicherheitstester (VDE 0751-1)', 'HF-Leistungsmessgerät', 'Neutralelektroden-Prüfadapter'],
+      geplanteDauerMin: 220
+    },
+    {
+      id: 'WO-2026-D002', klinik: 'Kreisklinik Beispielhausen', plz: '78564', ort: 'Wehingen',
+      geraet: 'MC-LS10', geraetName: 'LS10 (Beatmung)', anzahl: 2, typ: 'PM',
+      faelligLabel: '05.08.2026', ansprechpartner: 'Hr. Krüger', ansprechpartnerRolle: 'Medizintechnik',
+      telefon: '+49 7426 000-0000', distanzKm: 18, anfahrtMin: 22,
+      zugang: 'Direktzugang Technikeingang, Code 4471',
+      messmittel: ['Beatmungstester', 'Prüfprotokoll LS10 (2×)'],
+      geplanteDauerMin: 140
+    }
+  ];
+  const SIMULIERTER_AUFTRAG = {
+    id: 'WO-2026-D003', klinik: 'Klinikum Beispielsdorf', plz: '73728', ort: 'Esslingen',
+    geraet: 'MC-LS10', geraetName: 'LS10 (Beatmung)', anzahl: 2, typ: 'STK',
+    faelligLabel: '12.08.2026', ansprechpartner: 'Hr. Fischer', ansprechpartnerRolle: 'MTech',
+    telefon: '+49 711 000-0000', distanzKm: 41, anfahrtMin: 48,
+    zugang: 'Anmeldung Pforte Ost → Medizintechnik, 2. OG',
+    messmittel: ['Beatmungstester', 'Prüfprotokoll LS10 (2×)'],
+    geplanteDauerMin: 150
+  };
+
+  const EXTRA_KEY = 'fsa_app_extra_auftraege';
+  function ladeExtraAuftraege() {
+    try { return JSON.parse(localStorage.getItem(EXTRA_KEY)) || []; } catch (e) { return []; }
+  }
+  function speichereExtraAuftrag(auftrag) {
+    const liste = ladeExtraAuftraege();
+    if (!liste.some(a => a.id === auftrag.id)) {
+      liste.push(auftrag);
+      localStorage.setItem(EXTRA_KEY, JSON.stringify(liste));
+    }
+  }
+  function alleAuftraege() {
+    return DEMO_AUFTRAEGE.concat(ladeExtraAuftraege());
+  }
+  function findeAuftrag(id) {
+    return alleAuftraege().find(a => a.id === id);
+  }
+
+  /* ───────────────────────── STATUS-ABSTRAKTIONSSCHICHT (gleiches Interface wie workflow_demo.html) ───────────────────────── */
+  const StatusStore = {
+    _key(auftragId) { return `fsa_wf_status_${auftragId}`; },
+    get(auftragId) {
+      try { return JSON.parse(localStorage.getItem(this._key(auftragId))) || { bestaetigt: null }; }
+      catch (e) { return { bestaetigt: null }; }
+    },
+    setBestaetigt(auftragId, wert) {
+      const s = this.get(auftragId);
+      s.bestaetigt = wert;
+      s.zeitpunkt = new Date().toISOString();
+      localStorage.setItem(this._key(auftragId), JSON.stringify(s));
+      return s;
+    }
+  };
+
+  /* ───────────────────────── RENDER: AUFTRÄGE-LISTE ───────────────────────── */
+  const TXT = {
+    device: { DE: 'Gerät', EN: 'Device' },
+    due: { DE: 'Fällig', EN: 'Due' },
+    away: { DE: 'entfernt', EN: 'away' },
+    neu: { DE: 'NEU', EN: 'NEW' },
+    muster: { DE: 'MUSTER', EN: 'SAMPLE' },
+  };
+
+  function renderAuftraegeListe() {
+    const wrap = document.getElementById('auftraege-liste');
+    const extras = ladeExtraAuftraege().map(a => a.id);
+    wrap.innerHTML = alleAuftraege().map(a => `
+      <div class="auftrags-card" onclick="zeigeDetail('${a.id}')">
+        <div class="ak-top">
+          <div>
+            <div class="ak-id">${a.id} ${extras.includes(a.id) ? `<span class="badge-neu">${TXT.neu[LANG]}</span>` : ''}</div>
+            <div class="ak-klinik">${a.klinik} · ${a.plz} ${a.ort}</div>
+          </div>
+          <span class="badge-muster">${TXT.muster[LANG]}</span>
+        </div>
+        <div class="ak-meta">
+          <span>${a.typ}</span>
+          <span>${a.anzahl}× ${a.geraet}</span>
+          <span>${TXT.due[LANG]}: ${a.faelligLabel}</span>
+          <span>~${a.distanzKm}km ${TXT.away[LANG]}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ───────────────────────── NOTIFICATION-BERECHTIGUNG ───────────────────────── */
+  function notificationUnterstuetzt() { return 'Notification' in window; }
+
+  function renderPermStatus() {
+    const LBL = {
+      granted: { DE: '✓ Aktiviert', EN: '✓ Enabled' },
+      denied: { DE: '✗ Blockiert (Browser-Einstellungen prüfen)', EN: '✗ Blocked (check browser settings)' },
+      default: { DE: 'Noch nicht angefragt', EN: 'Not requested yet' },
+      unsupported: { DE: 'Von diesem Browser nicht unterstützt', EN: 'Not supported by this browser' },
+    };
+    const perm = notificationUnterstuetzt() ? Notification.permission : 'unsupported';
+    const cls = perm === 'granted' ? 'ok' : perm === 'denied' ? 'off' : 'pending';
+    const html = `<span class="hint-status ${cls}">${LBL[perm][LANG]}</span>`;
+
+    document.getElementById('perm-status').innerHTML = html;
+    document.getElementById('info-perm-status').innerHTML = html;
+    document.getElementById('perm-card').style.display = perm === 'granted' ? 'none' : 'block';
+  }
+
+  window.benachrichtigungenAnfordern = async function () {
+    if (!notificationUnterstuetzt()) {
+      zeigeToast(LANG === 'EN' ? 'Not supported by this browser' : 'Von diesem Browser nicht unterstützt');
+      return;
+    }
+    await Notification.requestPermission();
+    renderPermStatus();
+  };
+
+  /* ───────────────────────── SERVICE WORKER (nur auf dieser Seite aktiv) ───────────────────────── */
+  let swRegistration = null;
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('push/service-worker.js').then(function (reg) {
+      swRegistration = reg;
+    }).catch(function () { /* Offline-/Notification-Demo bleibt ueber Fallback nutzbar */ });
+    navigator.serviceWorker.addEventListener('message', function (event) {
+      if (event.data && event.data.type === 'fsa-open-auftrag') {
+        const url = new URL(event.data.url, location.href);
+        const id = url.searchParams.get('open');
+        if (id) { zeigeTab('auftraege'); zeigeDetail(id); }
+      }
+    });
+  }
+
+  /* ───────────────────────── NEUEN AUFTRAG SIMULIEREN + BENACHRICHTIGUNG ───────────────────────── */
+  window.simuliereNeuenAuftrag = function () {
+    speichereExtraAuftrag(SIMULIERTER_AUFTRAG);
+    renderAuftraegeListe();
+    zeigeNotification(SIMULIERTER_AUFTRAG);
+  };
+
+  function zeigeNotification(auftrag) {
+    if (!notificationUnterstuetzt()) {
+      zeigeToast(LANG === 'EN' ? 'Notifications not supported' : 'Benachrichtigungen nicht unterstützt');
+      return;
+    }
+    if (Notification.permission !== 'granted') {
+      zeigeToast(LANG === 'EN' ? 'Please enable notifications first (Info tab)' : 'Bitte zuerst Benachrichtigungen aktivieren (Tab „Info")');
+      zeigeTab('auftraege');
+      return;
+    }
+    const titel = (LANG === 'EN' ? 'New order' : 'Neuer Auftrag') + `: ${auftrag.id}`;
+    const body = `${auftrag.typ} ${auftrag.anzahl}× ${auftrag.geraet} — ${auftrag.klinik}`;
+    const optionen = {
+      body,
+      icon: 'push/icon.svg',
+      badge: 'push/icon.svg',
+      tag: auftrag.id,
+      data: { url: `techniker_app.html?open=${auftrag.id}` }
+    };
+    if (swRegistration) {
+      swRegistration.showNotification(titel, optionen);
+    } else if (Notification.permission === 'granted') {
+      const n = new Notification(titel, optionen);
+      n.onclick = function () {
+        window.focus();
+        zeigeTab('auftraege');
+        zeigeDetail(auftrag.id);
+        n.close();
+      };
+    }
+    zeigeToast(LANG === 'EN' ? '✓ Notification sent (local)' : '✓ Benachrichtigung gesendet (lokal)');
+  }
+
+  /* ───────────────────────── SCREEN: AUFTRAGSDETAIL ───────────────────────── */
+  const FIELD_LABEL = {
+    device: { DE: 'Gerät', EN: 'Device' }, location: { DE: 'Standort', EN: 'Location' },
+    travel: { DE: 'Anfahrt', EN: 'Travel' }, contact: { DE: 'Ansprechpartner', EN: 'Contact' },
+    access: { DE: 'Zugangs-Hinweis', EN: 'Access note' }, tools: { DE: 'Messmittel-Checkliste', EN: 'Equipment checklist' },
+    confirm: { DE: '✓ Bestätigen', EN: '✓ Confirm' }, question: { DE: '✗ Rückfrage', EN: '✗ Question' },
+    confirmed: { DE: '✓ BESTÄTIGT', EN: '✓ CONFIRMED' }, questioned: { DE: '⚠ RÜCKFRAGE VERMERKT', EN: '⚠ QUESTION NOTED' },
+    completeBtn: { DE: 'Einsatz abschließen', EN: 'Complete visit' },
+    detailTitle: { DE: 'Auftragsdetail', EN: 'Order detail' },
+  };
+
+  window.zeigeDetail = function (id) {
+    const a = findeAuftrag(id);
+    if (!a) return;
+    window._aktuellerAuftrag = a;
+    const status = StatusStore.get(a.id);
+
+    document.getElementById('detail-content').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <h2 class="screen-h" style="margin-bottom:0">${a.id}</h2>
+        <span class="badge-muster">${TXT.muster[LANG]}</span>
+      </div>
+      <p class="screen-sub">${a.klinik} · ${a.plz} ${a.ort}</p>
+
+      <div class="f-card"><div class="k">${FIELD_LABEL.device[LANG]}</div><div class="v">${a.anzahl}× ${a.geraet} (${a.geraetName}) — ${a.typ}</div></div>
+      <div class="f-card"><div class="k">${FIELD_LABEL.location[LANG]}</div><div class="v">${a.klinik}, ${a.plz} ${a.ort}</div></div>
+      <div class="f-card"><div class="k">${FIELD_LABEL.travel[LANG]}</div><div class="v">~${a.distanzKm} km · ca. ${a.anfahrtMin} min</div></div>
+      <div class="f-card"><div class="k">${FIELD_LABEL.contact[LANG]}</div><div class="v">${a.ansprechpartner} (${a.ansprechpartnerRolle}) · ${a.telefon}</div></div>
+      <div class="f-card"><div class="k">${FIELD_LABEL.access[LANG]}</div><div class="v">${a.zugang}</div></div>
+      <div class="f-card">
+        <div class="k">${FIELD_LABEL.tools[LANG]}</div>
+        <ul>${a.messmittel.map(m => `<li>${m}</li>`).join('')}</ul>
+      </div>
+
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-success" onclick="techBestaetigen()">${FIELD_LABEL.confirm[LANG]}</button>
+        <button class="btn btn-outline" onclick="techRueckfrage()">${FIELD_LABEL.question[LANG]}</button>
+      </div>
+      <div class="status-badge ${status.bestaetigt === true ? 'show' : ''}" id="status-badge-confirmed">${FIELD_LABEL.confirmed[LANG]}</div>
+      <div class="status-badge frage ${status.bestaetigt === false ? 'show' : ''}" id="status-badge-frage">${FIELD_LABEL.questioned[LANG]}</div>
+
+      <button class="btn btn-primary" style="margin-top:18px" onclick="zeigeAbschluss('${a.id}')">${FIELD_LABEL.completeBtn[LANG]}</button>
+    `;
+
+    document.getElementById('app-bar-h1').textContent = a.id;
+    document.getElementById('app-back-btn').style.display = 'inline-block';
+    window._zurueckZiel = 'auftraege';
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-detail').classList.add('active');
+  };
+
+  window.techBestaetigen = function () {
+    StatusStore.setBestaetigt(window._aktuellerAuftrag.id, true);
+    zeigeDetail(window._aktuellerAuftrag.id);
+    zeigeToast(LANG === 'EN' ? '✓ Appointment confirmed' : '✓ Termin bestätigt');
+  };
+  window.techRueckfrage = function () {
+    StatusStore.setBestaetigt(window._aktuellerAuftrag.id, false);
+    zeigeDetail(window._aktuellerAuftrag.id);
+    zeigeToast(LANG === 'EN' ? 'Question noted' : 'Rückfrage vermerkt');
+  };
+
+  /* ───────────────────────── SCHRITT: ABSCHLUSS (4-Faktoren-KI-Kontrolle) ─────────────────────────
+     pruefeAbschluss() ist eine reine Funktion (kein UI-Code vermischt), analog zu workflow_demo.html:
+     prueft 4 Faktoren, der schlechteste Einzelwert bestimmt die Gesamt-Ampel. Sprachabhaengige Texte
+     werden getrennt ueber TEXTE/FAKTOR_LABEL erzeugt, damit die Pruefung selbst sprachneutral bleibt. */
+  function pruefeAbschluss(geplanteDauerMin, gemeldeteDauerMin, anzahlErledigt, anzahlGesamt, auffaelligkeitVorhanden, dokumenteFehlendAnzahl) {
+    const RANG = { gruen: 0, gelb: 1, rot: 2 };
+    let gesamt = 'gruen';
+    const heben = s => { if (RANG[s] > RANG[gesamt]) gesamt = s; };
+    const faktoren = [];
+
+    const s1 = anzahlErledigt < anzahlGesamt ? 'rot' : 'gruen';
+    faktoren.push({ key: 'vollstaendigkeit', status: s1, werte: { erledigt: anzahlErledigt, gesamt: anzahlGesamt } });
+    heben(s1);
+
+    const abweichungPct = geplanteDauerMin > 0
+      ? Math.round(Math.abs(gemeldeteDauerMin - geplanteDauerMin) / geplanteDauerMin * 100) : 0;
+    const s2 = abweichungPct <= 20 ? 'gruen' : abweichungPct <= 40 ? 'gelb' : 'rot';
+    faktoren.push({ key: 'dauer', status: s2, werte: { abweichungPct } });
+    heben(s2);
+
+    const s3 = auffaelligkeitVorhanden ? 'gelb' : 'gruen';
+    faktoren.push({ key: 'auffaelligkeiten', status: s3, werte: { vorhanden: auffaelligkeitVorhanden } });
+    heben(s3);
+
+    const s4 = dokumenteFehlendAnzahl > 0 ? 'rot' : 'gruen';
+    faktoren.push({ key: 'dokumente', status: s4, werte: { fehlend: dokumenteFehlendAnzahl } });
+    heben(s4);
+
+    return { status: gesamt, faktoren };
+  }
+
+  const FAKTOR_LABEL = {
+    vollstaendigkeit: { DE: 'Vollständigkeit Geräte', EN: 'Device completeness' },
+    dauer: { DE: 'Plausibilität Dauer', EN: 'Duration plausibility' },
+    auffaelligkeiten: { DE: 'Auffälligkeiten', EN: 'Anomalies' },
+    dokumente: { DE: 'Vollständigkeit Dokumente', EN: 'Document completeness' },
+  };
+  const FAKTOR_TEXT = {
+    vollstaendigkeit: {
+      DE: w => w.erledigt === w.gesamt ? `Alle ${w.gesamt}/${w.gesamt} Geräte erledigt.` : `Unvollständig — ${w.erledigt}/${w.gesamt} Geräte erledigt.`,
+      EN: w => w.erledigt === w.gesamt ? `All ${w.gesamt}/${w.gesamt} devices completed.` : `Incomplete — ${w.erledigt}/${w.gesamt} devices completed.`,
+    },
+    dauer: {
+      DE: w => `Abweichung ${w.abweichungPct}% gegenüber geplanter Dauer` + (w.abweichungPct <= 20 ? ' — plausibel.' : w.abweichungPct <= 40 ? ' — bitte kurz begründen.' : ' — Rückfrage an Techniker erforderlich.'),
+      EN: w => `${w.abweichungPct}% deviation from planned duration` + (w.abweichungPct <= 20 ? ' — plausible.' : w.abweichungPct <= 40 ? ' — please add a short reason.' : ' — technician follow-up required.'),
+    },
+    auffaelligkeiten: {
+      DE: w => w.vorhanden ? 'Auffälligkeit gemeldet — siehe Notiz.' : 'Keine Auffälligkeiten gemeldet.',
+      EN: w => w.vorhanden ? 'Anomaly reported — see note.' : 'No anomalies reported.',
+    },
+    dokumente: {
+      DE: w => w.fehlend > 0 ? `${w.fehlend} Pflichtdokument(e) fehlen.` : 'Alle Pflichtdokumente vorhanden.',
+      EN: w => w.fehlend > 0 ? `${w.fehlend} required document(s) missing.` : 'All required documents present.',
+    },
+  };
+
+  window.zeigeAbschluss = function (id) {
+    const a = findeAuftrag(id);
+    if (!a) return;
+    window._aktuellerAuftrag = a;
+    window._letztesKiErgebnis = null;
+
+    let deviceRows = '';
+    for (let i = 1; i <= a.anzahl; i++) {
+      deviceRows += `<div class="device-row"><input type="checkbox" id="dev-${i}" checked><span>${LANG === 'EN' ? 'Device' : 'Gerät'} ${i}/${a.anzahl}</span></div>`;
+    }
+
+    document.getElementById('abschluss-content').innerHTML = `
+      <h2 class="screen-h">${LANG === 'EN' ? 'Complete visit' : 'Einsatz abschließen'}</h2>
+      <p class="screen-sub">${a.id} · ${a.klinik}</p>
+
+      <div class="f-card">
+        <div class="k">${LANG === 'EN' ? 'Devices' : 'Geräte'}</div>
+        ${deviceRows}
+      </div>
+
+      <div class="f-card">
+        <div class="k" style="margin-bottom:6px">${LANG === 'EN' ? 'Actual total duration (minutes)' : 'Tatsächliche Gesamtdauer (Minuten)'}</div>
+        <input type="number" class="num-input" id="abschluss-dauer" min="0" value="${a.geplanteDauerMin}">
+        <span style="font-size:11px;color:var(--muted);margin-left:8px">(${LANG === 'EN' ? 'planned' : 'geplant'}: ${a.geplanteDauerMin} min)</span>
+      </div>
+
+      <div class="f-card">
+        <div class="k" style="margin-bottom:6px">${LANG === 'EN' ? 'Anomaly / note (optional)' : 'Auffälligkeit / Besonderheit (optional)'}</div>
+        <textarea class="ta-input" id="abschluss-auffaelligkeit" oninput="updateFotoPflichtApp()" placeholder="${LANG === 'EN' ? 'e.g. extra device found, waiting time...' : 'z.B. zusätzliches Gerät entdeckt, Wartezeit MTech…'}"></textarea>
+      </div>
+
+      <div class="f-card">
+        <div class="k" style="margin-bottom:4px">${LANG === 'EN' ? 'Documents' : 'Dokumente'}</div>
+        <div class="doc-item"><input type="checkbox" id="doc-protokoll" checked><label for="doc-protokoll">${LANG === 'EN' ? 'Test report created' : 'Prüfprotokoll/STK-Bericht erstellt'}</label></div>
+        <div class="doc-item"><input type="checkbox" id="doc-unterschrift" checked><label for="doc-unterschrift">${LANG === 'EN' ? 'Customer sign-off obtained' : 'Kundenunterschrift/Abnahme eingeholt'}</label></div>
+        <div class="doc-item">
+          <input type="checkbox" id="doc-foto">
+          <label for="doc-foto">${LANG === 'EN' ? 'Photo documentation' : 'Foto-Dokumentation'}</label>
+          <span class="pflicht-tag" id="doc-foto-pflicht">${LANG === 'EN' ? 'REQUIRED' : 'PFLICHT'}</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="fuehreAbschlussPruefungDurch()">${LANG === 'EN' ? 'Check &amp; complete' : 'Prüfen &amp; abschließen'}</button>
+
+      <div class="card" style="margin-top:14px">
+        <div class="card-title">${LANG === 'EN' ? '4-factor AI check' : '4-Faktoren-KI-Kontrolle'}</div>
+        <div class="ki-result" id="ki-result"></div>
+        <p id="ki-empty-hint">${LANG === 'EN' ? 'No check performed yet.' : 'Noch keine Prüfung durchgeführt.'}</p>
+      </div>
+    `;
+
+    document.getElementById('app-bar-h1').textContent = (LANG === 'EN' ? 'Complete' : 'Abschluss') + ': ' + a.id;
+    document.getElementById('app-back-btn').style.display = 'inline-block';
+    window._zurueckZiel = 'detail:' + a.id;
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-abschluss').classList.add('active');
+  };
+
+  window.updateFotoPflichtApp = function () {
+    const vorhanden = document.getElementById('abschluss-auffaelligkeit').value.trim().length > 0;
+    const tag = document.getElementById('doc-foto-pflicht');
+    if (tag) tag.classList.toggle('show', vorhanden);
+  };
+
+  function renderKiErgebnis(ergebnis) {
+    const LABEL = { gruen: { DE: 'GRÜN', EN: 'GREEN' }, gelb: { DE: 'GELB', EN: 'YELLOW' }, rot: { DE: 'ROT', EN: 'RED' } };
+    const emptyHint = document.getElementById('ki-empty-hint');
+    if (emptyHint) emptyHint.style.display = 'none';
+    const result = document.getElementById('ki-result');
+    if (!result) return;
+    result.classList.add('show');
+
+    const overallLbl = (LANG === 'EN' ? 'Overall result' : 'Gesamtergebnis');
+    result.innerHTML = `
+      <div class="ki-overall"><span class="ampel ampel-${ergebnis.status}">● ${overallLbl}: ${LABEL[ergebnis.status][LANG]}</span></div>
+      ${ergebnis.faktoren.map(f => `
+        <div class="ki-row">
+          <span class="ampel ampel-${f.status}">● ${LABEL[f.status][LANG]}</span>
+          <div style="flex:1">
+            <div class="ki-row-faktor">${FAKTOR_LABEL[f.key][LANG]}</div>
+            <div class="ki-row-text">${FAKTOR_TEXT[f.key][LANG](f.werte)}</div>
+          </div>
+        </div>
+      `).join('')}
+    `;
+  }
+
+  window.fuehreAbschlussPruefungDurch = function () {
+    const a = window._aktuellerAuftrag;
+    let erledigt = 0;
+    for (let i = 1; i <= a.anzahl; i++) {
+      if (document.getElementById(`dev-${i}`).checked) erledigt++;
+    }
+    const gemeldeteDauerMin = parseInt(document.getElementById('abschluss-dauer').value, 10) || 0;
+    const auffaelligkeitVorhanden = document.getElementById('abschluss-auffaelligkeit').value.trim().length > 0;
+    const pflichtDokumente = ['doc-protokoll', 'doc-unterschrift'];
+    if (auffaelligkeitVorhanden) pflichtDokumente.push('doc-foto');
+    const fehlend = pflichtDokumente.filter(id => !document.getElementById(id).checked).length;
+
+    const ergebnis = pruefeAbschluss(a.geplanteDauerMin, gemeldeteDauerMin, erledigt, a.anzahl, auffaelligkeitVorhanden, fehlend);
+    window._letztesKiErgebnis = ergebnis;
+    renderKiErgebnis(ergebnis);
+    zeigeToast(ergebnis.status === 'gruen'
+      ? (LANG === 'EN' ? '✓ Visit completed' : '✓ Einsatz abgeschlossen')
+      : (LANG === 'EN' ? 'Check complete — please review' : 'Prüfung abgeschlossen — bitte Ergebnis prüfen'));
+  };
+
+  /* ───────────────────────── NAVIGATION (Tabs + Zurück + Deep-Link) ───────────────────────── */
+  window.zeigeTab = function (tab) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + tab).classList.add('active');
+    document.querySelectorAll('.bottom-nav-item').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+    document.getElementById('app-back-btn').style.display = 'none';
+    document.getElementById('app-bar-h1').textContent = LANG === 'EN' ? (_EN['app.title'] || _DE_CACHE['app.title']) : _DE_CACHE['app.title'];
+    if (tab === 'info') renderPermStatus();
+  };
+
+  window.gehZurueck = function () {
+    const ziel = window._zurueckZiel || 'auftraege';
+    if (ziel.indexOf('detail:') === 0) {
+      zeigeDetail(ziel.split(':')[1]);
+    } else {
+      zeigeTab('auftraege');
+    }
+  };
+
+  document.querySelectorAll('.bottom-nav-item').forEach(function (btn) {
+    btn.addEventListener('click', function () { zeigeTab(btn.dataset.tab); });
+  });
+
+  /* ───────────────────────── beforeinstallprompt (Android/Chrome) ───────────────────────── */
+  let deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    document.getElementById('install-btn').style.display = 'inline-flex';
+    document.getElementById('install-fallback-text').style.display = 'none';
+  });
+  window.appInstallieren = async function () {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    document.getElementById('install-btn').style.display = 'none';
+  };
+  window.addEventListener('appinstalled', function () {
+    zeigeToast(LANG === 'EN' ? '✓ App installed' : '✓ App installiert');
+  });
+
+  /* ───────────────────────── DEMO ZURÜCKSETZEN ───────────────────────── */
+  window.demoZuruecksetzen = function () {
+    alleAuftraege().forEach(a => localStorage.removeItem(`fsa_wf_status_${a.id}`));
+    localStorage.removeItem(EXTRA_KEY);
+    window._aktuellerAuftrag = null;
+    window._letztesKiErgebnis = null;
+    renderAuftraegeListe();
+    zeigeTab('auftraege');
+    zeigeToast(LANG === 'EN' ? '✓ Demo data reset' : '✓ Demo-Daten zurückgesetzt');
+  };
+
+  /* ───────────────────────── TOAST ───────────────────────── */
+  function zeigeToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  /* ───────────────────────── INIT ───────────────────────── */
+  function initApp() {
+    const savedLang = localStorage.getItem('fsa_app_lang');
+    if (savedLang === 'EN') { LANG = 'EN'; }
+    anwendenSprache();
+    renderAuftraegeListe();
+    renderPermStatus();
+
+    const openId = new URLSearchParams(location.search).get('open');
+    if (openId) {
+      history.replaceState(null, '', location.pathname);
+      zeigeDetail(openId);
+    }
+  }
+
+  if (pwOverlay.style.display === 'none') initApp();
+
+});
+</script>
+</body>
+</html>

@@ -413,6 +413,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
             <li><strong>Mail-Versand</strong> (<code>api/kommunikation.py</code>): Solange <code>KOMMUNIKATION_AUTOMATISCH_AKTIV = False</code> ist, wird kein echter Versand ausgelöst — jeder Aufruf schreibt stattdessen einen Log-Eintrag („Würde senden an: ..."). Platzhalter-Adressen (23 der 24 Techniker) lösen niemals einen Versandversuch aus, auch nicht bei aktiviertem Schalter — ein bewusstes Sicherheitsnetz gegen Versand an nicht-existente Adressen.</li>
             <li><strong>Push-Benachrichtigungen</strong> (<code>push/service-worker.js</code>, <code>push/manifest.json</code>): rein clientseitige PWA-Grundstruktur, kein echter Push-Server angebunden.</li>
           </ul>
+          <p><strong>Live-Demo zum Ausprobieren:</strong> <a href="techniker_app.html">techniker_app.html</a> ist eine installierbare Techniker-App mit rein lokal simulierten Benachrichtigungen (Browser-Notification-API) — kein Server, keine echten Daten. Auf dem eigenen Handy installierbar über „Zum Home-Bildschirm hinzufügen".</p>
           <p><strong>Für die Aktivierung im Regelbetrieb fehlt noch:</strong></p>
           <ol>
             <li>Backend-Entscheidung: interner Server vs. Cloud-Dienst</li>
@@ -726,6 +727,7 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<li><strong>Mail sending</strong> (<code>api/kommunikation.py</code>): as long as <code>KOMMUNIKATION_AUTOMATISCH_AKTIV = False</code>, no real message is ever sent — every call instead writes a log entry ("Would send to: ..."). Placeholder addresses (23 of the 24 technicians) never trigger a send attempt, even with the switch enabled — a deliberate safety net against sending to non-existent addresses.</li>'
       + '<li><strong>Push notifications</strong> (<code>push/service-worker.js</code>, <code>push/manifest.json</code>): a purely client-side PWA scaffold, not wired to a real push server.</li>'
       + '</ul>'
+      + '<p><strong>Live demo to try out:</strong> <a href="techniker_app.html">techniker_app.html</a> is an installable technician app with purely locally simulated notifications (browser Notification API) — no server, no real data. Installable on your own phone via "Add to Home Screen".</p>'
       + '<p><strong>Still needed for production activation:</strong></p>'
       + '<ol>'
       + '<li>Backend decision: internal server vs. cloud service</li>'

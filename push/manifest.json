@@ -1,12 +1,16 @@
 {
-  "_status": "STATUS: Grundgeruest, nicht aktiv. Benoetigt fuer Scharfschaltung: 1) Backend-Entscheidung (interner Server vs. Cloud-Dienst -- offene Frage, siehe manual.html), 2) VAPID-Schluessel, 3) IT-Freigabe.",
-  "name": "Field Service AI",
-  "short_name": "FieldServiceAI",
-  "description": "KI-gestuetztes Field Service Planning System (Pilotphase) -- Grundgeruest fuer 'Zum Home-Bildschirm hinzufuegen', noch nicht produktiv verdrahtet.",
-  "start_url": "/dashboard.html",
+  "_status": "Lokale Demo-Nutzung (Browser Notification API, kein echter Server) aktiv auf techniker_app.html. Ein echter Push-Server bleibt Grundgeruest, nicht aktiv -- benoetigt fuer Produktivbetrieb: 1) Backend-Entscheidung (interner Server vs. Cloud-Dienst -- offene Frage, siehe manual.html), 2) VAPID-Schluessel, 3) IT-Freigabe.",
+  "name": "Field Service AI — Techniker",
+  "short_name": "FSA Techniker",
+  "description": "Installierbare Demo-App fuer Techniker: Auftragsliste, simulierte Push-Benachrichtigung, Bestaetigung und KI-Abschlusskontrolle -- komplett client-seitig, keine echten Daten.",
+  "start_url": "../techniker_app.html",
+  "scope": "../",
   "display": "standalone",
-  "background_color": "#000810",
+  "background_color": "#FFFFFF",
   "theme_color": "#0072CE",
   "lang": "de",
-  "icons": []
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
 }
