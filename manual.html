@@ -95,6 +95,10 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
 .example-box .ex-label{font-weight:700;color:var(--accent);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 .example-box code{background:var(--glass2);padding:1px 5px;border-radius:4px;font-size:12px}
 
+.step-box{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:14px 0}
+.step-box ol{margin:8px 0 0 18px;line-height:1.75;font-size:13px}
+.warn-box{background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.4);border-radius:8px;padding:10px 14px;margin:10px 0;font-size:12.5px;color:#8a6100;line-height:1.55}
+
 .screenshot-placeholder{border:2px dashed var(--border2);border-radius:10px;padding:20px;text-align:center;color:var(--muted);font-size:12px;margin:14px 0;background:var(--glass)}
 
 .faq-item{margin-bottom:10px}
@@ -414,6 +418,18 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
             <li><strong>Push-Benachrichtigungen</strong> (<code>push/service-worker.js</code>, <code>push/manifest.json</code>): rein clientseitige PWA-Grundstruktur, kein echter Push-Server angebunden.</li>
           </ul>
           <p><strong>Live-Demo zum Ausprobieren:</strong> <a href="techniker_app.html">techniker_app.html</a> ist eine installierbare Techniker-App mit rein lokal simulierten Benachrichtigungen (Browser-Notification-API) — kein Server, keine echten Daten. Auf dem eigenen Handy installierbar über „Zum Home-Bildschirm hinzufügen".</p>
+          <div class="step-box">
+            <strong>So installierst du die Demo-App auf dem iPhone (iOS 16.4+):</strong>
+            <ol>
+              <li><code>techniker_app.html</code> in <strong>Safari</strong> öffnen (nicht Chrome — iOS-Push funktioniert nur in Safari)</li>
+              <li>Teilen-Symbol (Quadrat mit Pfeil nach oben) antippen</li>
+              <li>„Zum Home-Bildschirm" wählen</li>
+              <li>App-Icon erscheint auf dem Home-Bildschirm</li>
+              <li>App darüber öffnen (<strong>nicht</strong> mehr über den Safari-Tab) — erst von hier aus funktionieren Benachrichtigungen</li>
+              <li>Beim ersten Start: Benachrichtigungen erlauben, wenn gefragt</li>
+            </ol>
+          </div>
+          <div class="warn-box">⚠ <strong>Wichtig:</strong> Push-Benachrichtigungen funktionieren auf dem iPhone nur, wenn die App über das Home-Bildschirm-Icon geöffnet wird, nicht im normalen Safari-Tab.</div>
           <p><strong>Für die Aktivierung im Regelbetrieb fehlt noch:</strong></p>
           <ol>
             <li>Backend-Entscheidung: interner Server vs. Cloud-Dienst</li>
@@ -728,6 +744,18 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<li><strong>Push notifications</strong> (<code>push/service-worker.js</code>, <code>push/manifest.json</code>): a purely client-side PWA scaffold, not wired to a real push server.</li>'
       + '</ul>'
       + '<p><strong>Live demo to try out:</strong> <a href="techniker_app.html">techniker_app.html</a> is an installable technician app with purely locally simulated notifications (browser Notification API) — no server, no real data. Installable on your own phone via "Add to Home Screen".</p>'
+      + '<div class="step-box">'
+      + '<strong>How to install the demo app on iPhone (iOS 16.4+):</strong>'
+      + '<ol>'
+      + '<li>Open <code>techniker_app.html</code> in <strong>Safari</strong> (not Chrome — iOS push only works in Safari)</li>'
+      + '<li>Tap the Share icon (square with an arrow pointing up)</li>'
+      + '<li>Choose "Add to Home Screen"</li>'
+      + '<li>The app icon appears on your home screen</li>'
+      + '<li>Open the app from there (<strong>not</strong> from a Safari tab anymore) — notifications only work when opened this way</li>'
+      + '<li>On first launch: allow notifications when prompted</li>'
+      + '</ol>'
+      + '</div>'
+      + '<div class="warn-box">⚠ <strong>Important:</strong> push notifications on iPhone only work when the app is opened via the home-screen icon, not in a regular Safari tab.</div>'
       + '<p><strong>Still needed for production activation:</strong></p>'
       + '<ol>'
       + '<li>Backend decision: internal server vs. cloud service</li>'

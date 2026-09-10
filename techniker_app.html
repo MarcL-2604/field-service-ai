@@ -70,6 +70,17 @@ html,body{height:100%;background:var(--bg2);color:var(--text);font-family:'Plus 
 .hint-card{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:14px 15px;margin-bottom:14px}
 .hint-card .hint-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:5px;display:flex;align-items:center;gap:7px}
 .hint-card p{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:10px}
+
+/* iOS-INSTALLATIONSANLEITUNG (klappbar) */
+.ios-details{margin-top:10px}
+.ios-details summary{cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:10px 12px;background:var(--glass2);border:1px solid var(--border);border-radius:9px;list-style:none;display:flex;align-items:center;gap:7px}
+.ios-details summary::-webkit-details-marker{display:none}
+.ios-details summary::after{content:"+";margin-left:auto;color:var(--accent);font-weight:800}
+.ios-details[open] summary::after{content:"–"}
+.ios-details[open] summary{border-radius:9px 9px 0 0}
+.ios-steps{padding:12px 13px;border:1px solid var(--border);border-top:none;border-radius:0 0 9px 9px;font-size:12.5px;color:var(--text)}
+.ios-steps ol{margin:0 0 0 18px;line-height:1.75}
+.ios-warn{background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.4);border-radius:8px;padding:9px 11px;font-size:11.5px;color:#8a6100;margin-top:9px;line-height:1.5}
 .hint-status{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:20px}
 .hint-status.ok{background:rgba(0,133,124,0.14);color:var(--success)}
 .hint-status.pending{background:rgba(245,166,35,0.16);color:#a6690a}
@@ -240,6 +251,24 @@ p.screen-sub{font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:
         <p data-i18n="info.installText">Zum Home-Bildschirm hinzufügen, um die App wie eine native App zu öffnen (funktioniert danach auch offline).</p>
         <button class="btn btn-primary" id="install-btn" onclick="appInstallieren()" style="display:none" data-i18n="info.installBtn">Jetzt installieren</button>
         <p id="install-fallback-text" data-i18n="info.installFallback">In Chrome/Edge: Menü (⋮) → "App installieren" bzw. "Zum Startbildschirm hinzufügen". In Safari (iOS): Teilen-Symbol → "Zum Home-Bildschirm".</p>
+
+        <details class="ios-details">
+          <summary>🍎 <span data-i18n="ios.summary">iPhone-Installationsanleitung</span></summary>
+          <div class="ios-steps">
+            <div data-i18n-html="ios.steps">
+              <strong>So installierst du die Demo-App auf dem iPhone (iOS 16.4+):</strong>
+              <ol>
+                <li>techniker_app.html in <strong>Safari</strong> öffnen (nicht Chrome — iOS-Push funktioniert nur in Safari)</li>
+                <li>Teilen-Symbol (Quadrat mit Pfeil nach oben) antippen</li>
+                <li>„Zum Home-Bildschirm" wählen</li>
+                <li>App-Icon erscheint auf dem Home-Bildschirm</li>
+                <li>App darüber öffnen (<strong>nicht</strong> mehr über den Safari-Tab) — erst von hier aus funktionieren Benachrichtigungen</li>
+                <li>Beim ersten Start: Benachrichtigungen erlauben, wenn gefragt</li>
+              </ol>
+            </div>
+            <div class="ios-warn" data-i18n-html="ios.warning">⚠ <strong>Wichtig:</strong> Push-Benachrichtigungen funktionieren auf dem iPhone nur, wenn die App über das Home-Bildschirm-Icon geöffnet wird, nicht im normalen Safari-Tab.</div>
+          </div>
+        </details>
       </div>
 
       <div class="hint-card">
@@ -305,6 +334,12 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('[data-i18n]').forEach(function (el) {
     _DE_CACHE[el.getAttribute('data-i18n')] = el.textContent;
   });
+  // data-i18n-html: fuer Inhalte mit eingebetteten Tags (Listen, <strong>) --
+  // getrennt von data-i18n (textContent), sonst gehen die Tags beim
+  // DE/EN-Umschalten verloren (bekanntes Muster, siehe manual.html).
+  document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+    _DE_CACHE[el.getAttribute('data-i18n-html')] = el.innerHTML;
+  });
 
   const _EN = {
     'pw.title': 'Technician App', 'pw.sub': 'Field Service AI — Data access',
@@ -323,6 +358,18 @@ document.addEventListener('DOMContentLoaded', function () {
     'info.installText': 'Add to your home screen to open the app like a native app (works offline afterwards too).',
     'info.installBtn': 'Install now',
     'info.installFallback': 'In Chrome/Edge: menu (⋮) → "Install app" / "Add to Home screen". In Safari (iOS): Share icon → "Add to Home Screen".',
+    'ios.summary': 'iPhone install instructions',
+    'ios.steps':
+      '<strong>How to install the demo app on iPhone (iOS 16.4+):</strong>'
+      + '<ol>'
+      + '<li>Open techniker_app.html in <strong>Safari</strong> (not Chrome — iOS push only works in Safari)</li>'
+      + '<li>Tap the Share icon (square with an arrow pointing up)</li>'
+      + '<li>Choose "Add to Home Screen"</li>'
+      + '<li>The app icon appears on your home screen</li>'
+      + '<li>Open the app from there (<strong>not</strong> from a Safari tab anymore) — notifications only work when opened this way</li>'
+      + '<li>On first launch: allow notifications when prompted</li>'
+      + '</ol>',
+    'ios.warning': '⚠ <strong>Important:</strong> push notifications on iPhone only work when the app is opened via the home-screen icon, not in a regular Safari tab.',
     'info.resetTitle': 'Reset demo',
     'info.resetText': 'Resets all confirmations and simulated orders — for a fresh run-through.',
     'info.resetBtn': 'Reset demo data',
@@ -337,9 +384,12 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
       const key = el.getAttribute('data-i18n');
       const val = LANG === 'EN' ? (_EN[key] !== undefined ? _EN[key] : _DE_CACHE[key]) : _DE_CACHE[key];
-      if (val !== undefined) {
-        if (val.indexOf('<') !== -1) el.innerHTML = val; else el.textContent = val;
-      }
+      if (val !== undefined) el.textContent = val;
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+      const key = el.getAttribute('data-i18n-html');
+      const val = LANG === 'EN' ? (_EN[key] !== undefined ? _EN[key] : _DE_CACHE[key]) : _DE_CACHE[key];
+      if (val !== undefined) el.innerHTML = val;
     });
     document.getElementById('lang-btn').textContent = LANG === 'DE' ? 'EN' : 'DE';
     document.documentElement.lang = LANG.toLowerCase();

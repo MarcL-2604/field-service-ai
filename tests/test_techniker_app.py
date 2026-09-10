@@ -128,6 +128,41 @@ class TestFunktionaleBausteine:
         idx_btn = app_html.index("benachrichtigungenAnfordern()")
         assert idx_text < idx_btn
 
+    def test_data_i18n_html_wird_im_script_behandelt(self, app_script):
+        """Regressionsschutz: data-i18n-html-Elemente (Listen, <strong>) muessen
+        ueber innerHTML gesetzt werden -- sonst gehen die Tags beim
+        Sprachwechsel verloren (bekanntes Muster, siehe manual.html)."""
+        assert "data-i18n-html" in app_script
+        assert "el.innerHTML = val" in app_script
+
+
+class TestIosInstallationsanleitung:
+    """Klappbare iOS-Installationsanleitung -- prominent auf der App selbst,
+    nicht nur im Handbuch versteckt (fuer die Live-Vorfuehrung)."""
+
+    def test_klappbare_box_vorhanden(self, app_html):
+        assert '<details class="ios-details">' in app_html
+
+    def test_alle_sechs_schritte_erwaehnt(self, app_html):
+        begriffe = (
+            "Safari", "Teilen-Symbol", "Zum Home-Bildschirm",
+            "Home-Bildschirm", "Benachrichtigungen erlauben",
+        )
+        for begriff in begriffe:
+            assert begriff in app_html, f"Schritt-Begriff fehlt: {begriff!r}"
+
+    def test_warnung_vor_safari_tab_vorhanden(self, app_html):
+        assert "nicht im normalen Safari-Tab" in app_html or "not in a regular Safari tab" in app_html
+
+    def test_warnt_explizit_vor_chrome_auf_ios(self, app_html):
+        assert "nicht Chrome" in app_html
+
+    def test_manual_html_hat_dieselbe_anleitung(self):
+        inhalt = (_ROOT / "manual.html").read_text(encoding="utf-8")
+        assert "iOS 16.4" in inhalt
+        assert "Safari" in inhalt
+        assert "nicht im normalen Safari-Tab" in inhalt
+
 
 class TestSicherheitsgrenzen:
     """Die Demo-App muss vollstaendig isoliert von der echten (deaktivierten)
@@ -155,7 +190,7 @@ class TestSicherheitsgrenzen:
 
 class TestI18nVollstaendigkeit:
     def _html_keys(self, app_head: str) -> set[str]:
-        return set(re.findall(r'data-i18n="([^"]+)"', app_head))
+        return set(re.findall(r'data-i18n(?:-html)?="([^"]+)"', app_head))
 
     def _en_keys(self, app_script: str) -> set[str]:
         block = app_script[app_script.index("const _EN = {"):app_script.index("function anwendenSprache")]
@@ -172,12 +207,17 @@ class TestI18nVollstaendigkeit:
     def test_mindestens_20_uebersetzte_elemente(self, app_head):
         assert len(self._html_keys(app_head)) >= 20
 
-    def test_data_i18n_ohne_html_hat_keine_html_entities_im_en_wert(self, app_script):
+    def test_data_i18n_ohne_html_hat_keine_html_entities_im_en_wert(self, app_head, app_script):
         """Regressionsschutz (bekanntes Muster aus manual.html): data-i18n
-        setzt .textContent, das HTML-Entities NICHT dekodiert -- ein
-        EN-Wert mit '&amp;' wuerde woertlich erscheinen statt als '&'."""
+        (NICHT -html) setzt .textContent, das HTML-Entities NICHT dekodiert --
+        ein EN-Wert mit '&amp;' wuerde woertlich erscheinen statt als '&'.
+        data-i18n-html geht dagegen ueber innerHTML und darf Entities/Tags
+        enthalten, daher hier bewusst ausgeschlossen."""
+        plain_keys = set(re.findall(r'data-i18n="([^"]+)"', app_head))
         block = app_script[app_script.index("const _EN = {"):app_script.index("function anwendenSprache")]
         for key, wert in re.findall(r"'([a-zA-Z0-9_.]+)':\s*'([^']*)'", block):
+            if key not in plain_keys:
+                continue
             assert "&amp;" not in wert, f"{key}: EN-Wert enthaelt rohes '&amp;' statt '&' ({wert!r})"
 
     def test_data_i18n_ohne_html_hat_kein_html_tag_im_de_quelltext(self, app_head):
