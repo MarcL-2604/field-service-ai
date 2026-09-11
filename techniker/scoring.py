@@ -566,6 +566,103 @@ def berechne_empfehlung(
     return kandidaten[:3]
 
 
+def berechne_empfehlung_echtdaten(
+    model_code: str,
+    klinik_plz: str,
+    techniker_liste: list[dict],
+    repair_erforderlich: bool = False,
+) -> list[EmpfehlungErgebnis]:
+    """Echtdaten-Variante von berechne_empfehlung() fuer einzelne offene
+    SMax-Auftraege (siehe reporting/dashboard.py Aufraege-Tab).
+
+    Nutzt dieselbe Score-Formel/Gewichtung (config.SCORING_*) und denselben
+    Fahrzeit-Normalisierungsansatz wie berechne_empfehlung(), aber eigene
+    Datenquelle -- eine direkte Wiederverwendung von berechne_empfehlung()
+    ist nicht moeglich, weil die reale SMax-Skillmatrix ein anderes Schema
+    hat als daten/trainingsmatrix.csv:
+
+      - Kompetenz ist binaer (100/0 statt L1/L2/L3): die reale Skillmatrix
+        kennt nur JA/NEIN je Model Code, keine abgestuften Level. Qualifiziert
+        = der Model Code steht in der Techniker-Codeliste aus
+        data/smax_dashboard_data.json ('qualifizierte_model_codes' bzw.
+        'qualifizierte_model_codes_repair', siehe api/smax_cache.py).
+      - Klinik-Koordinaten kommen aus techniker.plz_koordinaten.hole_koordinaten()
+        (breite bundesweite PLZ-Abdeckung inkl. pgeocode-Fallback) statt der
+        kuratierten ~90-Klinik-Liste in _KLINIK_COORDS.
+      - Keine Arbeitszeitpruefung (TagesStatus/ArbZG): eine Einzelauftrags-
+        Empfehlung ohne Tagesplanungskontext (welche anderen Einsaetze hat
+        der Techniker diese Woche schon?) kann diese Regeln nicht sinnvoll
+        anwenden -- Auslastung fliesst stattdessen ueber die reale
+        Jahres-Auslastung ('auslastung_pct_real') in den Score ein.
+
+    Args:
+        model_code:    SMax Model Code des offenen Auftrags (z.B. "MC-FT10").
+        klinik_plz:    PLZ der Klinik.
+        techniker_liste: die "techniker"-Liste aus data/smax_dashboard_data.json
+            (benoetigt pseudonym_id, lat, lon, auslastung_pct_real,
+            qualifizierte_model_codes[_repair]).
+        repair_erforderlich: Wenn True, muss der Techniker zusaetzlich fuer
+            Repair an diesem Model Code qualifiziert sein (striktere Teilmenge).
+
+    Returns:
+        Top-3 EmpfehlungErgebnis, absteigend nach Score. Leer wenn keine
+        Klinik-Koordinaten aufloesbar sind oder kein qualifizierter
+        Techniker mit bekanntem Standort gefunden wird.
+    """
+    from techniker.plz_koordinaten import hole_koordinaten
+
+    klinik_coords = hole_koordinaten(klinik_plz)
+    if klinik_coords is None:
+        return []
+    klinik_lat, klinik_lon = klinik_coords
+
+    feld = "qualifizierte_model_codes_repair" if repair_erforderlich else "qualifizierte_model_codes"
+    mc_norm = model_code.strip().upper()
+
+    kandidaten: list[EmpfehlungErgebnis] = []
+    for tech in techniker_liste:
+        qualifiziert = {c.strip().upper() for c in tech.get(feld, [])}
+        if mc_norm not in qualifiziert:
+            continue
+
+        tech_lat = tech.get("lat", 0.0) or 0.0
+        tech_lon = tech.get("lon", 0.0) or 0.0
+        if not tech_lat and not tech_lon:
+            continue
+
+        distanz_km = _haversine_km(tech_lat, tech_lon, klinik_lat, klinik_lon)
+        auslastung_pct = tech.get("auslastung_pct_real", 0.0) or 0.0
+        auslastung_score = max(0.0, 100.0 - auslastung_pct)
+
+        kandidaten.append(EmpfehlungErgebnis(
+            techniker_id=tech["pseudonym_id"],
+            score=0.0,
+            kompetenz_score=100.0,
+            fahrzeit_score=0.0,
+            auslastung_score=auslastung_score,
+            distanz_km=distanz_km,
+            level="L3",
+            warnungen=[],
+        ))
+
+    if not kandidaten:
+        return []
+
+    max_distanz = max(k.distanz_km for k in kandidaten)
+    for k in kandidaten:
+        k.fahrzeit_score = (1.0 - k.distanz_km / max_distanz) * 100.0 if max_distanz > 0 else 100.0
+
+    for k in kandidaten:
+        k.score = (
+            k.kompetenz_score * _W_KOMPETENZ
+            + k.fahrzeit_score * _W_FAHRZEIT
+            + k.auslastung_score * _W_AUSLASTUNG
+        )
+
+    kandidaten.sort(key=lambda x: x.score, reverse=True)
+    return kandidaten[:3]
+
+
 def _naechster_werktag() -> datetime:
     """Gibt den naechsten Werktag (Mo-Do) um 08:00 Uhr zurueck."""
     from datetime import timedelta

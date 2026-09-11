@@ -695,11 +695,22 @@ def _render_ampel_karten(
     return "\n".join(karten)
 
 
-def _render_stk_tabelle(auftraege_rows: list[dict]) -> str:
+_EMPFEHLUNG_BTN_STYLE = (
+    "background:none;border:1px solid var(--card-border);border-radius:6px;"
+    "padding:3px 9px;cursor:pointer;font-size:11.5px;color:var(--accent);white-space:nowrap"
+)
+
+
+def _render_stk_tabelle(auftraege_rows: list[dict], zeige_empfehlung: bool = False) -> str:
     zeilen = []
     for row in auftraege_rows:
         css = _DRINGLICHKEIT_CSS.get(row["dringlichkeit"], "badge-normal")
         termine_html = row.get("termine_vorschlag", "&ndash;")
+        empfehlung_td = (
+            f"<td><button onclick=\"showEmpfehlung('{row['auftrag_id']}')\" "
+            f"style=\"{_EMPFEHLUNG_BTN_STYLE}\">&#127919; Empfehlung</button></td>"
+            if zeige_empfehlung else ""
+        )
         zeilen.append(
             f"      <tr>"
             f"<td><code>{row['auftrag_id']}</code></td>"
@@ -710,6 +721,7 @@ def _render_stk_tabelle(auftraege_rows: list[dict]) -> str:
             f"<td>{termine_html}</td>"
             f"<td><span class='badge {css}'>{_label(row['dringlichkeit'])}</span></td>"
             f"<td>{row['tage']}</td>"
+            f"{empfehlung_td}"
             f"</tr>"
         )
     return "\n".join(zeilen)
@@ -829,6 +841,8 @@ def _render_offene_echtdaten_tabelle(rows: list[dict]) -> str:
             f"<td>{row['produkt']}</td>"
             f"<td>{row['status']}</td>"
             f"<td><span class='badge badge-hoch'>{_label(row['typ_hinweis'])}</span></td>"
+            f"<td><button onclick=\"showEmpfehlung('{row['auftrag_id']}')\" "
+            f"style=\"{_EMPFEHLUNG_BTN_STYLE}\">&#127919; Empfehlung</button></td>"
             f"</tr>"
         )
     return "\n".join(zeilen)
@@ -952,6 +966,56 @@ def _render_auftraege_abschnitt3(is_echtdaten: bool, buendelung_html: str) -> st
   </section>"""
 
 
+# ---------------------------------------------------------------------------
+# Echte Techniker-Vorauswahl / KI-Scoring (Schritt 3, Modul-1-Vervollstaendigung)
+# ---------------------------------------------------------------------------
+
+def _baue_empfehlungen_echtdaten(
+    offene_auftraege: list[dict],
+    auftragsnummern: set[str],
+    smax_techniker: list[dict],
+) -> dict[str, dict]:
+    """Berechnet Top-3-Techniker-Empfehlungen (berechne_empfehlung_echtdaten)
+    fuer die im Dashboard tatsaechlich angezeigten realen offenen Auftraege.
+
+    Wird zur Build-Zeit vorberechnet und als JSON in die Seite eingebettet
+    (kein Live-Request/Backend) -- gleiche Architektur wie
+    _render_techniker_detail_data()/TECH_DETAIL_DATA. Nur fuer die
+    angezeigte Teilmenge (auftragsnummern), nicht fuer alle 786 offenen
+    Auftraege -- Top-3-Berechnung fuer alle waere unnoetiger Aufwand fuer
+    Zeilen, die im Dashboard ohnehin nicht sichtbar sind.
+    """
+    from techniker.scoring import berechne_empfehlung_echtdaten
+
+    nach_nummer = {
+        o["auftragsnummer"]: o for o in offene_auftraege
+        if o.get("auftragsnummer") in auftragsnummern
+    }
+
+    ergebnis: dict[str, dict] = {}
+    for aid, o in nach_nummer.items():
+        empfehlungen = berechne_empfehlung_echtdaten(
+            o["model_code"], o.get("plz", ""), smax_techniker,
+            repair_erforderlich=bool(o.get("repair_kandidat")),
+        )
+        ergebnis[aid] = {
+            "klinik": o.get("klinik", ""),
+            "geraet": o["model_code"],
+            "empfehlungen": [
+                {
+                    "techniker_id": e.techniker_id,
+                    "score": round(e.score, 1),
+                    "kompetenz_score": round(e.kompetenz_score, 1),
+                    "fahrzeit_score": round(e.fahrzeit_score, 1),
+                    "auslastung_score": round(e.auslastung_score, 1),
+                    "distanz_km": round(e.distanz_km),
+                }
+                for e in empfehlungen
+            ],
+        }
+    return ergebnis
+
+
 def _stk_section_texte(is_echtdaten: bool) -> tuple[str, str, str, str]:
     """(h_de, h_en, hint_de, hint_en) fuer Abschnitt 1 im Auftraege-Tab --
     EIN Wertepaar speist sowohl den initialen Render als auch den
@@ -997,10 +1061,13 @@ def _render_auftraege_abschnitt1(
     dringlichkeit_tip: str,
     h_de: str,
     hint_de: str,
+    zeige_empfehlung_spalte: bool = False,
 ) -> str:
     """Abschnitt 1 im Auftraege-Tab -- gleiche Spaltenstruktur in Demo- und
     Echtdaten-Modus, nur Kopftext/Hinweistext und Datenquelle unterscheiden
-    sich (siehe _stk_section_texte)."""
+    sich (siehe _stk_section_texte). Die Empfehlungs-Spalte (Schritt 3,
+    Echtdaten-Modus) ist der einzige strukturelle Unterschied."""
+    empfehlung_th = '<th data-i18n="th.recommendation">Empfehlung</th>' if zeige_empfehlung_spalte else ""
     return f"""  <section>
     <h2 data-i18n="h.stk">{h_de}</h2>
     <p class="section-hint" data-i18n="hint.stk">{hint_de}</p>
@@ -1015,6 +1082,7 @@ def _render_auftraege_abschnitt1(
           <th data-i18n="th.suggestedDates">Vorgeschlagene Termine</th>
           <th><span data-i18n="th.urgency">Dringlichkeit</span>{dringlichkeit_tip}</th>
           <th data-i18n="th.days">Tage</th>
+          {empfehlung_th}
         </tr>
       </thead>
       <tbody>
@@ -1048,6 +1116,7 @@ def _render_auftraege_abschnitt2(
           <th data-i18n="th.productFamily">Produktfamilie</th>
           <th data-i18n="th.status">Status</th>
           <th data-i18n="th.typeHint">Typ-Hinweis</th>
+          <th data-i18n="th.recommendation">Empfehlung</th>
         </tr>
       </thead>
       <tbody>
@@ -5090,9 +5159,10 @@ def render_html(
     gebiete_status: dict[str, dict] | None = None,
     repair_verdacht_rows: list[dict] | None = None,
     buendelung_plaene: list | None = None,
+    empfehlungen_echtdaten: dict | None = None,
 ) -> str:
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten, techniker)
-    stk_html      = _render_stk_tabelle(stk_rows)
+    stk_html      = _render_stk_tabelle(stk_rows, zeige_empfehlung=is_echtdaten)
     h_stk_de, h_stk_en, hint_stk_de, hint_stk_en = _stk_section_texte(is_echtdaten)
     h_repair_de, h_repair_en, hint_repair_de, hint_repair_en = _repair_section_texte(is_echtdaten)
     ct_html       = _render_ct_tabelle(ct_top5, techniker, labor_zeiten or [])
@@ -5120,6 +5190,7 @@ def render_html(
     tooltip_portal_script = _build_tooltip_portal_script()
     tech_detail_json = _render_techniker_detail_data(
         techniker, demo_history or {})
+    empfehlungen_json = json.dumps(empfehlungen_echtdaten or {}, ensure_ascii=False)
     ts = erstellt_am.strftime("%d.%m.%Y %H:%M")
 
     gruen_count = sum(1 for a in ampeln if a["ampel_css"] == "ampel-gruen")
@@ -5215,7 +5286,7 @@ def render_html(
     else:
         abschnitt2_tbody_html = _render_repair_tabelle(repair_rows or [])
     auftraege_abschnitt1_html = _render_auftraege_abschnitt1(
-        stk_html, dringlichkeit_tip, h_stk_de, hint_stk_de)
+        stk_html, dringlichkeit_tip, h_stk_de, hint_stk_de, zeige_empfehlung_spalte=is_echtdaten)
     auftraege_abschnitt2_html = _render_auftraege_abschnitt2(
         is_echtdaten, abschnitt2_tbody_html, h_repair_de, hint_repair_de, sla_status_tip)
     buendelung_karten_html = _render_buendelung_echtdaten(buendelung_plaene or [])
@@ -5493,6 +5564,7 @@ var _I18N = {{
     'th.phase': 'Phase',
     'th.sparePart': 'Ersatzteil',
     'th.typeHint': 'Typ-Hinweis',
+    'th.recommendation': 'Empfehlung',
     'h.buendelung': 'Auftragsbündelung — Kliniken mit mehreren offenen Aufträgen',
     'hint.buendelung': 'Gruppiert nach Klinik (Standort+PLZ) · Qualifikationsprüfung gegen die echte SMax-Skillmatrix (binär qualifiziert/nicht qualifiziert) · unbekannte Fälligkeit wird als aktueller Bestand behandelt, nicht als konkretes Datum',
     'h.ct': 'Crosstraining Top 5',
@@ -5603,6 +5675,7 @@ var _I18N = {{
     'th.phase': 'Phase',
     'th.sparePart': 'Spare Part',
     'th.typeHint': 'Type Hint',
+    'th.recommendation': 'Recommendation',
     'h.buendelung': 'Order bundling — hospitals with multiple open orders',
     'hint.buendelung': 'Grouped by hospital (location+ZIP) · qualification checked against the real SMax skill matrix (binary qualified/not qualified) · unknown due date is treated as current backlog, not a specific date',
     'h.ct': 'Cross-Training Top 5',
@@ -5755,6 +5828,41 @@ function showTechDetail(tid) {{
 
 function closeTechDetail() {{
   document.getElementById('tech-detail-overlay').classList.remove('active');
+}}
+
+/* ── Techniker-Empfehlung (Schritt 3, Echtdaten-Modus) ── Top-3-Scoring
+   wird zur Build-Zeit vorberechnet (techniker.scoring.berechne_empfehlung_echtdaten,
+   40% Kompetenz / 35% Fahrzeit / 25% Auslastung) und hier nur angezeigt --
+   kein Live-Request, gleiche Architektur wie TECH_DETAIL_DATA. Nutzt
+   dasselbe Overlay wie showTechDetail(). ── */
+var EMPFEHLUNG_DATA = {empfehlungen_json};
+
+function showEmpfehlung(auftragId) {{
+  var d = EMPFEHLUNG_DATA[auftragId];
+  var html = '<div class="tech-detail-title">' + auftragId + ' &mdash; Techniker-Empfehlung</div>';
+  if (!d || !d.empfehlungen || !d.empfehlungen.length) {{
+    html += '<p style="margin-top:12px;color:var(--text-muted)">Keine Empfehlung m&ouml;glich '
+      + '(keine PLZ-Koordinaten aufl&ouml;sbar oder kein qualifizierter Techniker gefunden).</p>';
+  }} else {{
+    html += '<p style="margin:6px 0 16px;color:var(--text-muted);font-size:12.5px">'
+      + d.geraet + ' &middot; ' + d.klinik + '</p>';
+    d.empfehlungen.forEach(function(e, i) {{
+      html += '<div style="margin-bottom:14px">';
+      html += '<div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:4px">'
+        + '<span>' + (i + 1) + '. ' + e.techniker_id + '</span><span>' + e.score.toFixed(1) + '</span></div>';
+      html += '<div style="height:8px;background:var(--card-border);border-radius:4px;overflow:hidden;margin-bottom:4px">'
+        + '<div style="height:100%;width:' + e.score + '%;background:var(--accent)"></div></div>';
+      html += '<div style="font-size:11px;color:var(--text-muted)">'
+        + 'Kompetenz ' + e.kompetenz_score.toFixed(0) + ' &middot; Fahrzeit ' + e.fahrzeit_score.toFixed(0)
+        + ' &middot; Auslastung ' + e.auslastung_score.toFixed(0) + ' &middot; ~' + e.distanz_km + 'km</div>';
+      html += '</div>';
+    }});
+    html += '<p style="margin-top:8px;font-size:10px;color:var(--text-muted);font-style:italic">'
+      + 'Echte Daten &middot; bin&auml;re Kompetenzpr&uuml;fung (SMax-Skillmatrix kennt keine Level) '
+      + '&middot; keine Arbeitszeitpr&uuml;fung (siehe Handbuch)</p>';
+  }}
+  document.getElementById('tech-detail-content').innerHTML = html;
+  document.getElementById('tech-detail-overlay').classList.add('active');
 }}
 
 document.addEventListener('keydown', function(e) {{
@@ -6138,6 +6246,7 @@ def main() -> None:
 
     repair_verdacht_rows: list[dict] = []
     buendelung_plaene: list = []
+    empfehlungen_echtdaten: dict = {}
     if _ECHTDATEN:
         print("Lade echte offene Auftraege (SMax Open Jobs)...")
         from api.smax_cache import load_dashboard_data as _smax_load_offen
@@ -6158,6 +6267,14 @@ def main() -> None:
             qualifikationsmatrix=_qualifikationsmatrix,
         )
         print(f"  {len(buendelung_plaene)} Buendelungsmoeglichkeiten gefunden")
+
+        print("Berechne Techniker-Empfehlungen fuer angezeigte Auftraege...")
+        _angezeigte_auftragsnummern = (
+            {r["auftrag_id"] for r in stk_rows} | {r["auftrag_id"] for r in repair_verdacht_rows}
+        )
+        empfehlungen_echtdaten = _baue_empfehlungen_echtdaten(
+            _smax_offen, _angezeigte_auftragsnummern, _smax_techniker_liste)
+        print(f"  {len(empfehlungen_echtdaten)} Auftraege mit vorberechneter Empfehlung")
     else:
         print("Berechne Dringlichkeiten fuer naechste 10 STK-Auftraege (Demo)...")
         auftraege = naechste_faellige_auftraege(n=10)
@@ -6332,6 +6449,7 @@ def main() -> None:
         gebiete_status=gebiete_status,
         repair_verdacht_rows=repair_verdacht_rows,
         buendelung_plaene=buendelung_plaene,
+        empfehlungen_echtdaten=empfehlungen_echtdaten,
     )
 
     _OUT_PATH.write_text(html, encoding="utf-8")

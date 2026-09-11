@@ -405,6 +405,10 @@ def build_dashboard_data() -> dict:
             info.cluster for mc in pm_mcs
             if (info := finde_cluster(mc)) is not None
         })
+        # Einzelne Model Codes (fuer die Einzelauftrags-Techniker-Empfehlung,
+        # siehe techniker/scoring.py berechne_empfehlung_echtdaten()) --
+        # feinere Granularitaet als qualifizierte_cluster.
+        qualifizierte_model_codes = sorted(pm_mcs)
 
         repair_mcs_raw = skill_repair.get(tn_norm, set())
         if tn_norm in korrekturen:
@@ -412,6 +416,7 @@ def build_dashboard_data() -> dict:
         else:
             repair_mcs = repair_mcs_raw
         pm_repair_count = len(repair_mcs)
+        qualifizierte_model_codes_repair = sorted(repair_mcs)
 
         # Crosstraining-Potenzial: Repair-Familien im 150-km-Umkreis
         tech_repair_familien: set[str] = set()
@@ -479,6 +484,8 @@ def build_dashboard_data() -> dict:
             "techniker_typ":     "HUGO_KEY_ACCOUNT" if ort_key in _HUGO_KA_STAEDTE else "STANDARD",
             "in_skills_matrix":  bool(alle_mcs),
             "qualifizierte_cluster": qualifizierte_cluster,
+            "qualifizierte_model_codes": qualifizierte_model_codes,
+            "qualifizierte_model_codes_repair": qualifizierte_model_codes_repair,
             "pm_count":          pm_count,
             "pm_repair_count":   pm_repair_count,
             "total_model_codes": total_mc,
