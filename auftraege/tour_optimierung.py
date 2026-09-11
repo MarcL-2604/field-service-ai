@@ -400,6 +400,8 @@ def buendle_auftraege(
 def buendle_mit_qualifikation(
     auftraege: list[Auftrag],
     avg_fahrzeit_std: float = 1.0,
+    techniker_ids: Optional[set[str]] = None,
+    qualifikationsmatrix: Optional[dict[str, dict[str, str]]] = None,
 ) -> list[QualifizierterBuendelPlan]:
     """Gruppiert Auftraege nach Klinik + Monat und prueft Qualifikation.
 
@@ -411,17 +413,30 @@ def buendle_mit_qualifikation(
     Args:
         auftraege:        Liste aller offenen Auftraege.
         avg_fahrzeit_std: Durchschnittliche Fahrzeit fuer Ersparnis-Berechnung.
+        techniker_ids:    Optionaler Echtdaten-Override fuer die aktiven
+                          Techniker-IDs. None (Default) = wie bisher aus
+                          daten/techniker.csv (Demo T1-T14) laden.
+        qualifikationsmatrix: Optionaler Echtdaten-Override fuer
+                          {techniker_id: {produktfamilie: level_str}}. None
+                          (Default) = wie bisher aus daten/trainingsmatrix.csv
+                          laden. Bei Echtdaten enthaelt der Level immer nur
+                          "L3" (binaer qualifiziert/nicht-qualifiziert -- die
+                          reale SMax-Skillmatrix kennt keine abgestuften
+                          Level), siehe reporting/dashboard.py.
 
     Returns:
         Liste von QualifizierterBuendelPlan (nur Gruppen mit >= 2 Auftraegen).
     """
-    matrix = _lade_trainingsmatrix()
-    tech_df = pd.read_csv(_DATA_DIR / "techniker.csv", dtype=str)
-    aktive_techniker = {
-        row["techniker_id"]
-        for _, row in tech_df.iterrows()
-        if str(row.get("status", "aktiv")).lower() == "aktiv"
-    }
+    matrix = qualifikationsmatrix if qualifikationsmatrix is not None else _lade_trainingsmatrix()
+    if techniker_ids is not None:
+        aktive_techniker = techniker_ids
+    else:
+        tech_df = pd.read_csv(_DATA_DIR / "techniker.csv", dtype=str)
+        aktive_techniker = {
+            row["techniker_id"]
+            for _, row in tech_df.iterrows()
+            if str(row.get("status", "aktiv")).lower() == "aktiv"
+        }
 
     # Gruppieren nach klinik_id + Monat
     gruppen: dict[tuple[str, str], list[Auftrag]] = {}

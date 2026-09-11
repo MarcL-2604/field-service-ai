@@ -395,6 +395,17 @@ def build_dashboard_data() -> dict:
         alle_mcs   = skill_alle.get(tn_norm, set())
         pm_count   = len(pm_mcs)
 
+        # Qualifizierte Cluster (fuer Buendelung/Scoring auf Echtdaten, siehe
+        # auftraege/tour_optimierung.py und reporting/dashboard.py): die reale
+        # SMax-Skillmatrix ist binaer (JA/NEIN je Model Code), daher hier
+        # Cluster-Granularitaet statt der abgestuften Demo-Level (L1/L2/L3) --
+        # "qualifiziert" bedeutet: mindestens ein PM-faehiger Model Code aus
+        # diesem Cluster.
+        qualifizierte_cluster = sorted({
+            info.cluster for mc in pm_mcs
+            if (info := finde_cluster(mc)) is not None
+        })
+
         repair_mcs_raw = skill_repair.get(tn_norm, set())
         if tn_norm in korrekturen:
             repair_mcs = _wende_korrektur_an(repair_mcs_raw, korrekturen[tn_norm])
@@ -467,6 +478,7 @@ def build_dashboard_data() -> dict:
             "hugo_ka":           ort_key in _HUGO_KA_STAEDTE,
             "techniker_typ":     "HUGO_KEY_ACCOUNT" if ort_key in _HUGO_KA_STAEDTE else "STANDARD",
             "in_skills_matrix":  bool(alle_mcs),
+            "qualifizierte_cluster": qualifizierte_cluster,
             "pm_count":          pm_count,
             "pm_repair_count":   pm_repair_count,
             "total_model_codes": total_mc,

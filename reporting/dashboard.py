@@ -60,6 +60,8 @@ from config import (  # noqa: E402
 )
 from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
+from auftraege.models import Auftrag, AuftragsTyp  # noqa: E402
+from auftraege.tour_optimierung import buendle_mit_qualifikation  # noqa: E402
 from reporting.erklaerungen import generiere_erklaerung, FRAGE_TYPEN, FRAGE_TYPEN_EN  # noqa: E402
 from config_hugo_standorte import HUGO_SPRINGER, HUGO_STANDORTE, HUGO_TEAM_GROESSE  # noqa: E402
 from reporting.hugo_kerngebiet import (  # noqa: E402
@@ -830,6 +832,124 @@ def _render_offene_echtdaten_tabelle(rows: list[dict]) -> str:
             f"</tr>"
         )
     return "\n".join(zeilen)
+
+
+# ---------------------------------------------------------------------------
+# Echte Auftragsbuendelung (Schritt 2, Modul-1-Vervollstaendigung)
+# ---------------------------------------------------------------------------
+# buendle_mit_qualifikation() (auftraege/tour_optimierung.py) ist ein
+# generischer, bereits getesteter Algorithmus -- diese Adapter-Funktionen
+# ueberfuehren echte SMax-Daten in das von ihm erwartete Schema, ohne den
+# Demo-Pfad (daten/techniker.csv + trainingsmatrix.csv) zu veraendern.
+
+def _baue_echte_auftraege_fuer_buendelung(offene_auftraege: list[dict], heute: date) -> list[Auftrag]:
+    """Baut Auftrag-Objekte aus echten offenen SMax-Jobs.
+
+    klinik_id = 'Klinik::PLZ' (reale Klinik-Identifikation aus Account+PLZ,
+    analog zu api/smax_cache.py job_standorte_map) statt Demo-Key 'K001'.
+    produkt_familie = Cluster-Name (die reale SMax-Skillmatrix ist nur auf
+    Cluster-Granularitaet verfuegbar, siehe api/smax_cache.py
+    'qualifizierte_cluster').
+    auftragstyp: REPAIR wenn repair_kandidat (Heuristik nach
+    Geraetefaehigkeit), sonst STK -- SMax liefert kein echtes
+    Auftragstyp-Feld.
+    faelligkeitsdatum: echtes next_pm_due_date wenn bekannt (nur ein kleiner
+    Teil der echten offenen Auftraege hat eines), sonst 'heute' als
+    neutraler Platzhalter -- kein erfundenes Zukunftsdatum. Die Buendelung
+    gruppiert dadurch weiterhin korrekt nach Klinik (ihr eigentlicher
+    Zweck); Auftraege mit echtem Datum bilden bei Bedarf einen eigenen
+    Monats-Bucket.
+    """
+    auftraege: list[Auftrag] = []
+    for i, o in enumerate(offene_auftraege, start=1):
+        klinik = (o.get("klinik") or "").strip()
+        if not klinik:
+            continue
+        plz = (o.get("plz") or "").strip()
+        klinik_id = f"{klinik}::{plz}"
+        faelligkeitsdatum = (
+            date.fromisoformat(o["faellig_iso"]) if o.get("faellig_iso") else heute
+        )
+        auftraege.append(Auftrag(
+            auftrag_id=o.get("auftragsnummer") or f"SMAX-{i:04d}",
+            auftragstyp=AuftragsTyp.REPAIR if o.get("repair_kandidat") else AuftragsTyp.STK,
+            klinik_id=klinik_id,
+            klinik_name=klinik,
+            geraet_id=o["model_code"],
+            produkt_familie=o.get("produktfamilie") or "Unbekannt",
+            faelligkeitsdatum=faelligkeitsdatum,
+        ))
+    return auftraege
+
+
+def _baue_echte_qualifikationsmatrix(
+    smax_techniker: list[dict],
+) -> tuple[set[str], dict[str, dict[str, str]]]:
+    """Baut (techniker_ids, qualifikationsmatrix) fuer buendle_mit_qualifikation()
+    aus den echten Technikern. Binaere Qualifikation (Level immer "L3" wenn
+    qualifiziert, kein Eintrag wenn nicht) -- die reale SMax-Skillmatrix
+    kennt keine abgestuften Level wie die Demo-Trainingsmatrix."""
+    techniker_ids = {t["pseudonym_id"] for t in smax_techniker}
+    matrix = {
+        t["pseudonym_id"]: {cluster: "L3" for cluster in t.get("qualifizierte_cluster", [])}
+        for t in smax_techniker
+    }
+    return techniker_ids, matrix
+
+
+_BUENDELUNG_FALL_LABEL = {
+    "A": "1 Techniker deckt alles ab",
+    "B": "Aufteilung nötig",
+    "C": "Teilüberschneidung",
+}
+
+
+def _render_buendelung_echtdaten(plaene: list) -> str:
+    """Rendert Buendelungs-Ergebnisse aus echten offenen Auftraegen
+    (buendle_mit_qualifikation()) als Empfehlungskarten -- gleiches
+    Karten-Layout wie die Top-3-Gebietsempfehlungen (.go-empf-*)."""
+    if not plaene:
+        return (
+            "<p style='color:var(--text-muted);font-style:italic;'>"
+            "Keine B&uuml;ndelungsm&ouml;glichkeiten gefunden (kein Standort mit "
+            "&ge;2 offenen Auftr&auml;gen im aktuellen Datensatz).</p>"
+        )
+    karten = []
+    for i, plan in enumerate(plaene[:10], start=1):
+        fall_text = _BUENDELUNG_FALL_LABEL.get(plan.fall, plan.fall)
+        stats = (
+            f'<div class="go-empf-stats">'
+            f'{len(plan.alle_auftraege)} Ger&auml;te &middot; '
+            f'spart {plan.eingesparte_fahrten} Fahrt(en) &middot; '
+            f'Fall {plan.fall}: {fall_text}</div>'
+        )
+        hinweis_html = plan.hinweis.replace("\n", "<br>")
+        karten.append(
+            f'<div class="go-empf-card">'
+            f'<div class="go-empf-num">{i}</div>'
+            f'<div class="go-empf-body">'
+            f'<div class="go-empf-title">{plan.klinik_name}</div>'
+            f'{stats}'
+            f'<div class="go-empf-text" '
+            f'style="font-family:\'Courier New\',monospace;white-space:pre-wrap">'
+            f'{hinweis_html}</div>'
+            f'</div></div>'
+        )
+    return "\n".join(karten)
+
+
+def _render_auftraege_abschnitt3(is_echtdaten: bool, buendelung_html: str) -> str:
+    """Abschnitt 3 im Auftraege-Tab -- nur im Echtdaten-Modus vorhanden
+    (Buendelungsempfehlungen aus echten offenen Auftraegen)."""
+    if not is_echtdaten:
+        return ""
+    return f"""  <section>
+    <h2 data-i18n="h.buendelung">Auftragsb&uuml;ndelung &mdash; Kliniken mit mehreren offenen Auftr&auml;gen</h2>
+    <p class="section-hint" data-i18n="hint.buendelung">Gruppiert nach Klinik (Standort+PLZ) &middot; Qualifikationspr&uuml;fung gegen die echte SMax-Skillmatrix (bin&auml;r qualifiziert/nicht qualifiziert) &middot; unbekannte F&auml;lligkeit wird als aktueller Bestand behandelt, nicht als konkretes Datum</p>
+    <div class="go-empf-grid">
+{buendelung_html}
+    </div>
+  </section>"""
 
 
 def _stk_section_texte(is_echtdaten: bool) -> tuple[str, str, str, str]:
@@ -4969,6 +5089,7 @@ def render_html(
     hugo_standorte_marker: list[dict] | None = None,
     gebiete_status: dict[str, dict] | None = None,
     repair_verdacht_rows: list[dict] | None = None,
+    buendelung_plaene: list | None = None,
 ) -> str:
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten, techniker)
     stk_html      = _render_stk_tabelle(stk_rows)
@@ -5097,6 +5218,8 @@ def render_html(
         stk_html, dringlichkeit_tip, h_stk_de, hint_stk_de)
     auftraege_abschnitt2_html = _render_auftraege_abschnitt2(
         is_echtdaten, abschnitt2_tbody_html, h_repair_de, hint_repair_de, sla_status_tip)
+    buendelung_karten_html = _render_buendelung_echtdaten(buendelung_plaene or [])
+    auftraege_abschnitt3_html = _render_auftraege_abschnitt3(is_echtdaten, buendelung_karten_html)
 
     # ── Modulaufbau Pilotphase (config.MODUL_2_AKTIV/MODUL_3_AKTIV): Tabs
     # spaeterer Module bleiben sichtbar, erhalten aber einen Hinweis-Badge ──
@@ -5190,6 +5313,7 @@ def render_html(
   <div id="tab-auftraege" class="tab-content">
 {auftraege_abschnitt1_html}
 {auftraege_abschnitt2_html}
+{auftraege_abschnitt3_html}
   </div>
 
   <!-- Tab 3: Cross-Training + NRW -->
@@ -5369,6 +5493,8 @@ var _I18N = {{
     'th.phase': 'Phase',
     'th.sparePart': 'Ersatzteil',
     'th.typeHint': 'Typ-Hinweis',
+    'h.buendelung': 'Auftragsbündelung — Kliniken mit mehreren offenen Aufträgen',
+    'hint.buendelung': 'Gruppiert nach Klinik (Standort+PLZ) · Qualifikationsprüfung gegen die echte SMax-Skillmatrix (binär qualifiziert/nicht qualifiziert) · unbekannte Fälligkeit wird als aktueller Bestand behandelt, nicht als konkretes Datum',
     'h.ct': 'Crosstraining Top 5',
     'hint.ct': 'Nur Techniker mit wirtschaftlich sinnvollem Crosstraining (Ger\u00e4tedichte & STK-Potenzial \u00fcber Schwellwert) \u00b7 sortiert nach STK-Potenzial pro Jahr',
     'th.technician': 'Techniker',
@@ -5477,6 +5603,8 @@ var _I18N = {{
     'th.phase': 'Phase',
     'th.sparePart': 'Spare Part',
     'th.typeHint': 'Type Hint',
+    'h.buendelung': 'Order bundling — hospitals with multiple open orders',
+    'hint.buendelung': 'Grouped by hospital (location+ZIP) · qualification checked against the real SMax skill matrix (binary qualified/not qualified) · unknown due date is treated as current backlog, not a specific date',
     'h.ct': 'Cross-Training Top 5',
     'hint.ct': 'Only technicians with an economically viable crosstraining case (device density & STK potential above threshold) \u00b7 sorted by STK potential per year',
     'th.technician': 'Technician',
@@ -6009,14 +6137,27 @@ def main() -> None:
         nrw_warnung = _berechne_nrw_warnung(ct_rows)
 
     repair_verdacht_rows: list[dict] = []
+    buendelung_plaene: list = []
     if _ECHTDATEN:
         print("Lade echte offene Auftraege (SMax Open Jobs)...")
         from api.smax_cache import load_dashboard_data as _smax_load_offen
-        _smax_offen = (_smax_load_offen() or {}).get("offene_auftraege", []) or []
+        _smax_daten_offen = _smax_load_offen() or {}
+        _smax_offen = _smax_daten_offen.get("offene_auftraege", []) or []
+        _smax_techniker_liste = _smax_daten_offen.get("techniker", []) or []
         print(f"  {len(_smax_offen)} offene Auftraege geladen")
         stk_rows = _baue_stk_rows_echtdaten(_smax_offen, heute=_HEUTE, n=10)
         repair_verdacht_rows = _baue_repair_verdacht_rows_echtdaten(_smax_offen, n=10)
         repair_rows: list[dict] = []  # ungenutzt im Echtdaten-Pfad, siehe repair_verdacht_rows
+
+        print("Berechne Auftragsbuendelung (echte offene Auftraege)...")
+        _auftraege_fuer_buendelung = _baue_echte_auftraege_fuer_buendelung(_smax_offen, heute=_HEUTE)
+        _techniker_ids, _qualifikationsmatrix = _baue_echte_qualifikationsmatrix(_smax_techniker_liste)
+        buendelung_plaene = buendle_mit_qualifikation(
+            _auftraege_fuer_buendelung,
+            techniker_ids=_techniker_ids,
+            qualifikationsmatrix=_qualifikationsmatrix,
+        )
+        print(f"  {len(buendelung_plaene)} Buendelungsmoeglichkeiten gefunden")
     else:
         print("Berechne Dringlichkeiten fuer naechste 10 STK-Auftraege (Demo)...")
         auftraege = naechste_faellige_auftraege(n=10)
@@ -6190,6 +6331,7 @@ def main() -> None:
         hugo_standorte_marker=hugo_standorte_marker_daten,
         gebiete_status=gebiete_status,
         repair_verdacht_rows=repair_verdacht_rows,
+        buendelung_plaene=buendelung_plaene,
     )
 
     _OUT_PATH.write_text(html, encoding="utf-8")
