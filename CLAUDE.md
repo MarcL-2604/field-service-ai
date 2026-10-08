@@ -13,7 +13,7 @@ Das System hat drei Kernfunktionen:
 ## 2. Technischer Stack
 - Python 3.12 · Pydantic v2
 - Hauptverzeichnis: C:\Projekte\FieldServiceAI
-- Tests: pytest · aktuell 516 Tests grün · 9 Testdateien
+- Tests: pytest · aktuell 1286 Tests grün (siehe `pytest tests/`)
 - Dashboard: reporting/dashboard.py → reporting/dashboard.html
 - Abhängigkeiten: pydantic>=2.0, pandas>=2.0, openpyxl>=3.1, pgeocode>=0.5, pytest>=8.0, flake8>=7.0
 
@@ -379,6 +379,10 @@ FieldServiceAI/
 ## 20. Entwicklungskommandos
 
 ```bash
+# Modul 1 per Ein-Klick: Excel importieren -> Dashboard -> Server -> Browser
+start_fsa.bat [Excel-Pfad] [--lan]      # Alternative: start_fsa.ps1 [-Xlsx Pfad] [-Lan]
+# Import/Validierung: api/smax_validierung.py · lokaler Server: fsa_server.py (nur 127.0.0.1, Whitelist)
+
 # Abhängigkeiten installieren
 pip install -r requirements.txt
 

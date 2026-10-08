@@ -209,6 +209,53 @@ tr:hover td{background:var(--glass2)}
     <p>Lade die benötigten Datensheets hoch um die KI-Planung mit echten Daten zu versorgen. Alle Felder werden validiert bevor die Daten gespeichert werden.</p>
   </div>
 
+  <!-- SMAX-KOMPLETTIMPORT (lokal) -->
+  <div class="card" id="smax-lokal-card" style="margin-bottom:20px">
+    <div class="card-header">
+      <div>
+        <div class="card-title">SMax-Excel komplett importieren</div>
+        <div class="card-sub">Ein Schritt: Excel pr&uuml;fen &rarr; Cache erneuern &rarr; Dashboard neu erzeugen</div>
+      </div>
+      <span class="sheet-badge">LOKAL</span>
+    </div>
+    <div id="smax-lokal-online" style="display:none">
+      <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Die komplette SMax-Exportdatei (<code>KI_gestuetzte_Planung.xlsx</code>, 5 Sheets) ausw&auml;hlen. Das Format wird vor dem Import gepr&uuml;ft; bei Abweichungen erscheint eine Fehlermeldung mit Sheet- und Spaltenname und es wird nichts ver&auml;ndert.</p>
+      <input type="file" id="smax-xlsx-file" accept=".xlsx">
+      <button class="btn btn-primary" id="smax-xlsx-btn" style="margin-left:8px">Importieren &amp; Dashboard neu erzeugen</button>
+      <pre id="smax-xlsx-out" style="display:none;margin-top:12px;white-space:pre-wrap;font-size:12px;max-height:260px;overflow:auto"></pre>
+    </div>
+    <div id="smax-lokal-offline" style="display:none;font-size:13px;color:var(--muted)">
+      Der Komplettimport l&auml;uft nur lokal auf dem Koordinator-Rechner. Bitte <code>start_fsa.bat</code> im Projektordner ausf&uuml;hren (Excel nach <code>data\KI_gestuetzte_Planung.xlsx</code> legen) &mdash; es importiert, erzeugt das Dashboard und &ouml;ffnet es im Browser. Details: <a href="manual.html#ch1-3" style="color:var(--accent)">Handbuch &ndash; Daten-Import</a>.
+    </div>
+  </div>
+  <script>
+  (function () {
+    var lokal = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') && location.protocol === 'http:';
+    document.getElementById(lokal ? 'smax-lokal-online' : 'smax-lokal-offline').style.display = 'block';
+    if (!lokal) return;
+    var btn = document.getElementById('smax-xlsx-btn');
+    var out = document.getElementById('smax-xlsx-out');
+    btn.addEventListener('click', function () {
+      var f = document.getElementById('smax-xlsx-file').files[0];
+      out.style.display = 'block';
+      if (!f) { out.textContent = 'Bitte zuerst eine .xlsx-Datei auswählen.'; return; }
+      btn.disabled = true;
+      out.textContent = 'Import läuft (kann 1–2 Minuten dauern) ...';
+      fetch('/api/import', { method: 'POST', body: f })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (j.ok) { out.textContent = 'FERTIG \u2013 Dashboard ist aktuell (dashboard.html neu laden).\n\n' + (j.log || ''); }
+          else {
+            var probleme = (j.probleme || []).map(function (p) { return ' - ' + p; }).join('\n');
+            out.textContent = 'FEHLER: ' + (j.fehler || '') + '\n' + probleme + (j.log ? '\n\n' + j.log : '');
+          }
+        })
+        .catch(function () { out.textContent = 'Server nicht erreichbar. Bitte start_fsa.bat verwenden.'; })
+        .then(function () { btn.disabled = false; });
+    });
+  })();
+  </script>
+
   <!-- STATUS BAR -->
   <div class="status-bar">
     <div class="status-items">

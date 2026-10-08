@@ -242,7 +242,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
       <section class="manual-section" id="ch1-3">
         <h2><span class="section-num">3.</span><span data-i18n="ch1.3.h">Daten-Import im Detail</span></h2>
         <div data-i18n-html="ch1.3.body">
-          <p>Diese Anleitung beschreibt den <strong>tatsächlichen, produktiven Import-Vorgang</strong> — den Weg, mit dem die aktuellen Live-Daten (24 Techniker, 6.569 Geräte, 1.444 Kliniken) ins Dashboard gelangt sind. Er läuft über Claude Code und zwei Python-Skripte, <strong>nicht</strong> über die Speichern-Schaltfläche in coordinator_import.html (siehe Hinweis in Kapitel 1.2).</p>
+          <p>Diese Anleitung beschreibt den <strong>tatsächlichen, produktiven Import-Vorgang</strong> — den Weg, mit dem die aktuellen Live-Daten (24 Techniker, 6.569 Geräte, 1.444 Kliniken) ins Dashboard gelangt sind. Er läuft seit Oktober 2026 per <strong>Ein-Klick-Skript <code>start_fsa.bat</code></strong> (kein Claude Code und kein Insiderwissen nötig) — <strong>nicht</strong> über die Speichern-Schaltfläche der CSV-Tabs in coordinator_import.html (siehe Hinweis in Kapitel 1.2).</p>
 
           <h3>Quellformat — was SMax liefern muss</h3>
           <p>Eine Excel-Datei (<code>.xlsx</code>) mit exakt <strong>5 Sheets</strong>. Die Sheet-Namen müssen exakt übereinstimmen (Groß-/Kleinschreibung, Unterstriche, Leerzeichen):</p>
@@ -258,15 +258,28 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
             Der reale SMax-Export enthält bei Closed/Open Jobs teils weitere Spalten (z.&nbsp;B. <code>Contract Category</code>, <code>Contract Type</code>) — diese dürfen vorhanden sein, werden vom Import aktuell aber nicht ausgewertet und einfach ignoriert.
           </div>
 
-          <h3>Import-Schritte</h3>
+          <h3>Import-Schritte (Ein-Klick)</h3>
           <ol>
-            <li>Excel-Datei exakt als <code>KI_gestuetzte_Planung.xlsx</code> nach <code>C:\Projekte\FieldServiceAI\data\</code> kopieren — Dateiname und Pfad sind im Code fest hinterlegt. Bei abweichendem Namen/Pfad einfach in Claude Code angeben, dann übernimmt Claude Code das Umbenennen/Verschieben.</li>
-            <li>Claude Code im Projektordner <code>C:\Projekte\FieldServiceAI</code> starten.</li>
-            <li>Import ausführen: <code>python -m api.smax_cache</code> — liest die XLSX vollständig (intern fest <code>sample_limit=None</code>, kein Stichproben-Limit) und schreibt <code>data/smax_dashboard_data.json</code> neu. Die Konsolenausgabe zeigt Techniker-, Skill- und Auftragszahlen sowie die PLZ-Auflösungsquote zur Kontrolle.</li>
-            <li>Dashboard neu generieren: <code>python -m reporting.dashboard</code> — erzeugt <code>reporting/dashboard.html</code> und die Root-Kopie <code>dashboard.html</code> (GitHub-Pages-Stand) neu, beide danach identisch.</li>
-            <li><code>pytest tests/</code> laufen lassen — alle Tests müssen grün bleiben, bevor der neue Stand übernommen wird.</li>
-            <li>Bei grünem Ergebnis: <code>git add</code>, <code>commit</code>, <code>push</code> für den Live-Stand.</li>
+            <li>SMax-Export als <code>KI_gestuetzte_Planung.xlsx</code> in den Ordner <code>C:\Projekte\FieldServiceAI\data\</code> legen (bestehende Datei ersetzen). Liegt die Datei woanders, den Pfad beim Start angeben (Schritt 2).</li>
+            <li>Im Projektordner <code>start_fsa.bat</code> per Doppelklick starten — oder aus der Eingabeaufforderung: <code>start_fsa.bat "C:\Pfad\export.xlsx"</code> für eine Datei an anderer Stelle. Wird die <code>.bat</code> auf dem Firmenrechner blockiert: <code>powershell -ExecutionPolicy Bypass -File .\start_fsa.ps1</code> (Parameter dort: <code>-Xlsx "C:\Pfad\export.xlsx"</code>).</li>
+            <li>Das Skript arbeitet 5 Schritte ab und zeigt je Schritt Erfolg oder Fehler: Python-Umgebung prüfen → Excel-Datei prüfen → Import mit Formatprüfung → Dashboard erzeugen → lokalen Server starten und Browser öffnen (<code>http://localhost:8000/dashboard.html</code>). Bei einem Fehler bricht es ab, statt mit halben Daten weiterzumachen.</li>
+            <li>Zur Kontrolle am Ende des Imports die <strong>Zusammenfassung</strong> lesen: Anzahl Techniker, Jobs (geschlossen/offen), Anteil aufgelöster PLZ und die Zahl offener Aufträge ohne Standort.</li>
+            <li>Beenden: Fenster schließen oder <code>Strg+C</code>. Für den Live-Stand (GitHub Pages) danach <code>pytest tests/</code>, <code>git add</code>, <code>commit</code>, <code>push</code>.</li>
           </ol>
+          <div class="example-box">
+            <div class="ex-label">Optional</div>
+            <strong>Excel im Browser hochladen:</strong> Läuft der Server lokal, bietet <code>coordinator_import.html</code> (Karte „SMax-Excel komplett importieren“) denselben Import per Datei-Auswahl an. Auf der Online-Version (GitHub Pages) ist das nicht verfügbar — dort erscheint der Hinweis, <code>start_fsa.bat</code> zu verwenden. <strong>Techniker-App am Handy testen:</strong> <code>start_fsa.bat --lan</code> startet den Server zusätzlich im WLAN und zeigt die Adresse (z.&nbsp;B. <code>http://192.168.x.x:8000/techniker_app.html</code>). Ohne <code>--lan</code> ist der Server nur auf diesem Rechner (127.0.0.1) erreichbar; auch im LAN-Modus werden nur die HTML-Seiten ausgeliefert, nie <code>data/</code>.
+          </div>
+
+          <h3>Fehlermeldungen und was zu tun ist</h3>
+          <ul>
+            <li><strong>„Excel-Datei nicht gefunden“</strong> — Datei nach <code>data\KI_gestuetzte_Planung.xlsx</code> kopieren oder Pfad als Parameter angeben.</li>
+            <li><strong>„Sheet '…' fehlt“ / „Pflichtspalte '…' fehlt“</strong> — der Export weicht vom erwarteten Format ab. Die Meldung nennt Sheet bzw. Spalte und die tatsächlich gefundenen Namen. Es wird <strong>nichts verändert</strong>; der bisherige Stand bleibt bestehen.</li>
+            <li><strong>„keine lesbare .xlsx-Datei“</strong> — als Excel-Arbeitsmappe (.xlsx) speichern (nicht .xls/.csv, nicht passwortgeschützt).</li>
+            <li><strong>„Keine Zugriffsberechtigung“</strong> — die Excel ist noch in Excel geöffnet; schließen und erneut starten.</li>
+            <li><strong>Port 8000 belegt</strong> — läuft schon ein Server (altes Fenster schließen) oder <code>python fsa_server.py --port 8080</code> verwenden.</li>
+            <li><strong>Hinweis im Dashboard „X von Y offenen Aufträgen ohne auflösbaren Standort“</strong> — kein Fehler: diese Aufträge (fehlende PLZ, Österreich/Schweiz) werden nicht in Bündelung und Techniker-Vorauswahl berücksichtigt. <strong>„Keine offenen Aufträge“</strong> bedeutet, dass der Export keine offenen Jobs enthält.</li>
+          </ul>
 
           <h3>Was während des Imports automatisch passiert</h3>
           <ul>
@@ -278,13 +291,13 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
           </ul>
 
           <h3>Wenn sich das Format ändert</h3>
-          <p>Falls SMax neue, umbenannte oder anders strukturierte Spalten liefert, reicht ein reiner Datenaustausch nicht mehr — die Mapping-Logik in <code>api/import_real_data.py</code> (Funktionen <code>map_closed_job_row()</code>, <code>map_open_job_row()</code> usw.) muss dann an die neuen Spaltennamen angepasst werden. Das ist kein einfacher Datenimport mehr, sondern eine Code-Änderung.</p>
+          <p>Die Formatprüfung (<code>api/smax_validierung.py</code>) meldet fehlende oder umbenannte Pflichtspalten sofort. Falls SMax neue, umbenannte oder anders strukturierte Spalten liefert, reicht ein reiner Datenaustausch nicht mehr — die Mapping-Logik in <code>api/import_real_data.py</code> (Funktionen <code>map_closed_job_row()</code>, <code>map_open_job_row()</code> usw.) muss dann an die neuen Spaltennamen angepasst werden. Das ist kein einfacher Datenimport mehr, sondern eine Code-Änderung.</p>
           <p><strong>Cluster-Mapping</strong> (Model Code → Gerätecluster → Repair-Berechtigung) ist <strong>manuell</strong> gepflegt in <code>data/model_code_cluster_mapping.json</code>. Neue Model Codes ohne Eintrag dort werden beim Import stillschweigend ignoriert (kein Fehler, kein Absturz — sie fehlen nur in Qualifikations-Ampel und Cross-Training). Prozess für neue Codes: Model-Codes-Liste (<code>data/model_codes_liste.txt</code>) mit den aktuell gemappten Codes abgleichen, die Differenz an den zuständigen Fachexperten (Rebecca, siehe Sheet-Zuordnung in coordinator_import.html) zur Cluster-Einstufung schicken und die Antwort als neue <code>exact</code>- oder <code>prefixes</code>-Einträge in die JSON-Datei übernehmen.</p>
 
           <h3>Häufige Fehlerquellen</h3>
           <details class="faq-item">
             <summary>Sheet-Namen weichen vom erwarteten Namen ab</summary>
-            <div class="faq-a">Der Import überspringt das betreffende Sheet stillschweigend (Warnung in der Konsolenausgabe von <code>python -m api.smax_cache</code>, kein harter Fehler) — die zugehörigen Daten fehlen dann komplett im Ergebnis. Sheet-Namen exakt wie oben unter „Quellformat" verwenden.</div>
+            <div class="faq-a">Der Import bricht mit einer Meldung ab, die den fehlenden Sheet-Namen nennt („Sheet '…' fehlt. Vorhandene Sheets: …“); der bisherige Stand bleibt unverändert. Sheet-Namen exakt wie oben unter „Quellformat" verwenden.</div>
           </details>
           <details class="faq-item">
             <summary>Model Codes ohne Cluster-Zuordnung</summary>
@@ -623,7 +636,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     'ch1.3.h': 'Data import in detail',
     'ch1.3.body':
-      '<p>This describes the <strong>actual, production import process</strong> — how the current live data (24 technicians, 6,569 devices, 1,444 clinics) got into the dashboard. It runs via Claude Code and two Python scripts, <strong>not</strong> via the save button in coordinator_import.html (see note in chapter 1.2).</p>'
+      '<p>This describes the <strong>actual, production import process</strong> — how the current live data (24 technicians, 6,569 devices, 1,444 clinics) got into the dashboard. Since October 2026 it runs via the <strong>one-click script <code>start_fsa.bat</code></strong> (no Claude Code and no insider knowledge needed) — <strong>not</strong> via the save button of the CSV tabs in coordinator_import.html (see note in chapter 1.2).</p>'
       + '<h3>Source format — what SMax must deliver</h3>'
       + '<p>An Excel file (<code>.xlsx</code>) with exactly <strong>5 sheets</strong>. Sheet names must match exactly (case, underscores, spaces):</p>'
       + '<ul>'
@@ -634,15 +647,24 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<li><strong>"5_Wohnorte"</strong> — <code>Name</code>, <code>Land</code>, <code>Stadt</code> (no ZIP included — resolved automatically via <code>pgeocode</code>).</li>'
       + '</ul>'
       + '<div class="example-box"><div class="ex-label">Note</div>The real SMax export sometimes contains further columns on Closed/Open Jobs (e.g. <code>Contract Category</code>, <code>Contract Type</code>) — these may be present but are currently not evaluated by the import and are simply ignored.</div>'
-      + '<h3>Import steps</h3>'
+      + '<h3>Import steps (one click)</h3>'
       + '<ol>'
-      + '<li>Copy the Excel file to <code>C:\\Projekte\\FieldServiceAI\\data\\</code>, named exactly <code>KI_gestuetzte_Planung.xlsx</code> — the filename and path are hardcoded. If it has a different name/path, just tell Claude Code, which will rename/move it.</li>'
-      + '<li>Start Claude Code in the project folder <code>C:\\Projekte\\FieldServiceAI</code>.</li>'
-      + '<li>Run the import: <code>python -m api.smax_cache</code> — reads the full XLSX (internally fixed at <code>sample_limit=None</code>, no sampling limit) and rewrites <code>data/smax_dashboard_data.json</code>. The console output shows technician, skill, and order counts plus the ZIP resolution rate for verification.</li>'
-      + '<li>Regenerate the dashboard: <code>python -m reporting.dashboard</code> — rebuilds <code>reporting/dashboard.html</code> and the root copy <code>dashboard.html</code> (the GitHub Pages version), both identical afterwards.</li>'
-      + '<li>Run <code>pytest tests/</code> — all tests must stay green before adopting the new state.</li>'
-      + '<li>If green: <code>git add</code>, <code>commit</code>, <code>push</code> for the live state.</li>'
+      + '<li>Put the SMax export into <code>C:\\Projekte\\FieldServiceAI\\data\\</code> as <code>KI_gestuetzte_Planung.xlsx</code> (replace the existing file). If the file lives elsewhere, pass its path at startup (step 2).</li>'
+      + '<li>Double-click <code>start_fsa.bat</code> in the project folder — or from a command prompt: <code>start_fsa.bat "C:\\path\\export.xlsx"</code> for a file elsewhere. If the <code>.bat</code> is blocked on the company PC: <code>powershell -ExecutionPolicy Bypass -File .\\start_fsa.ps1</code> (parameter there: <code>-Xlsx "C:\\path\\export.xlsx"</code>).</li>'
+      + '<li>The script runs 5 steps and reports success or failure for each: check Python environment → check Excel file → import with format validation → generate dashboard → start local server and open the browser (<code>http://localhost:8000/dashboard.html</code>). On any error it aborts instead of continuing with partial data.</li>'
+      + '<li>At the end of the import, read the <strong>summary</strong>: number of technicians, jobs (closed/open), share of resolved ZIP codes, and the number of open orders without a location.</li>'
+      + '<li>To stop: close the window or press <code>Ctrl+C</code>. For the live state (GitHub Pages) afterwards run <code>pytest tests/</code>, <code>git add</code>, <code>commit</code>, <code>push</code>.</li>'
       + '</ol>'
+      + '<div class="example-box"><div class="ex-label">Optional</div><strong>Upload the Excel in the browser:</strong> while the server runs locally, <code>coordinator_import.html</code> (card "Import complete SMax Excel") offers the same import via file picker. It is not available on the online version (GitHub Pages) — there a note points to <code>start_fsa.bat</code>. <strong>Testing the technician app on a phone:</strong> <code>start_fsa.bat --lan</code> additionally serves on the Wi-Fi and prints the address (e.g. <code>http://192.168.x.x:8000/techniker_app.html</code>). Without <code>--lan</code> the server is reachable from this PC only (127.0.0.1); even in LAN mode only the HTML pages are served, never <code>data/</code>.</div>'
+      + '<h3>Error messages and what to do</h3>'
+      + '<ul>'
+      + '<li><strong>"Excel-Datei nicht gefunden" (Excel file not found)</strong> — copy the file to <code>data\\KI_gestuetzte_Planung.xlsx</code> or pass the path as a parameter.</li>'
+      + '<li><strong>"Sheet \'…\' fehlt" / "Pflichtspalte \'…\' fehlt" (sheet / required column missing)</strong> — the export deviates from the expected format. The message names the sheet or column and what was actually found. <strong>Nothing is changed</strong>; the previous state stays in place.</li>'
+      + '<li><strong>"keine lesbare .xlsx-Datei" (not a readable .xlsx)</strong> — save as an Excel workbook (.xlsx), not .xls/.csv, not password-protected.</li>'
+      + '<li><strong>"Keine Zugriffsberechtigung" (no access permission)</strong> — the Excel file is still open in Excel; close it and start again.</li>'
+      + '<li><strong>Port 8000 in use</strong> — a server is already running (close the old window) or use <code>python fsa_server.py --port 8080</code>.</li>'
+      + '<li><strong>Dashboard note "X of Y open orders have no resolvable location"</strong> — not an error: these orders (missing ZIP, Austria/Switzerland) are excluded from bundling and technician pre-selection. <strong>"No open orders"</strong> means the export contains no open jobs.</li>'
+      + '</ul>'
       + '<h3>What happens automatically during import</h3>'
       + '<ul>'
       + '<li>Only technicians with <code>Land = Germany</code> are imported.</li>'
@@ -652,11 +674,11 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<li>SC/year normalization: Closed Jobs are divided by the actual observation period (earliest to latest <code>Actual Resolution</code>) and annualized; Open Jobs are added undivided as the current backlog.</li>'
       + '</ul>'
       + '<h3>If the format changes</h3>'
-      + '<p>If SMax delivers new, renamed, or differently structured columns, a plain data swap is no longer enough — the mapping logic in <code>api/import_real_data.py</code> (functions <code>map_closed_job_row()</code>, <code>map_open_job_row()</code>, etc.) then needs to be adapted to the new column names. That is no longer a simple data import but a code change.</p>'
+      + '<p>The format check (<code>api/smax_validierung.py</code>) reports missing or renamed required columns immediately. If SMax delivers new, renamed, or differently structured columns, a plain data swap is no longer enough — the mapping logic in <code>api/import_real_data.py</code> (functions <code>map_closed_job_row()</code>, <code>map_open_job_row()</code>, etc.) then needs to be adapted to the new column names. That is no longer a simple data import but a code change.</p>'
       + '<p><strong>Cluster mapping</strong> (model code → device cluster → repair authorization) is <strong>manually</strong> maintained in <code>data/model_code_cluster_mapping.json</code>. New model codes without an entry there are silently ignored on import (no error, no crash — they are simply missing from the qualification traffic light and cross-training). Process for new codes: compare the model codes list (<code>data/model_codes_liste.txt</code>) against the currently mapped codes, send the difference to the responsible subject-matter expert (Rebecca, see sheet assignment in coordinator_import.html) for cluster classification, and add the answer as new <code>exact</code> or <code>prefixes</code> entries in the JSON file.</p>'
       + '<h3>Common pitfalls</h3>'
       + '<details class="faq-item"><summary>Sheet names differ from the expected name</summary>'
-      + '<div class="faq-a">The import silently skips the affected sheet (a warning appears in the console output of <code>python -m api.smax_cache</code>, not a hard error) — the corresponding data is then completely missing from the result. Use the sheet names exactly as listed above under "Source format".</div></details>'
+      + '<div class="faq-a">The import aborts with a message naming the missing sheet ("Sheet \'…\' fehlt. Vorhandene Sheets: …"); the previous state stays unchanged. Use the sheet names exactly as listed above under "Source format".</div></details>'
       + '<details class="faq-item"><summary>Model codes without cluster mapping</summary>'
       + '<div class="faq-a">Ignored in the qualification traffic light and cross-training recommendations — not shown as an error, simply not considered. Regularly check <code>data/model_codes_liste.txt</code> against <code>data/model_code_cluster_mapping.json</code> (see "If the format changes" above).</div></details>'
       + '<details class="faq-item"><summary>Technician names in the skills matrix differ from sheet 5</summary>'
