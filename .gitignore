@@ -48,3 +48,7 @@ data/techniker_kontakte.json
 
 # Kommunikations-Log (Simulation/Test-Versand) — lokal, nicht oeffentlich
 data/kommunikation_log.jsonl
+
+# Audit-Paket fuer externes Review -- nie committen
+audit_paket/
+audit_paket.zip
