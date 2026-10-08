@@ -1016,6 +1016,28 @@ def _baue_empfehlungen_echtdaten(
     return ergebnis
 
 
+def _planungshinweis_texte(offene_gesamt: int, ohne_standort: int) -> tuple[str, str]:
+    """(de, en) Hinweistext zur Planbarkeit der offenen Auftraege (Echtdaten-Modus).
+
+    Leer ("", "") wenn alles planbar ist. Deckt die Randfaelle '0 offene
+    Auftraege' und 'Auftraege ohne aufloesbare PLZ' ab (kein Absturz, sondern
+    ein sichtbarer Hinweis fuer den Koordinator).
+    """
+    if offene_gesamt == 0:
+        return (
+            "Keine offenen Aufträge im aktuellen SMax-Export — es gibt nichts zu planen.",
+            "No open orders in the current SMax export — nothing to plan.",
+        )
+    if ohne_standort > 0:
+        return (
+            f"{ohne_standort} von {offene_gesamt} offenen Aufträgen ohne auflösbaren Standort "
+            f"(PLZ fehlt oder außerhalb Deutschlands) — nicht planbar.",
+            f"{ohne_standort} of {offene_gesamt} open orders have no resolvable location "
+            f"(ZIP missing or outside Germany) — cannot be planned.",
+        )
+    return ("", "")
+
+
 def _stk_section_texte(is_echtdaten: bool) -> tuple[str, str, str, str]:
     """(h_de, h_en, hint_de, hint_en) fuer Abschnitt 1 im Auftraege-Tab --
     EIN Wertepaar speist sowohl den initialen Render als auch den
@@ -5160,6 +5182,8 @@ def render_html(
     repair_verdacht_rows: list[dict] | None = None,
     buendelung_plaene: list | None = None,
     empfehlungen_echtdaten: dict | None = None,
+    offene_gesamt: int | None = None,
+    offene_ohne_standort: int = 0,
 ) -> str:
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten, techniker)
     stk_html      = _render_stk_tabelle(stk_rows, zeige_empfehlung=is_echtdaten)
@@ -5287,6 +5311,17 @@ def render_html(
         abschnitt2_tbody_html = _render_repair_tabelle(repair_rows or [])
     auftraege_abschnitt1_html = _render_auftraege_abschnitt1(
         stk_html, dringlichkeit_tip, h_stk_de, hint_stk_de, zeige_empfehlung_spalte=is_echtdaten)
+    plan_hinweis_de, plan_hinweis_en = (
+        _planungshinweis_texte(offene_gesamt, offene_ohne_standort)
+        if is_echtdaten and offene_gesamt is not None else ("", "")
+    )
+    if plan_hinweis_de:
+        auftraege_abschnitt1_html = (
+            '  <div class="planungshinweis" role="status" style="margin:0 0 14px;padding:10px 14px;'
+            'border:1px solid var(--warn, #FF8B00);border-radius:8px;background:rgba(255,139,0,.08)" '
+            f'data-i18n="hint.planInfo">{plan_hinweis_de}</div>'
+            "\n"
+        ) + auftraege_abschnitt1_html
     auftraege_abschnitt2_html = _render_auftraege_abschnitt2(
         is_echtdaten, abschnitt2_tbody_html, h_repair_de, hint_repair_de, sla_status_tip)
     buendelung_karten_html = _render_buendelung_echtdaten(buendelung_plaene or [])
@@ -5549,6 +5584,7 @@ var _I18N = {{
     'hint.demo': {json.dumps(demo_hint_text_de, ensure_ascii=False)},
     'h.stk': {json.dumps(h_stk_de, ensure_ascii=False)},
     'hint.stk': {json.dumps(hint_stk_de, ensure_ascii=False)},
+    'hint.planInfo': {json.dumps(plan_hinweis_de, ensure_ascii=False)},
     'th.orderId': 'Auftrag-ID',
     'th.clinic': 'Klinik',
     'th.device': 'Ger\u00e4t',
@@ -5660,6 +5696,7 @@ var _I18N = {{
     'hint.demo': {json.dumps(demo_hint_text_en, ensure_ascii=False)},
     'h.stk': {json.dumps(h_stk_en, ensure_ascii=False)},
     'hint.stk': {json.dumps(hint_stk_en, ensure_ascii=False)},
+    'hint.planInfo': {json.dumps(plan_hinweis_en, ensure_ascii=False)},
     'th.orderId': 'Order ID',
     'th.clinic': 'Hospital',
     'th.device': 'Device',
@@ -6245,6 +6282,8 @@ def main() -> None:
         nrw_warnung = _berechne_nrw_warnung(ct_rows)
 
     repair_verdacht_rows: list[dict] = []
+    offene_gesamt: int | None = None
+    offene_ohne_standort = 0
     buendelung_plaene: list = []
     empfehlungen_echtdaten: dict = {}
     if _ECHTDATEN:
@@ -6254,6 +6293,10 @@ def main() -> None:
         _smax_offen = _smax_daten_offen.get("offene_auftraege", []) or []
         _smax_techniker_liste = _smax_daten_offen.get("techniker", []) or []
         print(f"  {len(_smax_offen)} offene Auftraege geladen")
+        offene_gesamt = len(_smax_offen)
+        offene_ohne_standort = int(_smax_daten_offen.get("offene_ohne_standort", 0) or 0)
+        if offene_ohne_standort:
+            print(f"  HINWEIS: {offene_ohne_standort} offene Auftraege ohne Standort (nicht planbar)")
         stk_rows = _baue_stk_rows_echtdaten(_smax_offen, heute=_HEUTE, n=10)
         repair_verdacht_rows = _baue_repair_verdacht_rows_echtdaten(_smax_offen, n=10)
         repair_rows: list[dict] = []  # ungenutzt im Echtdaten-Pfad, siehe repair_verdacht_rows
@@ -6450,6 +6493,8 @@ def main() -> None:
         repair_verdacht_rows=repair_verdacht_rows,
         buendelung_plaene=buendelung_plaene,
         empfehlungen_echtdaten=empfehlungen_echtdaten,
+        offene_gesamt=offene_gesamt,
+        offene_ohne_standort=offene_ohne_standort,
     )
 
     _OUT_PATH.write_text(html, encoding="utf-8")

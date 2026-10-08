@@ -222,8 +222,15 @@ def _wende_korrektur_an(repair_mcs: set[str], korrektur: dict) -> set[str]:
     return nach_filter
 
 
-def build_dashboard_data() -> dict:
-    """Parst XLSX und erstellt dashboard-kompatible Daten mit pseudonymisierten IDs."""
+def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
+    """Parst XLSX und erstellt dashboard-kompatible Daten mit pseudonymisierten IDs.
+
+    xlsx_pfad: optionaler Pfad zur Excel-Datei, Default = data/KI_gestuetzte_Planung.xlsx.
+    Raises:
+        FileNotFoundError: Datei existiert nicht.
+        SmaxImportFehler: Format weicht ab (fehlendes Sheet/Spalte, leere Datei, keine Techniker).
+    """
+    from api.smax_validierung import SmaxImportFehler, pruefe_smax_xlsx
     from api.import_real_data import parse_smax_xlsx
     from api.cluster_mapping import finde_cluster, finde_repair_familie
     from api.auslastung_analyse import (
@@ -244,10 +251,17 @@ def build_dashboard_data() -> dict:
     from api.auslastung_analyse import auslastung_pct as _auslastung_pct
     from api.auslastung_analyse import klassifiziere_korridor as _klassifiziere_korridor
 
-    if not _XLSX.exists():
-        raise FileNotFoundError(f"XLSX nicht gefunden: {_XLSX}")
+    xlsx = Path(xlsx_pfad) if xlsx_pfad else _XLSX
+    if not xlsx.exists():
+        raise FileNotFoundError(f"XLSX nicht gefunden: {xlsx}")
 
-    ergebnis = parse_smax_xlsx(_XLSX.read_bytes(), sample_limit=None)
+    pruefe_smax_xlsx(xlsx)  # harte, deutsche Fehlermeldung statt stiller Falschdaten
+    ergebnis = parse_smax_xlsx(xlsx.read_bytes(), sample_limit=None)
+    if not ergebnis.techniker:
+        raise SmaxImportFehler([
+            "Sheet '5_Wohnorte': kein Techniker mit Land = 'Germany' gefunden "
+            "(Spalte 'Land' muss exakt 'Germany' enthalten)."
+        ])
     korrekturen = _lade_korrekturen()
 
     # Echte offene Auftraege (SMax Open Jobs) einzeln fuer den Aufraege-Tab im
@@ -352,18 +366,19 @@ def build_dashboard_data() -> dict:
     alle_auftraege = ergebnis.geschlossene_auftraege + ergebnis.offene_auftraege
     job_standorte_map: dict[tuple[str, str], dict] = {}
     jobs_aufgeloest = 0
+    offene_ohne_standort = 0  # offene Auftraege ohne aufloesbare PLZ -> nicht planbar
     for ist_offen, auftraege_liste in (
         (False, ergebnis.geschlossene_auftraege),
         (True, ergebnis.offene_auftraege),
     ):
         for auftrag in auftraege_liste:
             plz = (auftrag.plz or "").strip()
-            if not plz:
+            coords = hole_koordinaten(plz.zfill(5)) if plz else None
+            if coords is None:
+                if ist_offen:
+                    offene_ohne_standort += 1
                 continue
             plz5 = plz.zfill(5)
-            coords = hole_koordinaten(plz5)
-            if coords is None:
-                continue
             jobs_aufgeloest += 1
             account = (auftrag.account or "").strip()
             key = (account, plz5)
@@ -525,13 +540,14 @@ def build_dashboard_data() -> dict:
         "einsaetze_je_cluster_gesamt": einsaetze_je_cluster_gesamt,
         "auftragstyp_unterscheidbar": False,  # kein Auftragstyp-Feld in Closed/Open Jobs (siehe api/auslastung_analyse.py)
         "offene_auftraege":           offene_auftraege_liste,
+        "offene_ohne_standort":       offene_ohne_standort,
         "generated_at":               datetime.now().isoformat(timespec="seconds"),
     }
 
 
-def save_dashboard_data() -> dict:
+def save_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
     """Erstellt und speichert den JSON-Cache."""
-    data = build_dashboard_data()
+    data = build_dashboard_data(xlsx_pfad)
     _CACHE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     return data
 
@@ -546,32 +562,75 @@ def load_dashboard_data() -> Optional[dict]:
         return None
 
 
-if __name__ == "__main__":
-    print("Erstelle SMax Dashboard-Cache...")
+def _drucke_zusammenfassung(data: dict) -> None:
+    """Kurze Ergebnis-Zusammenfassung fuer Koordinatoren (kein Techniker-Detail)."""
+    gesamt = data["jobs_gesamt"]
+    pct = data["jobs_plz_aufgeloest"] / gesamt * 100 if gesamt else 0
+    offen = data["open_jobs"]
+    ohne = data.get("offene_ohne_standort", 0)
+    print()
+    print("=" * 60)
+    print("ZUSAMMENFASSUNG IMPORT")
+    print("=" * 60)
+    print(f"  Techniker (Deutschland, ohne Manager): {len(data['techniker'])}")
+    print(f"  Jobs gesamt:                           {gesamt} "
+          f"(geschlossen {data['closed_jobs']}, offen {offen})")
+    print(f"  PLZ aufgeloest:                        {data['jobs_plz_aufgeloest']}/{gesamt} ({pct:.1f}%)")
+    print(f"  Offene Auftraege ohne Standort:        {ohne}"
+          f"{' (nicht planbar, z.B. AT/CH oder fehlende PLZ)' if ohne else ''}")
+    if offen == 0:
+        print("  HINWEIS: Keine offenen Auftraege im Export -- Planung zeigt leere Liste.")
+    print("=" * 60)
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    """CLI: python -m api.smax_cache [EXCEL_PFAD]. Rueckgabe = Exit-Code."""
+    import argparse
+    from api.smax_validierung import SmaxImportFehler
+
+    parser = argparse.ArgumentParser(description="SMax-Excel importieren und Dashboard-Cache erstellen.")
+    parser.add_argument("xlsx", nargs="?", default=None,
+                        help=f"Pfad zur SMax-Excel-Datei (Default: {_XLSX})")
+    args = parser.parse_args(argv)
+    xlsx = Path(args.xlsx) if args.xlsx else _XLSX
+
+    print(f"Erstelle SMax Dashboard-Cache aus: {xlsx}")
     try:
-        data = save_dashboard_data()
-        print(f"Gespeichert: {_CACHE}")
-        print(f"  Techniker:               {len(data['techniker'])}")
-        print(f"  Skills gesamt:           {data['total_skills_eintraege']}")
-        print(f"  davon PM:                {data['pm_skills_eintraege']}")
-        print(f"  PM auf Repair-Geraete:   {data['pm_repair_skills_eintraege']}")
-        print(f"  Model Codes gesamt:      {data['total_model_codes']}")
-        print(f"  davon Repair-relevant:   {data['total_repair_codes']}")
-        print(f"  Closed Jobs:             {data['closed_jobs']}")
-        print(f"  Open Jobs:               {data['open_jobs']}")
-        print(f"  Job-Standorte (Gebietsoptimierung): {len(data['job_standorte'])}")
-        pct = data['jobs_plz_aufgeloest'] / data['jobs_gesamt'] * 100 if data['jobs_gesamt'] else 0
-        print(f"  PLZ aufgeloest:          {data['jobs_plz_aufgeloest']}/{data['jobs_gesamt']} ({pct:.1f}%)")
-        print(f"  Beobachtungszeitraum:    {data['beobachtungszeitraum_jahre']} Jahre (Closed Jobs)")
-        modus = "pseudonymisiert (SHA256)" if PSEUDONYMISIERUNG_AKTIV else "echte Namen (Nachname)"
-        print()
-        print(f"Techniker ({modus})  [PM-Codes / PM auf Repair-Geraeten / Abdeckung%]:")
-        for t in data["techniker"]:
-            ka = " [Hugo KA]" if t["hugo_ka"] else ""
-            mx = " [Skills-Matrix]" if t["in_skills_matrix"] else " [keine Skills]"
-            ct = f"  STK-Pot: {t['stk_potenzial']:3d}" if t["stk_potenzial"] > 0 else ""
-            print(f"  {t['pseudonym_id']:14s}  {t['standort']:20s}  "
-                  f"PM: {t['pm_count']:3d}  RepairPM: {t['pm_repair_count']:3d}"
-                  f"  Abdeckung: {t['repair_abdeckung_pct']:5.1f}%{ct}{ka}{mx}")
-    except FileNotFoundError as e:
-        print(f"FEHLER: {e}")
+        data = save_dashboard_data(xlsx)
+    except FileNotFoundError:
+        print(f"FEHLER: Excel-Datei nicht gefunden: {xlsx}")
+        print(f"  Bitte die SMax-Exportdatei als 'KI_gestuetzte_Planung.xlsx' nach")
+        print(f"  {_XLSX.parent}")
+        print(f"  kopieren oder den Pfad als Parameter angeben.")
+        return 2
+    except SmaxImportFehler as e:
+        print("FEHLER: Die Excel-Datei entspricht nicht dem erwarteten SMax-Format:")
+        print(str(e))
+        print("Es wurde NICHTS veraendert (alter Cache bleibt bestehen).")
+        return 3
+    except PermissionError:
+        print(f"FEHLER: Keine Zugriffsberechtigung auf {xlsx} -- ist die Datei noch in Excel geoeffnet?")
+        return 4
+
+    print(f"Gespeichert: {_CACHE}")
+    print(f"  Skills gesamt:           {data['total_skills_eintraege']}")
+    print(f"  davon PM:                {data['pm_skills_eintraege']}")
+    print(f"  Model Codes gesamt:      {data['total_model_codes']}")
+    print(f"  Beobachtungszeitraum:    {data['beobachtungszeitraum_jahre']} Jahre (Closed Jobs)")
+    modus = "pseudonymisiert (SHA256)" if PSEUDONYMISIERUNG_AKTIV else "echte Namen (Nachname)"
+    print()
+    print(f"Techniker ({modus})  [PM-Codes / PM auf Repair-Geraeten / Abdeckung%]:")
+    for t in data["techniker"]:
+        ka = " [Hugo KA]" if t["hugo_ka"] else ""
+        mx = " [Skills-Matrix]" if t["in_skills_matrix"] else " [keine Skills]"
+        ct = f"  STK-Pot: {t['stk_potenzial']:3d}" if t["stk_potenzial"] > 0 else ""
+        print(f"  {t['pseudonym_id']:14s}  {t['standort']:20s}  "
+              f"PM: {t['pm_count']:3d}  RepairPM: {t['pm_repair_count']:3d}"
+              f"  Abdeckung: {t['repair_abdeckung_pct']:5.1f}%{ct}{ka}{mx}")
+    _drucke_zusammenfassung(data)
+    return 0
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(main())
