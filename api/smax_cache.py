@@ -240,7 +240,7 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
         einsatzstunden_pro_jahr,
         jobs_je_cluster,
     )
-    from techniker.plz_koordinaten import hole_koordinaten
+    from techniker.plz_koordinaten import hole_koordinaten, normalisiere_plz
     from config import (
         AUSSENDIENST_STUNDEN,
         HUGO_KA_ZIEL_STUNDEN,
@@ -290,7 +290,8 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
             "einsatzdauer_min": int(dauer_map.get(auftrag.model_code, fallback_dauer_min) or 0),
             "klinik": auftrag.account,
             "ort": auftrag.ort,
-            "plz": auftrag.plz or "",
+            # 5-stellig normalisiert, wenn eine 4-stellige PLZ zur City passt; sonst Rohwert
+            "plz": normalisiere_plz(auftrag.plz, auftrag.ort) or auftrag.plz or "",
             "model_code": auftrag.model_code,
             "produktfamilie": cluster_info.cluster if cluster_info else "Unbekannt",
             "faellig_iso": faellig_dt.date().isoformat() if faellig_dt else None,
@@ -331,7 +332,7 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
         plz = (auftrag.plz or "").strip()
         if not plz:
             continue
-        coords = hole_koordinaten(plz)
+        coords = hole_koordinaten(plz, auftrag.ort)
         if coords is None:
             continue
         job_repair_orte.append((familie, coords[0], coords[1]))
@@ -370,18 +371,21 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
     job_standorte_map: dict[tuple[str, str], dict] = {}
     jobs_aufgeloest = 0
     offene_ohne_standort = 0  # offene Auftraege ohne aufloesbare PLZ -> nicht planbar
+    plz_unklar = 0            # alle Jobs ohne aufloesbare PLZ ("Ausland oder unklar")
     for ist_offen, auftraege_liste in (
         (False, ergebnis.geschlossene_auftraege),
         (True, ergebnis.offene_auftraege),
     ):
         for auftrag in auftraege_liste:
             plz = (auftrag.plz or "").strip()
-            coords = hole_koordinaten(plz.zfill(5)) if plz else None
+            # 4-stellige PLZ (AT/CH oder Excel-Zahl ohne fuehrende 0) nur mit passender City
+            plz5 = normalisiere_plz(plz, auftrag.ort) if plz else None
+            coords = hole_koordinaten(plz5) if plz5 else None
             if coords is None:
+                plz_unklar += 1
                 if ist_offen:
                     offene_ohne_standort += 1
                 continue
-            plz5 = plz.zfill(5)
             jobs_aufgeloest += 1
             account = (auftrag.account or "").strip()
             key = (account, plz5)
@@ -538,6 +542,7 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
         "einsatz_median_min":         einsatz_median_min,
         "job_standorte":              job_standorte,
         "jobs_plz_aufgeloest":        jobs_aufgeloest,
+        "jobs_plz_ausland_oder_unklar": plz_unklar,
         "jobs_gesamt":                jobs_gesamt,
         "beobachtungszeitraum_jahre": round(beobachtungszeitraum_jahre, 2),
         "einsaetze_je_cluster_gesamt": einsaetze_je_cluster_gesamt,

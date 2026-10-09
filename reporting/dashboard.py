@@ -63,6 +63,7 @@ from auftraege.dispatcher import naechste_faellige_auftraege  # noqa: E402
 from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # noqa: E402
 from auftraege.models import Auftrag, AuftragsTyp  # noqa: E402
 from auftraege.tour_optimierung import buendle_mit_qualifikation  # noqa: E402
+from techniker.plz_koordinaten import normalisiere_plz  # noqa: E402
 from reporting.erklaerungen import generiere_erklaerung, FRAGE_TYPEN, FRAGE_TYPEN_EN  # noqa: E402
 from config_hugo_standorte import HUGO_SPRINGER, HUGO_STANDORTE, HUGO_TEAM_GROESSE  # noqa: E402
 from reporting.hugo_kerngebiet import (  # noqa: E402
@@ -890,7 +891,9 @@ def _buendel_scope(job: dict) -> str:
     if any(m in name for m in _cfg.BUENDEL_INTERNE_ACCOUNT_MUSTER):
         return "intern"
     plz = (job.get("plz") or "").strip()
-    if plz and not (plz.isdigit() and len(plz) == 5):
+    # Gleiche Regel wie die PLZ-Aufloesung: 4-stellige PLZ gelten als Deutschland, wenn der
+    # aufgefuellte Ortsname zur City passt; sonst Ausland oder unklar.
+    if plz and normalisiere_plz(plz, job.get("ort")) is None:
         return "ausland"
     return "ok"
 
@@ -928,14 +931,14 @@ def _baue_buendel_eingabe(offene_auftraege: list[dict], smax_techniker: list[dic
         dauer[a.auftrag_id] = (o.get("einsatzdauer_min") or 0) / 60.0
         if not o.get("faellig_iso"):
             unbekannt.add(a.auftrag_id)
-        plz = (o.get("plz") or "").strip()
+        plz = normalisiere_plz(o.get("plz"), o.get("ort")) or ""
         if a.klinik_id:
             plz_je_klinik.setdefault(a.klinik_id, Counter())[plz] += 1
     klinik_xy: dict[str, tuple[float, float] | None] = {}
     for kid, plz_zaehler in plz_je_klinik.items():
         xy = None
         for plz, _ in plz_zaehler.most_common():
-            if plz.isdigit() and len(plz) == 5:
+            if plz:
                 xy = hole_koordinaten(plz)
                 if xy:
                     break
@@ -1124,6 +1127,7 @@ def _baue_empfehlungen_echtdaten(
         empfehlungen = berechne_empfehlung_echtdaten(
             o["model_code"], o.get("plz", ""), smax_techniker,
             repair_erforderlich=bool(o.get("repair_kandidat")),
+            klinik_ort=o.get("ort"),
         )
         ergebnis[aid] = {
             "klinik": o.get("klinik", ""),

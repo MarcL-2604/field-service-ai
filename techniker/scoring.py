@@ -571,6 +571,7 @@ def berechne_empfehlung_echtdaten(
     klinik_plz: str,
     techniker_liste: list[dict],
     repair_erforderlich: bool = False,
+    klinik_ort: str | None = None,
 ) -> list[EmpfehlungErgebnis]:
     """Echtdaten-Variante von berechne_empfehlung() fuer einzelne offene
     SMax-Auftraege (siehe reporting/dashboard.py Aufraege-Tab).
@@ -611,7 +612,7 @@ def berechne_empfehlung_echtdaten(
     """
     from techniker.plz_koordinaten import hole_koordinaten
 
-    klinik_coords = hole_koordinaten(klinik_plz)
+    klinik_coords = hole_koordinaten(klinik_plz, klinik_ort)
     if klinik_coords is None:
         return []
     klinik_lat, klinik_lon = klinik_coords
