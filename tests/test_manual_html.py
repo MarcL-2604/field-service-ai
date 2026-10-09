@@ -51,9 +51,9 @@ class TestManualStruktur:
         assert "Kapitel 1 — Für Koordinatoren" in manual_html
         assert "Kapitel 2 — Für Techniker" in manual_html
 
-    def test_16_abschnitte_mit_id_vorhanden(self, manual_html):
+    def test_17_abschnitte_mit_id_vorhanden(self, manual_html):
         ids = re.findall(r'<section class="manual-section" id="([^"]+)"', manual_html)
-        assert len(ids) == 16
+        assert len(ids) == 17
         assert ids == [f"ch1-{i}" for i in range(1, 11)] + [f"ch2-{i}" for i in range(1, 7)]
 
     def test_toc_sprungmarken_stimmen_mit_abschnitten_ueberein(self, manual_html):
