@@ -280,10 +280,10 @@ API: `berechne_einsatz_dauer(geraete_liste, techniker_id, klinik_id, klinik_groe
 | Universitätsklinikum Hamburg-Eppendorf (UKE) | 4 |
 | Uniklinikum Lübeck | 1 |
 | Klinikum Bochum | 1 |
-| Städtisches Klinikum Dresden | 1 |
-| Universitätsklinikum Ulm | 1 |
+| Demo-Klinik 1007 | 1 |
+| Demo-Klinik 1052 | 1 |
 
-Stuttgart (Katharinenhospital): kein klinisches Gerät – Demo/kein Vertrag, nicht in Serviceplanung aufnehmen.
+Stuttgart (Demo-Klinik 494): kein klinisches Gerät – Demo/kein Vertrag, nicht in Serviceplanung aufnehmen.
 
 Hugo-Regel: Nur Techniker mit Qualifikationslevel L3 (SELBSTSTAENDIG) dürfen Hugo-Aufträge übernehmen. Keine Ausnahmen.
 

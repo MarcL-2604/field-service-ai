@@ -184,6 +184,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
       <a href="#ch1-8" data-i18n="toc.ch1.8">8. Häufige Fragen</a>
       <a href="#ch1-9" data-i18n="toc.ch1.9">9. Modulaufbau des Projekts</a>
       <a href="#ch1-10" data-i18n="toc.ch1.10">10. Kommunikations-Infrastruktur (Vorbereitung)</a>
+      <a href="#ch1-11" data-i18n="toc.ch1.11">11. Betrieb und Datenschutz</a>
       <div class="toc-chapter" data-i18n="toc.ch2">Kapitel 2 — Für Techniker</div>
       <a href="#ch2-1" data-i18n="toc.ch2.1">1. Aufträge erhalten</a>
       <a href="#ch2-2" data-i18n="toc.ch2.2">2. Auftragsdetails verstehen</a>
@@ -452,6 +453,20 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Pl
         </div>
       </section>
 
+      <section class="manual-section" id="ch1-11">
+        <h2><span class="section-num">11.</span><span data-i18n="ch1.11.h">Betrieb und Datenschutz</span></h2>
+        <div data-i18n-html="ch1.11.body">
+          <p>GitHub Pages ist <strong>öffentlich erreichbar</strong> – auch wenn das Repository privat ist. Alles, was im Repository getrackt ist, gilt deshalb als öffentlich.</p>
+          <ul>
+            <li><strong>Echtdaten nur lokal:</strong> SMax-Excel, Cache (<code>data/smax_dashboard_data.json</code>) und das Echtdaten-Dashboard (<code>lokal/dashboard.html</code>) sind per <code>.gitignore</code> ausgeschlossen und werden nie committet.</li>
+            <li><strong>Online-Version nur Demo:</strong> <code>dashboard.html</code> im Repository wird immer im Demo-Modus erzeugt (<code>python -m reporting.dashboard --demo</code>) und trägt das sichtbare Demo-Badge.</li>
+            <li><strong>Ein-Klick-Start:</strong> <code>start_fsa.bat</code> baut das Echtdaten-Dashboard nach <code>lokal/</code>; der lokale Server (nur 127.0.0.1) liefert dann <code>/dashboard.html</code> von dort.</li>
+            <li><strong>Wächter:</strong> <code>python scripts/pruefe_keine_echtdaten.py</code> prüft alle getrackten Dateien auf Technikernamen und Kliniknamen (Ausgabe nur Anzahl und Dateipfad). Optional als pre-commit-Hook: <code>python scripts/install_pre_commit_hook.py</code>.</li>
+            <li><strong>KI-Chat:</strong> Im Echtdaten-Modus ist der Claude-API-Chat standardmäßig aus, weil Daten an einen Cloud-Dienst gingen. Das Template-Erklärungsfeld arbeitet lokal und bleibt aktiv.</li>
+          </ul>
+        </div>
+      </section>
+
       <div class="manual-chapter-title" data-i18n="toc.ch2">Kapitel 2 — Für Techniker</div>
 
       <section class="manual-section" id="ch2-1">
@@ -594,6 +609,7 @@ document.addEventListener('DOMContentLoaded', function() {
     'toc.ch1.7': '7. Tips & tricks', 'toc.ch1.8': '8. FAQ',
     'toc.ch1.9': '9. Project module structure',
     'toc.ch1.10': '10. Communication infrastructure (preparation)',
+    'toc.ch1.11': '11. Operation and data protection',
     'toc.ch2': 'Chapter 2 — For Technicians',
     'toc.ch2.1': '1. Receiving assignments', 'toc.ch2.2': '2. Understanding assignment details',
     'toc.ch2.3': '3. Confirm appointment/ask a question', 'toc.ch2.4': '4. Completing a visit',
@@ -757,6 +773,17 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<li><strong>Module 3 (coming):</strong> operational workflow. The "Workflow" tab carries the same badge for the same reason.</li>'
       + '</ul>'
       + '<p>Controlled technically via <code>MODUL_1_AKTIV</code>/<code>MODUL_2_AKTIV</code>/<code>MODUL_3_AKTIV</code> in <code>config.py</code> — the affected tabs are deliberately kept rather than removed, so the full planned scope stays visible in the dashboard.</p>',
+
+    'ch1.11.h': 'Operation and data protection',
+    'ch1.11.body':
+      '<p>GitHub Pages is <strong>publicly reachable</strong> even when the repository is private. Everything tracked in the repository is therefore considered public.</p>'
+      + '<ul>'
+      + '<li><strong>Real data stays local:</strong> the SMax Excel, the cache (<code>data/smax_dashboard_data.json</code>) and the real-data dashboard (<code>lokal/dashboard.html</code>) are excluded via <code>.gitignore</code> and never committed.</li>'
+      + '<li><strong>Online version is demo only:</strong> <code>dashboard.html</code> in the repository is always generated in demo mode (<code>python -m reporting.dashboard --demo</code>) and carries the visible demo badge.</li>'
+      + '<li><strong>One-click start:</strong> <code>start_fsa.bat</code> builds the real-data dashboard into <code>lokal/</code>; the local server (127.0.0.1 only) then serves <code>/dashboard.html</code> from there.</li>'
+      + '<li><strong>Guard:</strong> <code>python scripts/pruefe_keine_echtdaten.py</code> checks all tracked files for technician and clinic names (output: count and file path only). Optional pre-commit hook: <code>python scripts/install_pre_commit_hook.py</code>.</li>'
+      + '<li><strong>AI chat:</strong> in real-data mode the Claude API chat is off by default because data would go to a cloud service. The template explanation field works locally and stays active.</li>'
+      + '</ul>',
 
     'ch1.10.h': 'Communication infrastructure (preparation)',
     'ch1.10.body':

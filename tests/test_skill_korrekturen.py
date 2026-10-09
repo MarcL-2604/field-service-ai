@@ -13,6 +13,11 @@ from api.smax_cache import _lade_korrekturen, _wende_korrektur_an
 # _wende_korrektur_an: Präfix-Filter + Whitelist
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _key_dirk_g() -> str:
+    """Schluessel in data/skill_korrekturen.json (Klarname, gitignored) per Kurzform finden."""
+    return next(k for k in _lade_korrekturen() if k.startswith("Dirk G"))
+
+
 class TestWendeKorrekturAn:
 
     def _korr(self, praefixe=None, korrekt=None) -> dict:
@@ -102,20 +107,20 @@ class TestLadeKorrekturen:
 
     def test_dirk_goralski_vorhanden(self):
         result = _lade_korrekturen()
-        # Schluessel ist norm_umlaut("Dirk Goralski") = "Dirk Goralski" (keine Umlaute)
-        assert "Dirk Goralski" in result
+        # Schluessel ist norm_umlaut("Dirk G.") = "Dirk G." (keine Umlaute)
+        assert _key_dirk_g() in result
 
     def test_dirk_goralski_praefixe(self):
-        k = _lade_korrekturen()["Dirk Goralski"]
+        k = _lade_korrekturen()[_key_dirk_g()]
         assert "MC-MR8-" in k["praefixe"]
         assert "MC-8253" in k["praefixe"]
 
     def test_dirk_goralski_korrekt_codes(self):
-        k = _lade_korrekturen()["Dirk Goralski"]
+        k = _lade_korrekturen()[_key_dirk_g()]
         assert "MC-FT10"  in k["korrekt"]
         assert "MC-LS10"  in k["korrekt"]
         assert "MC-VLFX8" in k["korrekt"]
 
     def test_grund_vorhanden(self):
-        k = _lade_korrekturen()["Dirk Goralski"]
+        k = _lade_korrekturen()[_key_dirk_g()]
         assert len(k["grund"]) > 0

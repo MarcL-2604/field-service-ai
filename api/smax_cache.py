@@ -296,7 +296,7 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
         })
 
     # Skill-Map: normalisierter Name → {PM-Codes, Alle-Codes}
-    # Normalisierung notwendig: Skills-Sheet hat "Dirk Haebel", Wohnorte "Dirk Hübel"
+    # Normalisierung notwendig: Skills-Sheet und Wohnorte-Sheet schreiben Umlaute unterschiedlich
     skill_pm:     dict[str, set[str]] = {}
     skill_repair: dict[str, set[str]] = {}
     skill_alle:   dict[str, set[str]] = {}
@@ -552,9 +552,18 @@ def save_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
     return data
 
 
+_DEMO_MODUS = False
+
+
+def set_demo_modus(aktiv: bool) -> None:
+    """Demo-Modus: Cache wird ignoriert (fuer die oeffentlich getrackten Dashboards)."""
+    global _DEMO_MODUS
+    _DEMO_MODUS = bool(aktiv)
+
+
 def load_dashboard_data() -> Optional[dict]:
-    """Lädt gespeicherten Cache, gibt None zurück wenn nicht vorhanden."""
-    if not _CACHE.exists():
+    """Lädt gespeicherten Cache, gibt None zurück wenn nicht vorhanden oder Demo-Modus."""
+    if _DEMO_MODUS or not _CACHE.exists():
         return None
     try:
         return json.loads(_CACHE.read_text(encoding="utf-8"))

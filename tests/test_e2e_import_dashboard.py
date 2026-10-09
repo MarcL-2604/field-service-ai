@@ -63,8 +63,10 @@ def _mini_excel(pfad, *, offene=None, ohne_sheet=None, offen_kopf=None,
 def isoliert(tmp_path, monkeypatch):
     """Leitet Cache und HTML-Ausgabe ins tmp-Verzeichnis, stellt Dashboard-Globals wieder her."""
     monkeypatch.setattr(smax_cache, "_CACHE", tmp_path / "cache.json")
-    monkeypatch.setattr(dashboard, "_OUT_PATH", tmp_path / "out.html")
+    monkeypatch.setattr(smax_cache, "_DEMO_MODUS", False)
+    monkeypatch.setattr(dashboard, "_OUT_PATH", tmp_path / "tracked_reporting.html")
     monkeypatch.setattr(dashboard, "_OUT_PATH_ROOT", tmp_path / "root.html")
+    monkeypatch.setattr(dashboard, "_OUT_PATH_LOKAL", tmp_path / "out.html")
     for name in ("_ECHTDATEN", "_TECH_FARBEN", "_GEBIET_AKTUELL", "_GEBIET_OPTIMIERT",
                  "_NRW_TECHNIKER", "_HUGO_KA_IDS"):
         monkeypatch.setattr(dashboard, name, getattr(dashboard, name))
@@ -73,7 +75,7 @@ def isoliert(tmp_path, monkeypatch):
 
 def _pipeline(tmp_path, xlsx):
     data = smax_cache.save_dashboard_data(xlsx)
-    dashboard.main()
+    dashboard.main([])
     return data, (tmp_path / "out.html").read_text(encoding="utf-8")
 
 
@@ -90,8 +92,9 @@ def test_e2e_import_cache_dashboard(isoliert):
     assert "OFF-1" in html and "OFF-2" in html
     assert "Offene Aufträge (Top 10 nach Fälligkeit)" in html
     assert 'class="planungshinweis"' not in html
-    # beide HTML-Kopien identisch (GitHub-Pages-Kopie)
-    assert (isoliert / "root.html").read_text(encoding="utf-8") == html
+    # Echtdaten-Build schreibt NUR nach lokal/, nie in die getrackten (oeffentlichen) Dateien
+    assert not (isoliert / "root.html").exists()
+    assert not (isoliert / "tracked_reporting.html").exists()
 
 
 # -- Randfaelle ---------------------------------------------------------------

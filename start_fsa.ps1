@@ -47,7 +47,7 @@ Write-Host "[3/5] SMax-Excel importieren (Pruefung + Cache) ..."
 & $py -m api.smax_cache $Xlsx
 if ($LASTEXITCODE -ne 0) { Stop-Mit-Fehler "Import fehlgeschlagen - es wird NICHT mit halben Daten weitergemacht." }
 
-Write-Host "[4/5] Dashboard erzeugen ..."
+Write-Host "[4/5] Dashboard erzeugen (Echtdaten -> lokal/dashboard.html, nicht im Repo) ..."
 & $py -m reporting.dashboard
 if ($LASTEXITCODE -ne 0) { Stop-Mit-Fehler "Dashboard-Erzeugung fehlgeschlagen - Abbruch." }
 

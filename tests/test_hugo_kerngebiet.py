@@ -37,22 +37,22 @@ TECHNIKER_KLARNAMEN = {
 
 HUGO_STANDORTE_TEST = {
     "Ulm":     {"anzahl_systeme": 1, "haupt_techniker": ["Marc Liebhardt"], "lat": 48.40, "lon": 9.99},
-    "Hamburg": {"anzahl_systeme": 4, "haupt_techniker": ["Dirk Häbel", "Hector C."], "lat": 53.55, "lon": 9.99},
-    "Dresden":  {"anzahl_systeme": 1, "haupt_techniker": ["Ahmed Awadallah"],
+    "Hamburg": {"anzahl_systeme": 4, "haupt_techniker": ["Dirk H.", "Hector C."], "lat": 53.55, "lon": 9.99},
+    "Dresden":  {"anzahl_systeme": 1, "haupt_techniker": ["Ahmed A."],
                  "hinweis": "Springer-Zuständigkeit", "lat": 51.05, "lon": 13.74},
 }
-HUGO_SPRINGER_TEST = "Ahmed Awadallah"
+HUGO_SPRINGER_TEST = "Ahmed A."
 
 
 class TestHugoTechnikerNamen:
     def test_enthaelt_haupt_techniker_und_springer(self):
         namen = hugo_techniker_namen(HUGO_STANDORTE_TEST, HUGO_SPRINGER_TEST)
-        assert set(namen) == {"Marc Liebhardt", "Dirk Häbel", "Hector C.", "Ahmed Awadallah"}
+        assert set(namen) == {"Marc Liebhardt", "Dirk H.", "Hector C.", "Ahmed A."}
 
     def test_dedupliziert_springer_der_auch_haupt_techniker_ist(self):
-        standorte = {"X": {"haupt_techniker": ["Ahmed Awadallah"], "lat": 0, "lon": 0}}
-        namen = hugo_techniker_namen(standorte, "Ahmed Awadallah")
-        assert namen.count("Ahmed Awadallah") == 1
+        standorte = {"X": {"haupt_techniker": ["Ahmed A."], "lat": 0, "lon": 0}}
+        namen = hugo_techniker_namen(standorte, "Ahmed A.")
+        assert namen.count("Ahmed A.") == 1
 
 
 class TestBerechneHugoKerngebiete:
@@ -111,7 +111,7 @@ class TestBerechneHugoKerngebiete:
         assert ergebnis == []
 
     def test_kurzname_matching_fuer_echtdaten_modus(self):
-        """'Dirk Häbel' aus HUGO_STANDORTE matcht 'Dirk H.' im Techniker-Dict
+        """'Dirk H.' aus HUGO_STANDORTE matcht 'Dirk H.' im Techniker-Dict
         (Kurzform-Schema von api/smax_cache.py._display_name_kurz)."""
         ergebnis = berechne_hugo_kerngebiete(
             TECHNIKER_ECHTDATEN, {"Hamburg": HUGO_STANDORTE_TEST["Hamburg"]}, "",
@@ -166,10 +166,10 @@ class TestConfigHugoStandorte:
         assert HUGO_TEAM_GROESSE["REPAIR"] == 1
 
     def test_springer_ist_ahmed_awadallah(self):
-        assert HUGO_SPRINGER == "Ahmed Awadallah"
+        assert HUGO_SPRINGER == "Ahmed A."
 
     def test_dresden_nur_springer_zustaendig(self):
-        assert HUGO_STANDORTE["Dresden"]["haupt_techniker"] == ["Ahmed Awadallah"]
+        assert HUGO_STANDORTE["Dresden"]["haupt_techniker"] == ["Ahmed A."]
 
     def test_marc_liebhardt_drei_standorte(self):
         marc_standorte = [

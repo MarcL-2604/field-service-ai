@@ -9,6 +9,8 @@ Kleiner lokaler Webserver fuer Field Service AI (nur Python-Standardbibliothek).
 
 Sicherheitsgrenzen:
   * Standard-Bind ausschliesslich 127.0.0.1; LAN nur mit ausdruecklichem --lan.
+  * /dashboard.html wird aus lokal/ (Echtdaten, gitignored) geliefert, falls vorhanden;
+    lokal/ selbst ist nicht direkt abrufbar. Die getrackte Root-Version ist nur Demo.
   * Ausgeliefert werden NUR Dateien aus einer Whitelist (HTML im Projektroot und
     push/). data/ (Excel, Kontaktdaten), Python-Code, Tests, venv sind nicht abrufbar.
   * POST /api/import (Excel hochladen + Dashboard neu bauen) ist nur von
@@ -61,6 +63,14 @@ def ist_erlaubter_pfad(rel: str) -> bool:
     return False
 
 
+def aufgeloester_pfad(rel: str) -> str:
+    """/dashboard.html kommt aus lokal/ (Echtdaten), falls vorhanden; sonst die Demo im Root.
+    lokal/ ist NICHT direkt abrufbar (ist_erlaubter_pfad), nur dieses eine Mapping."""
+    if rel == "dashboard.html" and (ROOT / "lokal" / "dashboard.html").is_file():
+        return "lokal/dashboard.html"
+    return rel
+
+
 def fuehre_import_aus() -> tuple[bool, str]:
     """Import + Dashboard in Subprozessen (saubere Prozess-Isolation)."""
     ausgabe: list[str] = []
@@ -87,7 +97,7 @@ class Handler(SimpleHTTPRequestHandler):
         if not ist_erlaubter_pfad(rel):
             self.send_error(HTTPStatus.NOT_FOUND, "Nicht gefunden")
             return
-        self.path = "/" + rel
+        self.path = "/" + aufgeloester_pfad(rel)
         super().do_GET()
 
     def do_HEAD(self):  # noqa: N802
@@ -95,7 +105,7 @@ class Handler(SimpleHTTPRequestHandler):
         if not ist_erlaubter_pfad(rel):
             self.send_error(HTTPStatus.NOT_FOUND, "Nicht gefunden")
             return
-        self.path = "/" + rel
+        self.path = "/" + aufgeloester_pfad(rel)
         super().do_HEAD()
 
     def list_directory(self, path):  # Verzeichnislisting deaktiviert

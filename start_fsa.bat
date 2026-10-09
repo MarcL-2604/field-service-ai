@@ -62,6 +62,7 @@ if errorlevel 1 (
 echo.
 echo [4/5] Dashboard erzeugen ...
 python -m reporting.dashboard
+rem (Echtdaten-Dashboard wird nach lokal/dashboard.html geschrieben, nicht ins oeffentliche Repo)
 if errorlevel 1 (
   echo.
   echo FEHLER bei der Dashboard-Erzeugung - Abbruch.

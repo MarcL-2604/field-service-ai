@@ -71,7 +71,8 @@ from reporting.hugo_kerngebiet import (  # noqa: E402
 
 _DATA_DIR = _ROOT / "daten"
 _OUT_PATH = Path(__file__).parent / "dashboard.html"
-_OUT_PATH_ROOT = _ROOT / "dashboard.html"   # GitHub Pages copy
+_OUT_PATH_ROOT = _ROOT / "dashboard.html"   # GitHub Pages copy (IMMER Demo-Daten)
+_OUT_PATH_LOKAL = _ROOT / "lokal" / "dashboard.html"   # Echtdaten, gitignored
 _HEUTE = date.today()
 
 # ---------------------------------------------------------------------------
@@ -1525,7 +1526,7 @@ def _generate_demo_history(techniker: dict[str, dict],
         "Hessen": ["UKF Frankfurt", "Klinikum Kassel", "Uniklinik Giessen"],
         "Bayern": ["Klinikum Erlangen", "LMU Muenchen", "Klinikum Augsburg"],
         "Bayern-Nord": ["Klinikum Erlangen", "Klinikum Bayreuth", "Klinikum Bamberg"],
-        "Bayern-Ost": ["Klinikum Regensburg", "Klinikum Passau", "Klinikum Landshut"],
+        "Bayern-Ost": ["Klinikum Regensburg", "Demo-Klinik 600", "Klinikum Landshut"],
         "Baden-Württemberg": ["Uniklinik Tuebingen", "Klinikum Stuttgart", "Uniklinik Ulm"],
         "BaWü-Süd": ["Uniklinik Tuebingen", "Klinikum Stuttgart", "Uniklinik Freiburg"],
         "NRW-West": ["UKB Bonn", "Uniklinik Koeln", "Klinikum Aachen"],
@@ -6205,7 +6206,22 @@ def _vollstaendigkeits_pruefung(html: str) -> list[tuple[str, bool]]:
     return checks
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    import argparse
+    from api import smax_cache as _sc
+    ap = argparse.ArgumentParser(description="Dashboard erzeugen")
+    ap.add_argument("--demo", action="store_true",
+                    help="Demo-Modus: Cache ignorieren, oeffentliche (getrackte) Dateien schreiben")
+    args = ap.parse_args(argv)
+    # Echtdaten-Build schreibt NUR nach lokal/; getrackte Dateien nur im Demo-Modus.
+    _sc.set_demo_modus(args.demo)
+    if not args.demo and _sc.load_dashboard_data() is None:
+        _sc.set_demo_modus(True)   # kein Cache -> Demo (oeffentliche Dateien)
+        args.demo = True
+    _main_build(demo=args.demo)
+
+
+def _main_build(demo: bool) -> None:
     global _ECHTDATEN, _TECH_FARBEN, _GEBIET_AKTUELL, _GEBIET_OPTIMIERT
     global _NRW_TECHNIKER, _HUGO_KA_IDS
 
@@ -6497,10 +6513,15 @@ def main() -> None:
         offene_ohne_standort=offene_ohne_standort,
     )
 
-    _OUT_PATH.write_text(html, encoding="utf-8")
-    _OUT_PATH_ROOT.write_text(html, encoding="utf-8")
-    print(f"Gespeichert: {_OUT_PATH}")
-    print(f"Gespeichert: {_OUT_PATH_ROOT} (GitHub Pages)")
+    if _ECHTDATEN and not demo:
+        _OUT_PATH_LOKAL.parent.mkdir(exist_ok=True)
+        _OUT_PATH_LOKAL.write_text(html, encoding="utf-8")
+        print(f"Gespeichert: {_OUT_PATH_LOKAL} (nur lokal, Echtdaten)")
+    else:
+        _OUT_PATH.write_text(html, encoding="utf-8")
+        _OUT_PATH_ROOT.write_text(html, encoding="utf-8")
+        print(f"Gespeichert: {_OUT_PATH}")
+        print(f"Gespeichert: {_OUT_PATH_ROOT} (GitHub Pages, Demo)")
 
     # Ampel-Zusammenfassung auf der Konsole
     print("\nAmpel-Uebersicht:")

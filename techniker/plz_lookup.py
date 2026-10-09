@@ -32,7 +32,7 @@ STADT_ZU_PLZ: dict[str, str] = {
     "Brakel":            "33034",
     "Bad Aibling":       "83043",
     "Wildenberg":        "93359",   # Ortsteil von Neustadt a.d. Donau, Bayern
-    "Linden":            "30449",   # Linden bei Hannover (Marco Cloos, Markus Niski, Matthias Werner)
+    "Linden":            "30449",   # Linden bei Hannover (Marco C., Markus N., Matthias W.)
 }
 
 # Keine unsicheren Eintraege mehr — alle PLZ bestaetigt

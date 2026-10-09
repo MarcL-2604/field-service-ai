@@ -50,7 +50,7 @@ class TestPlzLookup:
 
     def test_linden_bestaetigt(self):
         plz, unsicher = plz_fuer_stadt("Linden")
-        assert plz == "30449"   # Linden bei Hannover (Marco Cloos, Markus Niski, Matthias Werner)
+        assert plz == "30449"   # Linden bei Hannover (Marco C., Markus N., Matthias W.)
         assert unsicher is False
 
     def test_unbekannte_stadt(self):

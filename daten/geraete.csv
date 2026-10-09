@@ -160,12 +160,12 @@ Charité Berlin,IPC,EC300_NT,4,1,2025-Q3
 Charité Berlin,Neurophysiologie,106E2,3,1,2025-Q4
 Charité Berlin,Gastro_Manometrie,MANOSCAN,2,1,2025-Q2
 Charité Berlin,Beatmung,980X1DEDRAC,8,1,2025-Q1
-Medizinische Hochschule Hannover,NIM,NIM4CM01,2,1,2025-Q2
-Medizinische Hochschule Hannover,AEX,AEX_40-405-1,2,1,2025-Q1
-Medizinische Hochschule Hannover,Schrittmacher_Prog,PROG_2090,6,2,2025-Q3
-Medizinische Hochschule Hannover,HF_Chirurgie,FT10,10,1,2025-Q2
-Medizinische Hochschule Hannover,IPC,1898001,6,1,2025-Q1
-Medizinische Hochschule Hannover,IPC,EC300_Legend,2,1,2025-Q4
+Demo-Klinik 790,NIM,NIM4CM01,2,1,2025-Q2
+Demo-Klinik 790,AEX,AEX_40-405-1,2,1,2025-Q1
+Demo-Klinik 790,Schrittmacher_Prog,PROG_2090,6,2,2025-Q3
+Demo-Klinik 790,HF_Chirurgie,FT10,10,1,2025-Q2
+Demo-Klinik 790,IPC,1898001,6,1,2025-Q1
+Demo-Klinik 790,IPC,EC300_Legend,2,1,2025-Q4
 Universitaetsklinikum Leipzig,NIM,NIM_Response_3.0,2,1,2025-Q2
 Universitaetsklinikum Leipzig,AEX,AEX_40-405-1,2,1,2025-Q1
 Universitaetsklinikum Leipzig,Schrittmacher_Prog,PROG_2090,6,2,2026-Q1
@@ -196,12 +196,12 @@ SLK Kliniken Heilbronn,AEX,AEX_40-405-1,2,1,2025-Q2
 SLK Kliniken Heilbronn,HF_Chirurgie,FT10,8,1,2025-Q4
 SLK Kliniken Heilbronn,IPC,EC300_Legend,2,1,2025-Q1
 SLK Kliniken Heilbronn,Schrittmacher_Prog,PROG_2090,4,2,2026-Q2
-Klinikum der Stadt Ludwigshafen,NIM,NIM4CM01,3,1,2025-Q2
-Klinikum der Stadt Ludwigshafen,AEX,AEX_40-405-1,2,1,2025-Q1
-Klinikum der Stadt Ludwigshafen,Schrittmacher_Prog,PROG_2090,6,2,2025-Q3
-Klinikum der Stadt Ludwigshafen,HF_Chirurgie,FT10,10,1,2025-Q4
-Klinikum der Stadt Ludwigshafen,Beatmung,980X1DEDRAC,4,1,2025-Q2
-Klinikum der Stadt Ludwigshafen,IPC,EC300_Legend,2,1,2026-Q1
+Demo-Klinik 620,NIM,NIM4CM01,3,1,2025-Q2
+Demo-Klinik 620,AEX,AEX_40-405-1,2,1,2025-Q1
+Demo-Klinik 620,Schrittmacher_Prog,PROG_2090,6,2,2025-Q3
+Demo-Klinik 620,HF_Chirurgie,FT10,10,1,2025-Q4
+Demo-Klinik 620,Beatmung,980X1DEDRAC,4,1,2025-Q2
+Demo-Klinik 620,IPC,EC300_Legend,2,1,2026-Q1
 Klinikum Fulda,NIM,NIM4CM01,2,1,2025-Q1
 Klinikum Fulda,NIM,NIM_Response_3.0,2,1,2025-Q3
 Klinikum Fulda,Schrittmacher_Prog,PROG_2090,4,2,2025-Q2
@@ -221,11 +221,11 @@ Klinikum Braunschweig,HF_Chirurgie,FT10,10,1,2025-Q3
 Klinikum Braunschweig,Schrittmacher_Prog,PROG_2090,4,2,2026-Q1
 Klinikum Braunschweig,IPC,EC300_Legend,2,1,2025-Q2
 Klinikum Braunschweig,AEX,AEX_40-405-1,2,1,2025-Q4
-Rems-Murr-Klinikum Winnenden,NIM,NIM4CM01,2,1,2025-Q2
-Rems-Murr-Klinikum Winnenden,AEX,AEX_40-405-1,2,1,2025-Q1
-Rems-Murr-Klinikum Winnenden,HF_Chirurgie,FT10,8,1,2025-Q3
-Rems-Murr-Klinikum Winnenden,IPC,EC300_Legend,2,1,2025-Q4
-Rems-Murr-Klinikum Winnenden,Schrittmacher_Prog,PROG_2090,3,2,2026-Q1
+Demo-Klinik 866,NIM,NIM4CM01,2,1,2025-Q2
+Demo-Klinik 866,AEX,AEX_40-405-1,2,1,2025-Q1
+Demo-Klinik 866,HF_Chirurgie,FT10,8,1,2025-Q3
+Demo-Klinik 866,IPC,EC300_Legend,2,1,2025-Q4
+Demo-Klinik 866,Schrittmacher_Prog,PROG_2090,3,2,2026-Q1
 Klinikum Bayreuth,NIM,NIM_Response_3.0,2,1,2025-Q1
 Klinikum Bayreuth,AEX,AEX_40-405-1,2,1,2025-Q3
 Klinikum Bayreuth,HF_Chirurgie,FT10,8,1,2025-Q2
@@ -235,12 +235,12 @@ Klinikum Kassel,NIM,NIM_Response_3.0,2,1,2025-Q2
 Klinikum Kassel,Schrittmacher_Prog,PROG_2090,4,2,2026-Q1
 Klinikum Kassel,HF_Chirurgie,FT10,8,1,2025-Q3
 Klinikum Kassel,IPC,EC300_Legend,2,1,2025-Q1
-Klinikum Nürnberg,HF_Chirurgie,FT10,10,1,2025-Q2
-Klinikum Nürnberg,IPC,EC300_NT,2,1,2025-Q1
-Klinikum Nürnberg,IPC,1898001,2,1,2025-Q3
-Klinikum Nürnberg,Schrittmacher_Prog,PROG_2090,6,2,2025-Q4
-Klinikum Nürnberg,AEX,AEX_40-405-1,2,1,2025-Q2
-Klinikum Nürnberg,O_arm,Oarm,1,1,2025-Q3
+Demo-Klinik 594,HF_Chirurgie,FT10,10,1,2025-Q2
+Demo-Klinik 594,IPC,EC300_NT,2,1,2025-Q1
+Demo-Klinik 594,IPC,1898001,2,1,2025-Q3
+Demo-Klinik 594,Schrittmacher_Prog,PROG_2090,6,2,2025-Q4
+Demo-Klinik 594,AEX,AEX_40-405-1,2,1,2025-Q2
+Demo-Klinik 594,O_arm,Oarm,1,1,2025-Q3
 Klinikum Ingolstadt,IPC,EC300_Legend,3,1,2025-Q1
 Klinikum Ingolstadt,HF_Chirurgie,FT10,8,1,2025-Q3
 Klinikum Ingolstadt,Schrittmacher_Prog,PROG_2090,4,2,2026-Q1
@@ -256,10 +256,10 @@ Westpfalz-Klinikum Kaiserslautern,Schrittmacher_Prog,PROG_2090,6,2,2026-Q1
 Westpfalz-Klinikum Kaiserslautern,Beatmung,980X1DEDRAC,6,1,2025-Q1
 Westpfalz-Klinikum Kaiserslautern,HF_Chirurgie,FT10,8,1,2025-Q4
 Westpfalz-Klinikum Kaiserslautern,IPC,EC300_Legend,2,1,2025-Q2
-Vivantes Humboldt-Klinikum Berlin,Beatmung,980X1DEDRAC,14,1,2025-Q2
-Vivantes Humboldt-Klinikum Berlin,Schrittmacher_Prog,PROG_2090,8,2,2026-Q1
-Vivantes Humboldt-Klinikum Berlin,HF_Chirurgie,FT10,10,1,2025-Q3
-Vivantes Humboldt-Klinikum Berlin,IPC,EC300_NT,2,1,2025-Q1
+Demo-Klinik 1073 Berlin,Beatmung,980X1DEDRAC,14,1,2025-Q2
+Demo-Klinik 1073 Berlin,Schrittmacher_Prog,PROG_2090,8,2,2026-Q1
+Demo-Klinik 1073 Berlin,HF_Chirurgie,FT10,10,1,2025-Q3
+Demo-Klinik 1073 Berlin,IPC,EC300_NT,2,1,2025-Q1
 Bezirkskliniken Schwaben Augsburg,Beatmung,980X1DEDRAC,8,1,2025-Q2
 Bezirkskliniken Schwaben Augsburg,HF_Chirurgie,FT10,4,1,2025-Q4
 DONAUISAR Klinikum Deggendorf,Beatmung,980X1DEDRAC,16,1,2025-Q1
@@ -271,15 +271,15 @@ Schoen Klinik Hamburg,HF_Chirurgie,FT10,4,1,2025-Q4
 Kliniken Schmieder Heidelberg,Beatmung,980X1DEDRAC,8,1,2025-Q3
 Kliniken Schmieder Heidelberg,HF_Chirurgie,FT10,4,1,2025-Q1
 Kliniken Schmieder Konstanz,Beatmung,980X1DEDRAC,4,1,2025-Q2
-Klinikum Bogenhausen Muenchen,AEX,AEX_40-405-1,2,1,2025-Q1
-Klinikum Bogenhausen Muenchen,HF_Chirurgie,FT10,8,1,2025-Q3
-Klinikum Bogenhausen Muenchen,IPC,EC300_Legend,2,1,2025-Q2
-Klinikum Neuperlach Muenchen,AEX,AEX_40-405-1,2,1,2025-Q4
-Klinikum Neuperlach Muenchen,HF_Chirurgie,FT10,8,1,2025-Q2
-Klinikum Schwabing Muenchen,AEX,AEX_40-405-1,2,1,2025-Q1
-Klinikum Schwabing Muenchen,NIM,NIM_Response_3.0,2,1,2025-Q3
-Klinikum Schwabing Muenchen,HF_Chirurgie,FT10,8,1,2025-Q2
-Klinikum Schwabing Muenchen,IPC,EC300_Legend,2,1,2025-Q4
+Demo-Klinik 539 Muenchen,AEX,AEX_40-405-1,2,1,2025-Q1
+Demo-Klinik 539 Muenchen,HF_Chirurgie,FT10,8,1,2025-Q3
+Demo-Klinik 539 Muenchen,IPC,EC300_Legend,2,1,2025-Q2
+Demo-Klinik 592 Muenchen,AEX,AEX_40-405-1,2,1,2025-Q4
+Demo-Klinik 592 Muenchen,HF_Chirurgie,FT10,8,1,2025-Q2
+Demo-Klinik 603 Muenchen,AEX,AEX_40-405-1,2,1,2025-Q1
+Demo-Klinik 603 Muenchen,NIM,NIM_Response_3.0,2,1,2025-Q3
+Demo-Klinik 603 Muenchen,HF_Chirurgie,FT10,8,1,2025-Q2
+Demo-Klinik 603 Muenchen,IPC,EC300_Legend,2,1,2025-Q4
 # O-arm Standorte (ca. 45 gesamt, verteilt auf grosse Zentren)
 Universitaetsklinikum Hamburg-Eppendorf,O_arm,Oarm,2,1,2025-Q2
 Universitaetsklinikum Freiburg,O_arm,Oarm,2,1,2025-Q1
@@ -296,7 +296,7 @@ Charité Berlin,O_arm,Oarm,3,1,2025-Q1
 Universitaetsklinikum Augsburg,O_arm,Oarm,1,1,2025-Q3
 Universitaetsklinikum Leipzig,O_arm,Oarm,2,1,2025-Q2
 Klinikum Dortmund,O_arm,Oarm,1,1,2025-Q4
-Medizinische Hochschule Hannover,O_arm,Oarm,1,1,2025-Q1
+Demo-Klinik 790,O_arm,Oarm,1,1,2025-Q1
 Klinikum Braunschweig,O_arm,Oarm,1,1,2025-Q3
 Universitaetsklinikum Bonn,O_arm,Oarm,2,1,2025-Q2
 Universitaetsklinikum Ulm,O_arm,Oarm,2,1,2025-Q1
@@ -342,17 +342,17 @@ Universitaetsklinikum Wuerzburg,ACT,ACT200,2,1,2025-Q4
 Universitaetsklinikum Aachen,ACT,ACT200,2,1,2025-Q1
 Klinikum Oldenburg,ACT,ACT200,1,1,2025-Q2
 Klinikum Fulda,ACT,ACT200,1,1,2025-Q3
-Rems-Murr-Klinikum Winnenden,ACT,ACT200,1,1,2025-Q1
-Klinikum der Stadt Ludwigshafen,ACT,ACT200,2,1,2025-Q4
+Demo-Klinik 866,ACT,ACT200,1,1,2025-Q1
+Demo-Klinik 620,ACT,ACT200,2,1,2025-Q4
 Klinikum Bayreuth,ACT,ACT200,1,1,2025-Q2
 Universitaetsklinikum Essen,ACT,ACT200,2,1,2025-Q3
 Uniklinikum Giessen Marburg,ACT,ACT200,2,1,2025-Q1
 Universitaetsklinikum Leipzig,ACT,ACT200,2,1,2025-Q2
 Universitaetsmedizin Rostock,ACT,ACT200,1,1,2025-Q4
-Medizinische Hochschule Hannover,ACT,ACT200,2,1,2025-Q1
+Demo-Klinik 790,ACT,ACT200,2,1,2025-Q1
 Universitaetsklinikum Halle Saale,ACT,ACT200,1,1,2025-Q3
 Uniklinikum Carl Gustav Carus Dresden,ACT,ACT200,1,1,2025-Q2
-Klinikum Nürnberg,ACT,ACT200,2,1,2025-Q4
+Demo-Klinik 594,ACT,ACT200,2,1,2025-Q4
 Staedtisches Klinikum Karlsruhe,ACT,ACT200,2,1,2025-Q1
 Westpfalz-Klinikum Kaiserslautern,ACT,ACT200,1,1,2025-Q2
 # Ablation HF (CAGEN1 - ca. 80 gesamt)
@@ -370,12 +370,12 @@ Universitaetsklinikum Heidelberg,Ablation_HF,CAGEN1,3,1,2025-Q3
 Universitaetsklinikum Erlangen,Ablation_HF,CAGEN1,2,1,2025-Q2
 Klinikum Dortmund,Ablation_HF,CAGEN1,2,1,2025-Q4
 SLK Kliniken Heilbronn,Ablation_HF,CAGEN1,2,1,2025-Q1
-Klinikum der Stadt Ludwigshafen,Ablation_HF,CAGEN1,2,1,2025-Q3
+Demo-Klinik 620,Ablation_HF,CAGEN1,2,1,2025-Q3
 Universitaetsklinikum Tuebingen,Ablation_HF,CAGEN1,2,1,2025-Q2
 Universitaetsklinikum Aachen,Ablation_HF,CAGEN1,2,1,2025-Q4
 Universitaetsklinikum Essen,Ablation_HF,CAGEN1,2,1,2025-Q1
 Universitaetsklinikum Leipzig,Ablation_HF,CAGEN1,2,1,2025-Q3
-Medizinische Hochschule Hannover,Ablation_HF,CAGEN1,2,1,2025-Q2
+Demo-Klinik 790,Ablation_HF,CAGEN1,2,1,2025-Q2
 Universitaetsklinikum Wuerzburg,Ablation_HF,CAGEN1,2,1,2025-Q4
 Klinikum Bayreuth,Ablation_HF,CAGEN1,1,1,2025-Q1
 Klinikum Kassel,Ablation_HF,CAGEN1,1,1,2025-Q3
@@ -394,9 +394,9 @@ Universitaetsklinikum Erlangen,Ablation_RF,RFAGEN,2,1,2025-Q3
 Universitaetsklinikum Muenster,Ablation_RF,RFAGEN,2,1,2025-Q2
 Universitaetsklinikum Tuebingen,Ablation_RF,RFAGEN,2,1,2025-Q4
 Klinikum Dortmund,Ablation_RF,RFAGEN,2,1,2025-Q1
-Klinikum der Stadt Ludwigshafen,Ablation_RF,RFAGEN,2,1,2025-Q3
+Demo-Klinik 620,Ablation_RF,RFAGEN,2,1,2025-Q3
 Universitaetsklinikum Essen,Ablation_RF,RFAGEN,2,1,2025-Q2
-Medizinische Hochschule Hannover,Ablation_RF,RFAGEN,2,1,2025-Q4
+Demo-Klinik 790,Ablation_RF,RFAGEN,2,1,2025-Q4
 Universitaetsklinikum Leipzig,Ablation_RF,RFAGEN,2,1,2025-Q1
 # Gastro Manometrie (MANOSCAN - ca. 40 gesamt, nur Unikliniken)
 Universitaetsklinikum Hamburg-Eppendorf,Gastro_Manometrie,MANOSCAN,2,1,2025-Q2
@@ -411,29 +411,29 @@ Universitaetsklinikum Bonn,Gastro_Manometrie,MANOSCAN,2,1,2025-Q4
 Universitaetsklinikum Wuerzburg,Gastro_Manometrie,MANOSCAN,2,1,2025-Q1
 Universitaetsklinikum Aachen,Gastro_Manometrie,MANOSCAN,2,1,2025-Q3
 Universitaetsklinikum Essen,Gastro_Manometrie,MANOSCAN,2,1,2025-Q2
-Medizinische Hochschule Hannover,Gastro_Manometrie,MANOSCAN,2,1,2025-Q4
+Demo-Klinik 790,Gastro_Manometrie,MANOSCAN,2,1,2025-Q4
 Universitaetsmedizin Mainz,Gastro_Manometrie,MANOSCAN,2,1,2025-Q1
 # Gastro Endoskopie ColonoscopyAI (ca. 60 gesamt)
-Gastroenterologische Praxis Wuppertal,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q2
-Gastroenterologische Praxis Dortmund,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q1
-Gastroenterologische Praxis Hamburg,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q3
-MVZ Dorfen,Gastro_Endoskopie,ColonoscopyAI,3,1,2025-Q2
-CaritasKlinikum Saarbrücken,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q4
+Demo-Klinik 295 Wuppertal,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q2
+Demo-Klinik 295 Dortmund,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q1
+Demo-Klinik 295 Hamburg,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q3
+Demo-Klinik 727,Gastro_Endoskopie,ColonoscopyAI,3,1,2025-Q2
+Demo-Klinik 117,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q4
 Leber Magen Darm Zentrum Muenster,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q1
-Gastroenterologische Praxis Magdeburg,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q3
+Demo-Klinik 295 Magdeburg,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q3
 Krankenhaus Barmherzige Brueder Regensburg,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q2
 Praxis Prof Ehehalt Heidelberg,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q4
-Mare Klinikum Kiel,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q1
+Demo-Klinik 752 Kiel,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q1
 Dres Muelhhoefer Brey Koch,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q3
 Praxis Dr Koeppe,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q2
-Krankenhaus Reinbek,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q4
+Demo-Klinik 650,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q4
 Gastroenterologie Ettlinger Tor Karlsruhe,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q1
 Praxis Dr Schirin-Sokhan,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q3
-Gastroenterologische Praxis Berlin,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q2
-Gastroenterologische Praxis Muenchen,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q4
-Gastroenterologische Praxis Koeln,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q1
-Gastroenterologische Praxis Frankfurt,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q3
-Gastroenterologische Praxis Hannover,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q2
+Demo-Klinik 295 Berlin,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q2
+Demo-Klinik 295 Muenchen,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q4
+Demo-Klinik 295 Koeln,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q1
+Demo-Klinik 295 Frankfurt,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q3
+Demo-Klinik 295 Hannover,Gastro_Endoskopie,ColonoscopyAI,2,1,2025-Q2
 # Neurophysiologie (106E2 NITRON - ca. 90 gesamt)
 Universitaetsklinikum Hamburg-Eppendorf,Neurophysiologie,106E2,3,1,2025-Q2
 Universitaetsklinikum Freiburg,Neurophysiologie,106E2,3,1,2025-Q1
@@ -449,7 +449,7 @@ Klinikum rechts der Isar Muenchen,Neurophysiologie,NITRON,2,1,2025-Q3
 Universitaetsklinikum Frankfurt,Neurophysiologie,NITRON,3,1,2025-Q2
 Universitaetsklinikum Wuerzburg,Neurophysiologie,106E2,2,1,2025-Q4
 Universitaetsklinikum Essen,Neurophysiologie,NITRON,2,1,2025-Q1
-Medizinische Hochschule Hannover,Neurophysiologie,106E2,2,1,2025-Q3
+Demo-Klinik 790,Neurophysiologie,106E2,2,1,2025-Q3
 Universitaetsklinikum Leipzig,Neurophysiologie,NITRON,2,1,2025-Q2
 Universitaetsmedizin Mainz,Neurophysiologie,106E2,2,1,2025-Q4
 Klinikum Dortmund,Neurophysiologie,106E2,2,1,2025-Q1
@@ -465,17 +465,17 @@ Klinikum Aschaffenburg Alzenau,NIM,NIM4CM01,2,1,2025-Q2
 Klinikum Aschaffenburg Alzenau,NIM,NIM_Response_3.0,2,1,2025-Q1
 Klinikum Aschaffenburg Alzenau,HF_Chirurgie,FT10,6,1,2025-Q3
 Klinikum Aschaffenburg Alzenau,Schrittmacher_Prog,PROG_2090,2,2,2025-Q4
-Evangelisches Krankenhaus Bad Duerkheim,NIM,NIM_Response_3.0,2,1,2025-Q2
-Evangelisches Krankenhaus Bad Duerkheim,Schrittmacher_Prog,PROG_2090,2,2,2026-Q1
-Evangelisches Krankenhaus Bad Duerkheim,HF_Chirurgie,FT10,4,1,2025-Q1
+Demo-Klinik 260 Bad Duerkheim,NIM,NIM_Response_3.0,2,1,2025-Q2
+Demo-Klinik 260 Bad Duerkheim,Schrittmacher_Prog,PROG_2090,2,2,2026-Q1
+Demo-Klinik 260 Bad Duerkheim,HF_Chirurgie,FT10,4,1,2025-Q1
 Klinikum Bamberg Sozialstiftung,HF_Chirurgie,FT10,6,1,2025-Q3
 Klinikum Bamberg Sozialstiftung,Schrittmacher_Prog,PROG_2090,4,2,2025-Q2
 Klinikum Bamberg Sozialstiftung,IPC,EC300_NT,2,1,2025-Q4
-Katharinenhospital Stuttgart,HF_Chirurgie,FT10,12,1,2025-Q1
-Katharinenhospital Stuttgart,IPC,EC300_NT,2,1,2025-Q3
-Katharinenhospital Stuttgart,Schrittmacher_Prog,PROG_2090,6,2,2025-Q2
-Katharinenhospital Stuttgart,NIM,NIM4CM01,2,1,2025-Q4
-Katharinenhospital Stuttgart,AEX,AEX_40-405-1,2,1,2025-Q1
+Demo-Klinik 494 Stuttgart,HF_Chirurgie,FT10,12,1,2025-Q1
+Demo-Klinik 494 Stuttgart,IPC,EC300_NT,2,1,2025-Q3
+Demo-Klinik 494 Stuttgart,Schrittmacher_Prog,PROG_2090,6,2,2025-Q2
+Demo-Klinik 494 Stuttgart,NIM,NIM4CM01,2,1,2025-Q4
+Demo-Klinik 494 Stuttgart,AEX,AEX_40-405-1,2,1,2025-Q1
 Klinikum Chemnitz,HF_Chirurgie,FT10,8,1,2025-Q3
 Klinikum Chemnitz,IPC,EC300_NT,2,1,2025-Q2
 Klinikum Chemnitz,NIM,NIM_Response_3.0,2,1,2025-Q4
@@ -500,9 +500,9 @@ Krankenhaus Salem Heidelberg,IPC,EC300_Legend,2,1,2025-Q1
 Klinikum St Georg Leipzig,NIM,NIM4CM01,2,1,2025-Q2
 Klinikum St Georg Leipzig,HF_Chirurgie,FT10,6,1,2025-Q4
 Klinikum St Georg Leipzig,AEX,AEX_40-405-1,2,1,2025-Q1
-KRH Klinikum Nordstadt Hannover,NIM,NIM4CM01,2,1,2025-Q3
-KRH Klinikum Nordstadt Hannover,HF_Chirurgie,FT10,6,1,2025-Q1
-KRH Klinikum Nordstadt Hannover,Schrittmacher_Prog,PROG_2090,4,2,2025-Q2
+Demo-Klinik 462 Hannover,NIM,NIM4CM01,2,1,2025-Q3
+Demo-Klinik 462 Hannover,HF_Chirurgie,FT10,6,1,2025-Q1
+Demo-Klinik 462 Hannover,Schrittmacher_Prog,PROG_2090,4,2,2025-Q2
 Siloah St Trudpert Klinikum Pforzheim,NIM,NIM4CM01,2,1,2025-Q4
 Siloah St Trudpert Klinikum Pforzheim,NIM,NIM_Response_3.0,2,1,2025-Q2
 Siloah St Trudpert Klinikum Pforzheim,HF_Chirurgie,FT10,6,1,2025-Q1
@@ -513,14 +513,14 @@ Neckar-Odenwald-Kliniken,NIM,NIM4CM01,2,1,2025-Q1
 Neckar-Odenwald-Kliniken,HF_Chirurgie,FT10,4,1,2025-Q3
 Neckar-Odenwald-Kliniken,Schrittmacher_Prog,PROG_2090,2,2,2025-Q2
 Neckar-Odenwald-Kliniken,IPC,EC300_NT,2,1,2025-Q4
-Klinikum Itzehoe,NIM,NIM4CM01,2,1,2025-Q1
-Klinikum Itzehoe,IPC,EC300_Legend,2,1,2025-Q3
-Klinikum Itzehoe,HF_Chirurgie,FT10,4,1,2025-Q2
-Klinikum Itzehoe,Schrittmacher_Prog,PROG_2090,2,2,2025-Q4
-Regio Klinikum Pinneberg,NIM,NIM4CM01,2,1,2025-Q2
-Regio Klinikum Pinneberg,Schrittmacher_Prog,PROG_2090,2,2,2026-Q1
-Regio Klinikum Pinneberg,IPC,EC300_NT,2,1,2025-Q1
-Regio Klinikum Pinneberg,HF_Chirurgie,FT10,4,1,2025-Q3
+Demo-Klinik 569,NIM,NIM4CM01,2,1,2025-Q1
+Demo-Klinik 569,IPC,EC300_Legend,2,1,2025-Q3
+Demo-Klinik 569,HF_Chirurgie,FT10,4,1,2025-Q2
+Demo-Klinik 569,Schrittmacher_Prog,PROG_2090,2,2,2025-Q4
+Demo-Klinik 861,NIM,NIM4CM01,2,1,2025-Q2
+Demo-Klinik 861,Schrittmacher_Prog,PROG_2090,2,2,2026-Q1
+Demo-Klinik 861,IPC,EC300_NT,2,1,2025-Q1
+Demo-Klinik 861,HF_Chirurgie,FT10,4,1,2025-Q3
 KKRN Kath Klinikum Ruhrgebiet,NIM,NIM4CM01,2,1,2025-Q4
 KKRN Kath Klinikum Ruhrgebiet,NIM,NIM_Response_3.0,2,1,2025-Q2
 KKRN Kath Klinikum Ruhrgebiet,HF_Chirurgie,FT10,6,1,2025-Q1
@@ -538,29 +538,29 @@ Evang Krankenhaus Duesseldorf,Schrittmacher_Prog,PROG_2090,2,2,2026-Q1
 Klinikum Werra-Meissner,NIM,NIM4CM01,2,1,2025-Q1
 Klinikum Werra-Meissner,Schrittmacher_Prog,PROG_2090,2,2,2025-Q2
 Klinikum Werra-Meissner,HF_Chirurgie,FT10,4,1,2025-Q3
-Klinikum Ibbenbüren,NIM,NIM4CM01,2,1,2025-Q2
-Klinikum Ibbenbüren,NIM,NIM_Response_3.0,2,1,2025-Q4
-Klinikum Ibbenbüren,HF_Chirurgie,FT10,4,1,2025-Q1
-Klinikum Ibbenbüren,Schrittmacher_Prog,PROG_2090,2,2,2025-Q3
+Demo-Klinik 566,NIM,NIM4CM01,2,1,2025-Q2
+Demo-Klinik 566,NIM,NIM_Response_3.0,2,1,2025-Q4
+Demo-Klinik 566,HF_Chirurgie,FT10,4,1,2025-Q1
+Demo-Klinik 566,Schrittmacher_Prog,PROG_2090,2,2,2025-Q3
 Universitaetsklinikum Brandenburg,AEX,AEX_40-405-1,2,1,2025-Q2
 Universitaetsklinikum Brandenburg,Schrittmacher_Prog,PROG_2090,2,2,2026-Q1
 Universitaetsklinikum Brandenburg,HF_Chirurgie,FT10,4,1,2025-Q4
-Marien-Elisabeth-Kliniken Kassel,NIM,NIM4CM01,2,1,2025-Q1
-Marien-Elisabeth-Kliniken Kassel,AEX,AEX_40-405-1,2,1,2025-Q3
-Marien-Elisabeth-Kliniken Kassel,HF_Chirurgie,FT10,4,1,2025-Q2
-Marien-Elisabeth-Kliniken Kassel,NIM,NIM_Response_3.0,2,1,2025-Q4
-Bundeswehrkrankenhaus Ulm,NIM,NIM4CM01,2,1,2025-Q3
-Bundeswehrkrankenhaus Ulm,Schrittmacher_Prog,PROG_2090,2,2,2025-Q1
-Bundeswehrkrankenhaus Ulm,HF_Chirurgie,FT10,4,1,2025-Q2
-Bundeswehrkrankenhaus Ulm,Beatmung,980X1DEDRAC,2,1,2025-Q4
-Bundeswehrzentralkrankenhaus Koblenz,NIM,NIM4CM01,2,1,2025-Q2
-Bundeswehrzentralkrankenhaus Koblenz,HF_Chirurgie,FT10,4,1,2025-Q4
-Kinderkrankenhaus auf der Bult Hannover,NIM,NIM_Response_3.0,2,1,2025-Q1
-Kinderkrankenhaus auf der Bult Hannover,HF_Chirurgie,FT10,4,1,2025-Q3
-Landstuhl Regional Medical Center,NIM,NIM_Response_3.0,2,1,2025-Q2
-Landstuhl Regional Medical Center,Schrittmacher_Prog,PROG_2090,2,2,2025-Q4
-Landstuhl Regional Medical Center,HF_Chirurgie,FT10,4,1,2025-Q1
-Landstuhl Regional Medical Center,IPC,EC300_NT,2,1,2025-Q3
+Demo-Klinik 758,NIM,NIM4CM01,2,1,2025-Q1
+Demo-Klinik 758,AEX,AEX_40-405-1,2,1,2025-Q3
+Demo-Klinik 758,HF_Chirurgie,FT10,4,1,2025-Q2
+Demo-Klinik 758,NIM,NIM_Response_3.0,2,1,2025-Q4
+Demo-Klinik 105,NIM,NIM4CM01,2,1,2025-Q3
+Demo-Klinik 105,Schrittmacher_Prog,PROG_2090,2,2,2025-Q1
+Demo-Klinik 105,HF_Chirurgie,FT10,4,1,2025-Q2
+Demo-Klinik 105,Beatmung,980X1DEDRAC,2,1,2025-Q4
+Demo-Klinik 106 Koblenz,NIM,NIM4CM01,2,1,2025-Q2
+Demo-Klinik 106 Koblenz,HF_Chirurgie,FT10,4,1,2025-Q4
+Demo-Klinik 501 Hannover,NIM,NIM_Response_3.0,2,1,2025-Q1
+Demo-Klinik 501 Hannover,HF_Chirurgie,FT10,4,1,2025-Q3
+Demo-Klinik 706,NIM,NIM_Response_3.0,2,1,2025-Q2
+Demo-Klinik 706,Schrittmacher_Prog,PROG_2090,2,2,2025-Q4
+Demo-Klinik 706,HF_Chirurgie,FT10,4,1,2025-Q1
+Demo-Klinik 706,IPC,EC300_NT,2,1,2025-Q3
 # Weitere LS10 und VLFX8 Verteilung
 Universitaetsklinikum Hamburg-Eppendorf,HF_Chirurgie,LS10,4,1,2025-Q3
 Universitaetsklinikum Freiburg,HF_Chirurgie,VLFX8,3,1,2025-Q2
@@ -599,10 +599,10 @@ Kreisklinik Kaufbeuren,Beatmung,980X1DEDRAC,12,1,2025-Q2
 Kreisklinik Kaufbeuren,HF_Chirurgie,FT10,8,1,2025-Q4
 Kreisklinik Kaufbeuren,NIM,NIM_Response_3.0,3,1,2026-Q2
 Kreisklinik Kaufbeuren,Schrittmacher_Prog,PROG_2090,6,2,2026-Q1
-Klinikum Memmingen,Beatmung,980X1DEDRAC,14,1,2025-Q3
-Klinikum Memmingen,HF_Chirurgie,FT10,8,1,2025-Q1
-Klinikum Memmingen,NIM,NIM_Response_3.0,4,1,2026-Q1
-Klinikum Memmingen,IPC,EC300_Legend,3,1,2025-Q4
+Demo-Klinik 587,Beatmung,980X1DEDRAC,14,1,2025-Q3
+Demo-Klinik 587,HF_Chirurgie,FT10,8,1,2025-Q1
+Demo-Klinik 587,NIM,NIM_Response_3.0,4,1,2026-Q1
+Demo-Klinik 587,IPC,EC300_Legend,3,1,2025-Q4
 Klinikum Lindau,Beatmung,980X1DEDRAC,8,1,2025-Q4
 Klinikum Lindau,HF_Chirurgie,FT10,4,1,2026-Q2
 Klinikum Lindau,NIM,NIM_Vital,2,1,2025-Q3

@@ -52,3 +52,8 @@ data/kommunikation_log.jsonl
 # Audit-Paket fuer externes Review -- nie committen
 audit_paket/
 audit_paket.zip
+
+# Echtdaten-Cache und lokale Echtdaten-Dashboards -- nie committen (GitHub Pages ist oeffentlich)
+data/smax_dashboard_data.json
+data/*.vorher.xlsx
+lokal/

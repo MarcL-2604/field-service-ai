@@ -94,11 +94,11 @@ class TestSendeAuftragsBenachrichtigungSchalterAus:
         assert result["empfaenger"] == "marc.liebhardt@medtronic.com"
 
     def test_platzhalter_techniker_nur_log(self, tmp_path, monkeypatch):
-        _schreibe_kontakte(tmp_path, {"Ahmed Awadallah": "PLATZHALTER@medtronic.com"})
+        _schreibe_kontakte(tmp_path, {"Ahmed A.": "PLATZHALTER@medtronic.com"})
         monkeypatch.setattr(komm, "_KONTAKTE_DATEI", tmp_path / "techniker_kontakte.json")
         monkeypatch.setattr(komm, "KOMMUNIKATION_AUTOMATISCH_AKTIV", False)
 
-        result = komm.sende_auftrags_benachrichtigung("Ahmed Awadallah", AUFTRAG)
+        result = komm.sende_auftrags_benachrichtigung("Ahmed A.", AUFTRAG)
 
         assert result["versendet"] is False
         assert result["modus"] == "log"
@@ -130,7 +130,7 @@ class TestSendeAuftragsBenachrichtigungSchalterAn:
     """KOMMUNIKATION_AUTOMATISCH_AKTIV=True -- Platzhalter bleiben trotzdem gesperrt."""
 
     def test_platzhalter_niemals_versandversuch_trotz_aktivem_schalter(self, tmp_path, monkeypatch):
-        _schreibe_kontakte(tmp_path, {"Ahmed Awadallah": "PLATZHALTER@medtronic.com"})
+        _schreibe_kontakte(tmp_path, {"Ahmed A.": "PLATZHALTER@medtronic.com"})
         monkeypatch.setattr(komm, "_KONTAKTE_DATEI", tmp_path / "techniker_kontakte.json")
         monkeypatch.setattr(komm, "KOMMUNIKATION_AUTOMATISCH_AKTIV", True)
 
@@ -139,7 +139,7 @@ class TestSendeAuftragsBenachrichtigungSchalterAn:
 
         monkeypatch.setattr(komm, "_sende_echte_mail", _sollte_nie_aufgerufen_werden)
 
-        result = komm.sende_auftrags_benachrichtigung("Ahmed Awadallah", AUFTRAG, testkontext=True)
+        result = komm.sende_auftrags_benachrichtigung("Ahmed A.", AUFTRAG, testkontext=True)
 
         assert result["versendet"] is False
         assert result["modus"] == "log"

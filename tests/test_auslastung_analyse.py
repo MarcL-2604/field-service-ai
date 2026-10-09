@@ -83,11 +83,11 @@ class TestJobsJeTechnikerUndCluster:
         jobs = [
             _job("MC-HUGO-1", tech="Marc Liebhardt"),
             _job("MC-8253-1", tech="Marc Liebhardt"),
-            _job("MC-MR8-AA07", tech="Dirk Häbel"),
+            _job("MC-MR8-AA07", tech="Dirk H."),
         ]
         z = jobs_je_techniker_und_cluster(jobs, finde_cluster)
         assert z["Marc Liebhardt"] == {"CLUSTER1_OR": 1, "CLUSTER3_MONITORING": 1}
-        assert z["Dirk Häbel"] == {"CLUSTER2_CARDIAC": 1}
+        assert z["Dirk H."] == {"CLUSTER2_CARDIAC": 1}
 
     def test_job_ohne_techniker_wird_ignoriert(self):
         jobs = [_job("MC-HUGO-1", tech="")]
