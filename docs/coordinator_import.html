@@ -18,11 +18,14 @@
   --primary: #005195;
   --accent:  #0066CC;
   --text:    #1A1A1A;
-  --muted:   #666666;
+  --muted:   #595959;
   --success: #00857C;
   --warn:    #f5a623;
   --error:   #e05252;
   --gold:    #f5a623;
+  --warn-text:    #8A5A00;
+  --error-text:   #C62828;
+  --success-text: #006B63;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;overflow-x:hidden}
@@ -37,20 +40,20 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus J
 .pw-card input:focus{border-color:var(--primary)}
 .pw-btn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background .2s}
 .pw-btn:hover{background:var(--accent)}
-.pw-error{color:var(--error);font-size:12px;margin-top:8px;display:none}
+.pw-error{color:var(--error-text);font-size:12px;margin-top:8px;display:none}
 
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:100;background:rgba(0,81,149,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;color:#fff}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
 .logo-svg{width:32px;height:32px}
-.logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);line-height:1.2}
-.logo-text span{color:var(--accent);display:block;font-size:10px;font-weight:400;letter-spacing:.05em;color:var(--muted)}
+.logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#fff;line-height:1.2}
+.logo-text span{display:block;font-size:10px;font-weight:400;letter-spacing:.05em;color:rgba(255,255,255,.85)}
 .topbar-right{display:flex;align-items:center;gap:12px}
-.badge-demo{background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.4);color:var(--gold);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.06em}
+.badge-demo{background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.4);color:#FFD27A;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.06em}
 .nav-links{display:flex;gap:4px}
-.nav-links a{color:var(--muted);text-decoration:none;font-size:12px;padding:6px 10px;border-radius:6px;transition:all .2s}
-.nav-links a:hover{color:var(--text);background:var(--glass2)}
-.nav-links a.current{color:var(--text);background:var(--glass2);font-weight:600}
+.nav-links a{color:rgba(255,255,255,.9);text-decoration:none;font-size:12px;padding:6px 10px;border-radius:6px;transition:all .2s}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,.18)}
+.nav-links a.current{color:#fff;background:rgba(255,255,255,.22);font-weight:600}
 
 /* LAYOUT */
 .page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:32px 24px 80px}
@@ -68,7 +71,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus J
 .mtab.active{background:var(--primary);color:#fff}
 .mtab .tab-num{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,0.15);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .mtab.active .tab-num{background:rgba(255,255,255,0.25)}
-.mtab .tab-ok{color:var(--success);font-size:11px;display:none}
+.mtab .tab-ok{color:var(--success-text);font-size:11px;display:none}
 .mtab.done .tab-ok{display:inline}
 .mtab.done .tab-num{display:none}
 
@@ -96,7 +99,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus J
 .dz-icon{font-size:28px;margin-bottom:10px}
 .dz-title{font-size:14px;font-weight:600;margin-bottom:4px}
 .dz-sub{font-size:12px;color:var(--muted)}
-.dz-filename{margin-top:8px;font-size:12px;color:var(--success);font-weight:600;display:none}
+.dz-filename{margin-top:8px;font-size:12px;color:var(--success-text);font-weight:600;display:none}
 
 /* TEMPLATE BTN */
 .btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
@@ -308,11 +311,11 @@ tr:hover td{background:var(--glass2)}
             <span style="font-size:12px;color:var(--muted)">Nicht trainiert</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <span style="background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.35);color:var(--warn);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.04em">PM</span>
+            <span style="background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.35);color:var(--warn-text);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.04em">PM</span>
             <span style="font-size:12px;color:var(--muted)">PM / STK — selbe Stufe, kein Feldeinsatz Repair</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <span style="background:rgba(0,196,140,0.15);border:1px solid rgba(0,196,140,0.35);color:var(--success);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.04em">PM+R</span>
+            <span style="background:rgba(0,196,140,0.15);border:1px solid rgba(0,196,140,0.35);color:var(--success-text);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.04em">PM+R</span>
             <span style="font-size:12px;color:var(--muted)">PM / STK + Repair (Feldeinsatz berechtigt)</span>
           </div>
         </div>
@@ -435,12 +438,12 @@ tr:hover td{background:var(--glass2)}
           <div class="card-title">Offene Jobs</div>
           <div class="card-sub">Aktuell offene Aufträge mit Fälligkeiten und Vertragsdaten (Stefan) · GCH-2004 Filter aktiv</div>
         </div>
-        <span class="sheet-badge" style="background:rgba(0,196,140,0.12);border-color:rgba(0,196,140,0.35);color:#00c48c">SHEET 4 · NEU</span>
+        <span class="sheet-badge" style="background:rgba(0,196,140,0.12);border-color:rgba(0,196,140,0.35);color:var(--success-text)">SHEET 4 · NEU</span>
       </div>
 
       <!-- Info box -->
       <div style="background:rgba(0,196,140,0.06);border:1px solid rgba(0,196,140,0.2);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#6bb8a0;line-height:1.6">
-        <strong style="color:var(--success)">ℹ Offene Jobs vs. Historische Daten:</strong>
+        <strong style="color:var(--success-text)">ℹ Offene Jobs vs. Historische Daten:</strong>
         Sheet 3 enthält abgeschlossene Wartungen als Referenz. Sheet 4 enthält die <strong>aktuell zu planenden offenen Aufträge</strong> — diese fließen direkt in die Planungslogik. Keine Duplikate als Seriennummer.
       </div>
 
@@ -480,12 +483,12 @@ tr:hover td{background:var(--glass2)}
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px">
         <div style="font-size:12px;font-weight:600;margin-bottom:10px">Automatische Validierung beim Import</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
-          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> Duplikat-Seriennummern entfernen</div>
-          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> PLZ-Format prüfen (5-stellig)</div>
-          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> Datumsformat normalisieren</div>
-          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> Leere Pflichtfelder markieren</div>
-          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> GCH-Code Filter anwenden</div>
-          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success)">✓</span> Fälligkeits-Ampel berechnen</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success-text)">✓</span> Duplikat-Seriennummern entfernen</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success-text)">✓</span> PLZ-Format prüfen (5-stellig)</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success-text)">✓</span> Datumsformat normalisieren</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success-text)">✓</span> Leere Pflichtfelder markieren</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success-text)">✓</span> GCH-Code Filter anwenden</div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="color:var(--success-text)">✓</span> Fälligkeits-Ampel berechnen</div>
         </div>
       </div>
 
@@ -521,11 +524,11 @@ tr:hover td{background:var(--glass2)}
             <div style="font-size:11px;color:var(--muted);margin-top:2px">Überfällig</div>
           </div>
           <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--warn)" id="stat-soon">—</div>
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--warn-text)" id="stat-soon">—</div>
             <div style="font-size:11px;color:var(--muted);margin-top:2px">Fällig &lt;30 Tage</div>
           </div>
           <div style="background:rgba(0,196,140,0.08);border:1px solid rgba(0,196,140,0.2);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--success)" id="stat-ok">—</div>
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--success-text)" id="stat-ok">—</div>
             <div style="font-size:11px;color:var(--muted);margin-top:2px">Fällig &gt;30 Tage</div>
           </div>
           <div style="background:rgba(0,81,149,0.08);border:1px solid rgba(0,81,149,0.2);border-radius:8px;padding:12px;text-align:center">
