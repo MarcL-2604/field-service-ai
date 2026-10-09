@@ -209,3 +209,25 @@ def test_js_json_neutralisiert_script_ende():
     out = dashboard._js_json({"k": "</script><!-- <script>"})
     assert "<" not in out
     assert json.loads(out) == {"k": "</script><!-- <script>"}
+
+
+# -- F03: Claude-Chat im Echtdaten-Modus gesperrt ------------------------------
+
+def test_chat_im_echtdaten_modus_gesperrt(isoliert):
+    xlsx = _mini_excel(isoliert / "t.xlsx", offene=[("OFF-1", "89073")])
+    _, html = _pipeline(isoliert, xlsx)
+    assert 'id="chat-gesperrt-hinweis"' in html
+    assert "if (true) { return; }" in html
+    assert '<button class="api-key-btn"' not in html
+    assert "var SYSTEM_PROMPT = \"\";" in html          # keine Datenzusammenfassung eingebettet
+    assert 'id="erklaer-box"' in html                    # Template-Erklaerungen bleiben
+
+
+def test_chat_freigabe_per_konstante(isoliert, monkeypatch):
+    import config
+    monkeypatch.setattr(config, "CHAT_MIT_ECHTDATEN_ERLAUBT", True)
+    xlsx = _mini_excel(isoliert / "t.xlsx", offene=[("OFF-1", "89073")])
+    _, html = _pipeline(isoliert, xlsx)
+    assert 'id="chat-gesperrt-hinweis"' not in html
+    assert "if (false) { return; }" in html
+    assert '<button class="api-key-btn"' in html

@@ -5254,8 +5254,24 @@ def render_html(
     rot_count   = sum(1 for a in ampeln if a["ampel_css"] == "ampel-rot")
 
     # System-Prompt fuer Chat
-    system_prompt = _build_system_prompt(ct_rows or [], techniker, ampeln)
+    import config as _cfg_chat
+    # F03: Im Echtdaten-Modus ist der Claude-API-Chat standardmaessig gesperrt (Daten gingen an
+    # einen Cloud-Dienst). Dann wird weder der System-Prompt (Datenzusammenfassung) in die Seite
+    # eingebettet noch der Chat-JS ausgefuehrt. Das Template-Erklaerungsfeld bleibt.
+    chat_gesperrt = bool(is_echtdaten) and not _cfg_chat.CHAT_MIT_ECHTDATEN_ERLAUBT
+    system_prompt = "" if chat_gesperrt else _build_system_prompt(ct_rows or [], techniker, ampeln)
     system_prompt_js = _js_json(system_prompt)
+    chat_gesperrt_js = "true" if chat_gesperrt else "false"
+    api_key_btn_html = "" if chat_gesperrt else (
+        '<button class="api-key-btn" onclick="document.getElementById(' + "'chat-setup'" + ').style.display=' + "'block'"
+        + ';document.getElementById(' + "'api-key-input'" + ').focus()">API-Key &#128273;</button>')
+    chat_hide_attr = ' style="display:none"' if chat_gesperrt else ""
+    chat_gesperrt_hinweis = (
+        '<div class="erklaer-divider" id="chat-gesperrt-hinweis" data-i18n="chat.locked">'
+        'KI-Chat im Echtdaten-Modus gesperrt: Eingaben und Dashboard-Daten w&uuml;rden an einen '
+        'Cloud-Dienst (Claude API) gesendet. Freigabe nur bewusst &uuml;ber '
+        'config.CHAT_MIT_ECHTDATEN_ERLAUBT.</div>'
+    ) if chat_gesperrt else ""
     erklaerungen_json = _js_json(erklaerungen or {})
     frage_typen_json = _js_json(FRAGE_TYPEN)
     frage_typen_en_json = _js_json(FRAGE_TYPEN_EN)
@@ -5400,7 +5416,7 @@ def render_html(
     <a href="workflow_demo.html" class="lang-toggle" style="text-decoration:none">Workflow Demo</a>
     <span class="demo-badge" data-i18n="header.demo">{demo_badge_text_de}</span>
     <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleLang()">EN</button>
-    <button class="api-key-btn" onclick="document.getElementById('chat-setup').style.display='block';document.getElementById('api-key-input').focus()">API-Key &#128273;</button>
+    {api_key_btn_html}
   </div>
 </header>
 
@@ -5533,10 +5549,11 @@ def render_html(
     <button class="chat-btn-primary" id="erklaer-btn" data-i18n="erklaer.btn">Erkl&auml;ren</button>
     <div class="erklaer-antwort" id="erklaer-antwort" style="display:none"></div>
   </div>
-  <div class="erklaer-divider" data-i18n="erklaer.divider">F&uuml;r freie Fragen: Claude API-Key verbinden (optional)</div>
+  {chat_gesperrt_hinweis}
+  <div class="erklaer-divider" data-i18n="erklaer.divider"{chat_hide_attr}>F&uuml;r freie Fragen: Claude API-Key verbinden (optional)</div>
 
   <!-- API-Key Setup -->
-  <div class="chat-setup" id="chat-setup">
+  <div class="chat-setup" id="chat-setup"{chat_hide_attr}>
     <p data-i18n-html="chat.setup">Claude API-Key eingeben, um den<br>KI-Assistenten zu aktivieren.</p>
     <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." autocomplete="off">
     <div class="chat-key-error" id="chat-key-error">Ung&uuml;ltiger API-Key. Bitte pr&uuml;fen.</div>
@@ -5661,6 +5678,7 @@ var _I18N = {{
     'chat.setup': 'Claude API-Key eingeben, um den<br>KI-Assistenten zu aktivieren.',
     'chat.connect': 'Verbinden',
     'chat.keyNote': 'Key wird lokal im Browser gespeichert.<br>Keine serverseitige Speicherung.',
+    'chat.locked': 'KI-Chat im Echtdaten-Modus gesperrt: Eingaben und Dashboard-Daten würden an einen Cloud-Dienst (Claude API) gesendet. Freigabe nur bewusst über config.CHAT_MIT_ECHTDATEN_ERLAUBT.',
     'chat.placeholder': 'Frage zum Dashboard stellen...',
     'chat.removeKey': 'API-Key entfernen',
     'chat.q1': 'Warum T5?',
@@ -5773,6 +5791,7 @@ var _I18N = {{
     'chat.setup': 'Enter Claude API key to<br>activate the AI assistant.',
     'chat.connect': 'Connect',
     'chat.keyNote': 'Key is stored locally in your browser.<br>No server-side storage.',
+    'chat.locked': 'AI chat is locked in real-data mode: inputs and dashboard data would be sent to a cloud service (Claude API). Enable deliberately via config.CHAT_MIT_ECHTDATEN_ERLAUBT only.',
     'chat.placeholder': 'Ask a question about the dashboard...',
     'chat.removeKey': 'Remove API key',
     'chat.q1': 'Why T5?',
@@ -5951,6 +5970,7 @@ document.addEventListener('keydown', function(e) {{
 
 /* ══════════ Claude Chat ══════════ */
 (function() {{
+  if ({chat_gesperrt_js}) {{ return; }}   // F03: Chat im Echtdaten-Modus gesperrt
   var SYSTEM_PROMPT = {system_prompt_js};
   var API_URL = 'https://api.anthropic.com/v1/messages';
   var MODEL = 'claude-sonnet-4-20250514';

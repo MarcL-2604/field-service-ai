@@ -234,3 +234,8 @@ BC_TAGE_PRO_WOCHE = 4                      # Planungstage pro Woche
 BC_WOCHEN_PRO_JAHR = 52
 BC_FAHRZEIT_EINSPARUNG_EUR_JAHR = 10_000   # Annahme (Gebiets-Szenario), nicht gemessen
 BC_INVESTITION_EUR = 17_590                # Annahme: einmalige Implementierungskosten
+
+# ─── Datenschutz: Claude-API-Chat im Dashboard ─────────
+# Im Echtdaten-Modus ist der Chat standardmaessig AUS: Dashboard-Daten und Fragen wuerden an einen
+# Cloud-Dienst (Anthropic API) gesendet. Das Template-Erklaerungsfeld (lokal) bleibt immer aktiv.
+CHAT_MIT_ECHTDATEN_ERLAUBT = False
