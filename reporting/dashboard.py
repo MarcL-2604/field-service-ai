@@ -876,6 +876,89 @@ def _render_offene_echtdaten_tabelle(rows: list[dict]) -> str:
 # ueberfuehren echte SMax-Daten in das von ihm erwartete Schema, ohne den
 # Demo-Pfad (daten/techniker.csv + trainingsmatrix.csv) zu veraendern.
 
+def _norm_text(wert: str) -> str:
+    """Normalisiert Account-/Stadtnamen fuer den Klinik-Schluessel (Gross/Klein, Leerraum, Satzzeichen)."""
+    return re.sub(r"[^0-9a-zäöüß]+", " ", str(wert).casefold()).strip()
+
+
+def _buendel_scope(job: dict) -> str:
+    """'ok' | 'intern' (interner Medtronic-Account) | 'ausland' (PLZ nicht 5-stellig, d.h. AT/CH).
+
+    Leere PLZ bleibt 'ok' -- sie wird spaeter als 'Standort unbekannt' gefuehrt, nicht als Ausland."""
+    import config as _cfg
+    name = (job.get("klinik") or "").casefold()
+    if any(m in name for m in _cfg.BUENDEL_INTERNE_ACCOUNT_MUSTER):
+        return "intern"
+    plz = (job.get("plz") or "").strip()
+    if plz and not (plz.isdigit() and len(plz) == 5):
+        return "ausland"
+    return "ok"
+
+
+def _baue_buendel_eingabe(offene_auftraege: list[dict], smax_techniker: list[dict], heute: date) -> dict:
+    """Bereitet die Buendelung mit Scope-Filter und Echtdaten-Kontext vor.
+
+    Returns dict: auftraege, kontext (BuendelKontext), scope {gesamt, ausland, intern,
+    ausland_kliniken, intern_kliniken, betrachtet}."""
+    from collections import Counter
+    from auftraege.tour_optimierung import BuendelKontext
+    from techniker.plz_koordinaten import hole_koordinaten
+
+    im_scope: list[dict] = []
+    zaehler: Counter = Counter()
+    kliniken: dict[str, set] = {"ausland": set(), "intern": set()}
+    for o in offene_auftraege:
+        sc = _buendel_scope(o)
+        if sc == "ok":
+            im_scope.append(o)
+        else:
+            zaehler[sc] += 1
+            kliniken[sc].add((_norm_text(o.get("klinik") or ""), _norm_text(o.get("ort") or "")))
+
+    auftraege = _baue_echte_auftraege_fuer_buendelung(im_scope, heute=heute)
+    # Fuer Auftraege ohne Auftragsnummer vergibt der Adapter fortlaufende IDs ueber den
+    # gefilterten Index; die Zuordnung zu den Rohdaten laeuft ueber die gleiche Reihenfolge
+    # (Auftraege ohne Klinik werden dort uebersprungen).
+    roh_mit_klinik = [o for o in im_scope if (o.get("klinik") or "").strip()]
+
+    dauer: dict[str, float] = {}
+    unbekannt: set[str] = set()
+    plz_je_klinik: dict[str, Counter] = {}
+    for a, o in zip(auftraege, roh_mit_klinik):
+        dauer[a.auftrag_id] = (o.get("einsatzdauer_min") or 0) / 60.0
+        if not o.get("faellig_iso"):
+            unbekannt.add(a.auftrag_id)
+        plz = (o.get("plz") or "").strip()
+        if a.klinik_id:
+            plz_je_klinik.setdefault(a.klinik_id, Counter())[plz] += 1
+    klinik_xy: dict[str, tuple[float, float] | None] = {}
+    for kid, plz_zaehler in plz_je_klinik.items():
+        xy = None
+        for plz, _ in plz_zaehler.most_common():
+            if plz.isdigit() and len(plz) == 5:
+                xy = hole_koordinaten(plz)
+                if xy:
+                    break
+        klinik_xy[kid] = xy
+
+    tech_xy = {
+        t["pseudonym_id"]: (t["lat"], t["lon"])
+        for t in smax_techniker if (t.get("lat") or t.get("lon"))
+    }
+    auslastung = {t["pseudonym_id"]: t.get("auslastung_pct_real", 0.0) or 0.0 for t in smax_techniker}
+    kontext = BuendelKontext(
+        techniker_koordinaten=tech_xy, auslastung_pct=auslastung, klinik_koordinaten=klinik_xy,
+        einsatzdauer_std=dauer, faelligkeit_unbekannt=unbekannt,
+    )
+    scope = {
+        "gesamt": len(offene_auftraege),
+        "betrachtet": len(im_scope),
+        "ausland": zaehler["ausland"], "intern": zaehler["intern"],
+        "ausland_kliniken": len(kliniken["ausland"]), "intern_kliniken": len(kliniken["intern"]),
+    }
+    return {"auftraege": auftraege, "kontext": kontext, "scope": scope}
+
+
 def _baue_echte_auftraege_fuer_buendelung(offene_auftraege: list[dict], heute: date) -> list[Auftrag]:
     """Baut Auftrag-Objekte aus echten offenen SMax-Jobs.
 
@@ -895,12 +978,17 @@ def _baue_echte_auftraege_fuer_buendelung(offene_auftraege: list[dict], heute: d
     Monats-Bucket.
     """
     auftraege: list[Auftrag] = []
+    # Eine Klinik mit mehreren Schluesseln (gleicher Account + gleiche Stadt, aber z.B. andere
+    # PLZ oder andere Schreibweise) wird zusammengefuehrt: kanonischer Schluessel =
+    # (normalisierter Account, normalisierte Stadt); die erste gesehene Klinik-ID gilt.
+    kanonisch: dict[tuple[str, str], str] = {}
     for i, o in enumerate(offene_auftraege, start=1):
         klinik = (o.get("klinik") or "").strip()
         if not klinik:
             continue
         plz = (o.get("plz") or "").strip()
-        klinik_id = f"{klinik}::{plz}"
+        stadt_norm = _norm_text(o.get("ort") or "") or plz
+        klinik_id = kanonisch.setdefault((_norm_text(klinik), stadt_norm), f"{klinik}::{plz}")
         faelligkeitsdatum = (
             date.fromisoformat(o["faellig_iso"]) if o.get("faellig_iso") else heute
         )
@@ -935,27 +1023,46 @@ _BUENDELUNG_FALL_LABEL = {
     "A": "1 Techniker deckt alles ab",
     "B": "Aufteilung nötig",
     "C": "Teilüberschneidung",
+    "U": "Standort unbekannt",
 }
 
 
-def _render_buendelung_echtdaten(plaene: list) -> str:
+def _buendel_scope_hinweis(scope: dict | None) -> str:
+    """Zeile mit den aus der Buendelung ausgenommenen Auftraegen (getrennt gezaehlt)."""
+    if not scope or not (scope.get("ausland") or scope.get("intern")):
+        return ""
+    teile = []
+    if scope.get("ausland"):
+        teile.append(f"{scope['ausland']} Aufträge ({scope['ausland_kliniken']} Standorte) außerhalb Deutschlands (AT/CH)")
+    if scope.get("intern"):
+        teile.append(f"{scope['intern']} Aufträge interner Medtronic-Accounts")
+    return ("<p class='section-hint'>Nicht gebündelt: " + " &middot; ".join(teile)
+            + f" &mdash; betrachtet: {scope['betrachtet']} von {scope['gesamt']} offenen Aufträgen.</p>")
+
+
+def _render_buendelung_echtdaten(plaene: list, scope: dict | None = None) -> str:
     """Rendert Buendelungs-Ergebnisse aus echten offenen Auftraegen
     (buendle_mit_qualifikation()) als Empfehlungskarten -- gleiches
     Karten-Layout wie die Top-3-Gebietsempfehlungen (.go-empf-*)."""
+    scope_html = _buendel_scope_hinweis(scope)
     if not plaene:
-        return (
+        return scope_html + (
             "<p style='color:var(--text-muted);font-style:italic;'>"
             "Keine B&uuml;ndelungsm&ouml;glichkeiten gefunden (kein Standort mit "
             "&ge;2 offenen Auftr&auml;gen im aktuellen Datensatz).</p>"
         )
-    karten = []
+    karten = [scope_html] if scope_html else []
     for i, plan in enumerate(plaene[:10], start=1):
         fall_text = _BUENDELUNG_FALL_LABEL.get(plan.fall, plan.fall)
+        if not getattr(plan, "faelligkeit_bekannt", True):
+            faellig_html = " &middot; F&auml;lligkeit unbekannt, Potenzial"
+        else:
+            faellig_html = ""
         stats = (
             f'<div class="go-empf-stats">'
             f'{len(plan.alle_auftraege)} Ger&auml;te &middot; '
             f'spart {plan.eingesparte_fahrten} Fahrt(en) &middot; '
-            f'Fall {plan.fall}: {fall_text}</div>'
+            f'Fall {plan.fall}: {fall_text}{faellig_html}</div>'
         )
         hinweis_html = _esc(plan.hinweis).replace("\n", "<br>")
         karten.append(
@@ -5213,6 +5320,7 @@ def render_html(
     gebiete_status: dict[str, dict] | None = None,
     repair_verdacht_rows: list[dict] | None = None,
     buendelung_plaene: list | None = None,
+    buendelung_scope: dict | None = None,
     empfehlungen_echtdaten: dict | None = None,
     offene_gesamt: int | None = None,
     offene_ohne_standort: int = 0,
@@ -5372,7 +5480,7 @@ def render_html(
         ) + auftraege_abschnitt1_html
     auftraege_abschnitt2_html = _render_auftraege_abschnitt2(
         is_echtdaten, abschnitt2_tbody_html, h_repair_de, hint_repair_de, sla_status_tip)
-    buendelung_karten_html = _render_buendelung_echtdaten(buendelung_plaene or [])
+    buendelung_karten_html = _render_buendelung_echtdaten(buendelung_plaene or [], buendelung_scope)
     auftraege_abschnitt3_html = _render_auftraege_abschnitt3(is_echtdaten, buendelung_karten_html)
 
     # ── Modulaufbau Pilotphase (config.MODUL_2_AKTIV/MODUL_3_AKTIV): Tabs
@@ -6357,6 +6465,7 @@ def _main_build(demo: bool) -> None:
     offene_gesamt: int | None = None
     offene_ohne_standort = 0
     buendelung_plaene: list = []
+    buendelung_scope: dict | None = None
     empfehlungen_echtdaten: dict = {}
     if _ECHTDATEN:
         print("Lade echte offene Auftraege (SMax Open Jobs)...")
@@ -6374,14 +6483,17 @@ def _main_build(demo: bool) -> None:
         repair_rows: list[dict] = []  # ungenutzt im Echtdaten-Pfad, siehe repair_verdacht_rows
 
         print("Berechne Auftragsbuendelung (echte offene Auftraege)...")
-        _auftraege_fuer_buendelung = _baue_echte_auftraege_fuer_buendelung(_smax_offen, heute=_HEUTE)
+        _buendel_eingabe = _baue_buendel_eingabe(_smax_offen, _smax_techniker_liste, heute=_HEUTE)
+        buendelung_scope = _buendel_eingabe["scope"]
         _techniker_ids, _qualifikationsmatrix = _baue_echte_qualifikationsmatrix(_smax_techniker_liste)
         buendelung_plaene = buendle_mit_qualifikation(
-            _auftraege_fuer_buendelung,
+            _buendel_eingabe["auftraege"],
             techniker_ids=_techniker_ids,
             qualifikationsmatrix=_qualifikationsmatrix,
+            kontext=_buendel_eingabe["kontext"],
         )
-        print(f"  {len(buendelung_plaene)} Buendelungsmoeglichkeiten gefunden")
+        print(f"  {len(buendelung_plaene)} Buendelungsmoeglichkeiten gefunden "
+              f"(ausserhalb Scope: {buendelung_scope['ausland']} Ausland, {buendelung_scope['intern']} intern)")
 
         print("Berechne Techniker-Empfehlungen fuer angezeigte Auftraege...")
         _angezeigte_auftragsnummern = (
@@ -6564,6 +6676,7 @@ def _main_build(demo: bool) -> None:
         gebiete_status=gebiete_status,
         repair_verdacht_rows=repair_verdacht_rows,
         buendelung_plaene=buendelung_plaene,
+        buendelung_scope=buendelung_scope,
         empfehlungen_echtdaten=empfehlungen_echtdaten,
         offene_gesamt=offene_gesamt,
         offene_ohne_standort=offene_ohne_standort,
