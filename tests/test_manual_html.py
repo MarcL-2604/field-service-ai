@@ -54,7 +54,7 @@ class TestManualStruktur:
     def test_17_abschnitte_mit_id_vorhanden(self, manual_html):
         ids = re.findall(r'<section class="manual-section" id="([^"]+)"', manual_html)
         assert len(ids) == 17
-        assert ids == [f"ch1-{i}" for i in range(1, 11)] + [f"ch2-{i}" for i in range(1, 7)]
+        assert ids == [f"ch1-{i}" for i in range(1, 12)] + [f"ch2-{i}" for i in range(1, 7)]
 
     def test_toc_sprungmarken_stimmen_mit_abschnitten_ueberein(self, manual_html):
         toc_hrefs = re.findall(r'href="#([^"]+)"', manual_html)

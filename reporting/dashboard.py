@@ -467,12 +467,17 @@ LABEL_MAP_EN: dict[str, str] = {
     "Mobilitätskostenreduktion": "Mobility cost reduction",
     "Investition & Break-even": "Investment & break-even",
     "einmalig": "one-time",
-    "Break-even: ca. 10 Wochen": "Break-even: approx. 10 weeks",
+    "Break-even (rechnerisch)": "Break-even (calculated)",
+    "Std./Tag": "h/day",
+    "Annahme: 1 Std./Tag je Techniker (Schätzung, im Pilot zu messen)":
+        "Assumption: 1 h/day per technician (estimate, to be measured in the pilot)",
+    "Annahme, nicht gemessen": "assumption, not measured",
     "Einmalige Implementierungskosten": "One-time implementation costs",
     "Startwert, anpassbar": "Starting value, adjustable",
     "Techniker-Kostensatz (Startwert, anpassbar in config.py)":
         "Technician cost rate (starting value, adjustable in config.py)",
-    "Alle übrigen Kennzahlen sind belastbare Ist-Werte.": "All other figures are solid actuals.",
+    "Alle Kennzahlen dieser Sektion sind Annahmen bzw. Rechenbeispiele, im Pilot zu messen.":
+        "All figures in this section are assumptions or worked examples, to be measured in the pilot.",
     "Herleitung (Schätzung): Marktdurchschnitt Bruttolohn Servicetechniker Medizintechnik Deutschland ≈24 €/h × Lohnnebenkosten-Faktor ≈1,9 (Sozialversicherung, Urlaubs-/Krankheitsrücklage, anteilige Fahrzeug-/Ausrüstungskosten). Zentral anpassbar in config.py.":
         "Derivation (estimate): German medical-device field service technician average gross wage ≈€24/h × non-wage labor cost factor ≈1.9 (employer social security contributions, vacation/sick-leave reserve, pro-rata vehicle/equipment costs). Centrally adjustable in config.py.",
     "Euro-Äquivalent des STK-Potenzials bei internem Techniker-Kostensatz (Startwert, anpassbar in config.py) — zeigt den Wert der freiwerdenden Kapazität, kein garantierter Zusatzumsatz.":
@@ -1455,9 +1460,21 @@ def _render_business_case(stk_potenzial_gesamt: int = 0, median_min: int = 0) ->
     kostensatz_fmt = f"{TECHNIKER_KOSTENSATZ_EUR_STUNDE:.0f}".replace(".", ",")
     kostensatz_tip = _kostensatz_info_tip()
 
-    zeitersparnis_h = 4992
+    import config as _cfg
+    std_tag = _cfg.BC_PLANUNG_STD_PRO_TAG
+    zeitersparnis_h = round(_cfg.BC_TECHNIKER_ANZAHL * std_tag * _cfg.BC_TAGE_PRO_WOCHE * _cfg.BC_WOCHEN_PRO_JAHR)
+    zeit_fmt = f"{zeitersparnis_h:,}".replace(",", ".")
+    std_tag_fmt = f"{std_tag:g}".replace(".", ",")
     monetaerer_wert = round(zeitersparnis_h * TECHNIKER_KOSTENSATZ_EUR_STUNDE)
     monetaerer_wert_fmt = f"{monetaerer_wert:,}".replace(",", ".")
+    fahrzeit_fmt = f"{_cfg.BC_FAHRZEIT_EINSPARUNG_EUR_JAHR:,}".replace(",", ".")
+    invest_fmt = f"{_cfg.BC_INVESTITION_EUR:,}".replace(",", ".")
+    # Break-even = Investition / (Jahreswert / 52); Jahreswert = Planungswert + Fahrzeit-Annahme
+    # (Crosstraining-ROI bewusst nicht eingerechnet -> konservativ).
+    jahreswert = monetaerer_wert + _cfg.BC_FAHRZEIT_EINSPARUNG_EUR_JAHR
+    jahreswert_fmt = f"{jahreswert:,}".replace(",", ".")
+    breakeven_wochen = _cfg.BC_INVESTITION_EUR / (jahreswert / _cfg.BC_WOCHEN_PRO_JAHR) if jahreswert > 0 else None
+    breakeven_fmt = f"{breakeven_wochen:.1f}".replace(".", ",") if breakeven_wochen is not None else "–"
 
     if stk_potenzial_gesamt > 0:
         stk_fmt = f"{stk_potenzial_gesamt:,}".replace(",", ".")
@@ -1483,13 +1500,13 @@ def _render_business_case(stk_potenzial_gesamt: int = 0, median_min: int = 0) ->
     <div class="bc-grid">
       <div class="bc-card">
         <div class="bc-card-title">{_label("Zeitersparnis Planung")}</div>
-        <div class="bc-formula">24 {_label("Techniker")} &times; 4 h/{_label("Tag")} &times; 4 {_label("Tage")} &times; 52 {_label("Wochen")}</div>
-        <div class="bc-result">= 4.992 h/{_label("Jahr")}</div>
-        <div class="bc-hint">{_label("manuelle Planung entfällt")}</div>
+        <div class="bc-formula">{_cfg.BC_TECHNIKER_ANZAHL} &times; {std_tag_fmt} {_label("Std./Tag")} &times; {_cfg.BC_TAGE_PRO_WOCHE} {_label("Tage")} &times; {_cfg.BC_WOCHEN_PRO_JAHR} {_label("Wochen")}</div>
+        <div class="bc-result">= {zeit_fmt} h/{_label("Jahr")}</div>
+        <div class="bc-hint">{_label("manuelle Planung entfällt")} &ndash; {_label("Annahme: 1 Std./Tag je Techniker (Schätzung, im Pilot zu messen)")}</div>
       </div>
       <div class="bc-card">
         <div class="bc-card-title">{_label("Monetärer Wert")}</div>
-        <div class="bc-formula">4.992 h &times; {kostensatz_fmt}&thinsp;&euro;/h{kostensatz_tip}</div>
+        <div class="bc-formula">{zeit_fmt} h &times; {kostensatz_fmt}&thinsp;&euro;/h{kostensatz_tip}</div>
         <div class="bc-result">= {monetaerer_wert_fmt} &euro;/{_label("Jahr")}</div>
         <div class="bc-hint">{_label("Jährliche Einsparung")}</div>
       </div>
@@ -1499,19 +1516,19 @@ def _render_business_case(stk_potenzial_gesamt: int = 0, median_min: int = 0) ->
       <div class="bc-card">
         <div class="bc-card-title">{_label("Fahrzeit / Gebiet")}</div>
         <div class="bc-formula">{_label("Fahrzeit-Einsparung aus Gebiets-Szenario")}</div>
-        <div class="bc-result">~10.000 &euro;/{_label("Jahr")}</div>
-        <div class="bc-hint">{_label("Mobilitätskostenreduktion")}</div>
+        <div class="bc-result">~{fahrzeit_fmt} &euro;/{_label("Jahr")}</div>
+        <div class="bc-hint">{_label("Mobilitätskostenreduktion")} &ndash; {_label("Annahme, nicht gemessen")}</div>
       </div>
       <div class="bc-card">
         <div class="bc-card-title">{_label("Investition &amp; Break-even")}</div>
-        <div class="bc-formula">17.590 &euro; {_label("einmalig")}</div>
-        <div class="bc-result">{_label("Break-even: ca. 10 Wochen")}</div>
-        <div class="bc-hint">{_label("Einmalige Implementierungskosten")}</div>
+        <div class="bc-formula">{invest_fmt} &euro; {_label("einmalig")} / ({jahreswert_fmt} &euro; / {_cfg.BC_WOCHEN_PRO_JAHR})</div>
+        <div class="bc-result">{_label("Break-even (rechnerisch)")}: ca. {breakeven_fmt} {_label("Wochen")}</div>
+        <div class="bc-hint">{_label("Einmalige Implementierungskosten")} &ndash; {_label("Annahme, nicht gemessen")}</div>
       </div>
     </div>
     <div class="bc-gold-hint">
       &#9733; {_label("Techniker-Kostensatz (Startwert, anpassbar in config.py)")}: {kostensatz_fmt}&thinsp;&euro;/h{kostensatz_tip}.
-      {_label("Alle übrigen Kennzahlen sind belastbare Ist-Werte.")}
+      {_label("Alle Kennzahlen dieser Sektion sind Annahmen bzw. Rechenbeispiele, im Pilot zu messen.")}
     </div>
   </section>"""
 

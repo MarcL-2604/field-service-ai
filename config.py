@@ -225,3 +225,12 @@ PROJEKT_KLINIKEN_ANZAHL = 1444         # distinct Klinik-Accounts (Closed+Open J
 PROJEKT_DASHBOARD_CHECKS = 17          # reporting/dashboard.py: _vollstaendigkeits_pruefung()
 PROJEKT_CLUSTER_ANZAHL = 6             # techniker/models.py: produkt_cluster()-Kategorien
 PROJEKT_PRODUKTFAMILIEN_ANZAHL = 31    # techniker/models.py: distinct Produktfamilien
+
+# ─── Business Case (Annahmen, KEINE Ist-Werte) ─────────
+# Alle Zahlen sind Planungsannahmen und im Pilot zu messen.
+BC_TECHNIKER_ANZAHL = 24                   # aktive Techniker
+BC_PLANUNG_STD_PRO_TAG = 1.0               # Annahme: 1 Std./Tag je Techniker (Schaetzung, im Pilot zu messen)
+BC_TAGE_PRO_WOCHE = 4                      # Planungstage pro Woche
+BC_WOCHEN_PRO_JAHR = 52
+BC_FAHRZEIT_EINSPARUNG_EUR_JAHR = 10_000   # Annahme (Gebiets-Szenario), nicht gemessen
+BC_INVESTITION_EUR = 17_590                # Annahme: einmalige Implementierungskosten

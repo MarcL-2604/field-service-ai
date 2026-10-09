@@ -75,9 +75,9 @@ Indices:      0    1    2    3     4    5    6    7
 ## ROI (Folie 10)
 - Crosstraining: +192.000€/Jahr · Gebietsoptimierung: +29.250€/Jahr
 - Admin+QA: +18.000€/Jahr · Hugo-Ausfälle: +15.000€/Jahr
-- Investition: 17.590€ einmalig (Weiterbildung + API)
+- Investition: 17.590€ einmalig (Annahme, Weiterbildung + API)
 - Trainingskosten: T&E anfragen (Platzhalter)
-- Break-even: ca. 10 Wochen · ROI >1.000%
+- Break-even: nicht fest behauptet — im Dashboard (Business Case) rechnerisch aus Investition / (Jahreswert/52) mit den Annahmen aus config.py (BC_*); alle Beträge sind Annahmen, im Pilot zu messen
 
 ## IHK KI-Manager
 - Anbieter: DIHK-Bildungs-gGmbH · Live-Online abends · 64 UE · ca. 2.590€
