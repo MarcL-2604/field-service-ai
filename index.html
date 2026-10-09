@@ -1472,8 +1472,9 @@ function applyStats(){
   const tldt=document.getElementById('tl1-dt');
   if(tldt)tldt.textContent=(lang==='de'?cfg.tests+' Tests · Dashboard '+cfg.dash+' · Autodidaktisch vor formaler Ausbildung':cfg.tests+' tests · Dashboard '+cfg.dash+' · Self-taught before formal training');
   const roi=document.getElementById('roi-f1');
-  if(roi)roi.innerHTML=cfg.tech+(lang==='de'?' Techniker × [Ø Einsparung h/Woche] × 52 × [Stundensatz €]':' technicians × [avg. savings h/week] × 52 × [hourly rate €]');
-  document.getElementById('cfg-tech-roi').textContent=cfg.tech;
+  if(roi)roi.innerHTML='<span id="cfg-tech-roi">'+cfg.tech+'</span>'+(lang==='de'?' Techniker × [Ø Einsparung h/Woche] × 52 × [Stundensatz €]':' technicians × [avg. savings h/week] × 52 × [hourly rate €]');
+  const roiTech=document.getElementById('cfg-tech-roi');
+  if(roiTech)roiTech.textContent=cfg.tech;
 }
 
 /* ── LANGUAGE ───────────────────────────────────────────────────────────── */
