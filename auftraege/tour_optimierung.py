@@ -17,7 +17,7 @@ Oeffentliche API:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 from typing import Optional
@@ -38,6 +38,11 @@ from config import (
     LETZTER_AUSSENEINSATZ_WOCHENTAG,
     KEIN_WOCHENENDEINSATZ,
     HUGO_KA_IDS,
+    BUENDEL_MAX_TAG_STD,
+    BUENDEL_STANDARD_DAUER_STD,
+    SCORING_KOMPETENZ,
+    SCORING_FAHRZEIT,
+    SCORING_AUSLASTUNG,
 )
 from techniker.models import (
     BIG_CAPITAL_CLUSTER1_OR,
@@ -156,6 +161,28 @@ class QualifizierterBuendelPlan:
     eingesparte_fahrten: int
     hinweis: str                           # Dashboard-Anzeige-Text
     aufteilungsgrund: Optional[str] = None  # Warum aufgeteilt (nur bei B/C)
+    faelligkeit_bekannt: bool = True       # False: Potenzial, Monat wird nicht angezeigt
+    standort_bekannt: bool = True          # False: Fall "U", keine Technikerzuweisung
+    nicht_planbar: list = field(default_factory=list)  # Auftraege, die in keinen Einsatz <= Tagesgrenze passen
+
+
+@dataclass
+class BuendelKontext:
+    """Echtdaten-Kontext fuer buendle_mit_qualifikation() (None = Demo-Verhalten).
+
+    techniker_koordinaten:  {techniker_id: (lat, lon)}
+    auslastung_pct:         {techniker_id: reale Jahres-Auslastung in %}
+    klinik_koordinaten:     {klinik_id: (lat, lon) | None}; None = nicht aufloesbar
+    einsatzdauer_std:       {auftrag_id: Dauer in Stunden}; fehlend -> BUENDEL_STANDARD_DAUER_STD
+    faelligkeit_unbekannt:  auftrag_ids ohne bekannte Faelligkeit (eigene Gruppe "Potenzial")
+    max_tag_std:            Obergrenze Einsatzzeit + Hin-/Rueckfahrt je Einsatz
+    """
+    techniker_koordinaten: dict
+    auslastung_pct: dict
+    klinik_koordinaten: dict
+    einsatzdauer_std: dict = field(default_factory=dict)
+    faelligkeit_unbekannt: set = field(default_factory=set)
+    max_tag_std: float = BUENDEL_MAX_TAG_STD
 
 
 @dataclass
@@ -397,11 +424,169 @@ def buendle_auftraege(
 # 2. Klinik-Buendelung mit Qualifikations-Check
 # ---------------------------------------------------------------------------
 
+def _klinik_anzeige(name: str) -> str:
+    """'Klinik <Name>' ohne Dopplung, wenn der Name selbst schon 'Klinik' enthaelt."""
+    return name if "klinik" in name.lower() else f"Klinik {name}"
+
+
+def _bewerte_techniker(
+    tids: list[str], klinik_xy: tuple[float, float], kontext: BuendelKontext,
+) -> dict[str, dict]:
+    """Score je Techniker fuer einen Klinikstandort (Gewichtung wie
+    techniker.scoring.berechne_empfehlung_echtdaten: Kompetenz/Fahrzeit/Auslastung).
+    Kompetenz ist hier 100 (nur voll bzw. teilweise abdeckende Techniker werden bewertet)."""
+    dist = {}
+    for t in tids:
+        xy = kontext.techniker_koordinaten.get(t)
+        if xy:
+            dist[t] = _haversine_km(xy[0], xy[1], klinik_xy[0], klinik_xy[1])
+    if not dist:
+        return {}
+    max_d = max(dist.values())
+    erg = {}
+    for t, d in dist.items():
+        fz_score = (1.0 - d / max_d) * 100.0 if max_d > 0 else 100.0
+        ausl = float(kontext.auslastung_pct.get(t, 0.0) or 0.0)
+        ausl_score = max(0.0, 100.0 - ausl)
+        erg[t] = {
+            "distanz_km": d,
+            "fahrzeit_std": _fahrzeit_std(d),
+            "auslastung_pct": ausl,
+            "score": 100.0 * SCORING_KOMPETENZ + fz_score * SCORING_FAHRZEIT + ausl_score * SCORING_AUSLASTUNG,
+        }
+    return erg
+
+
+def _teile_nach_tagesgrenze(
+    auftraege: list[Auftrag], fahrzeit_std: float, kontext: BuendelKontext,
+) -> tuple[list[tuple[list[Auftrag], float]], list[Auftrag]]:
+    """Teilt Auftraege (first-fit decreasing) auf Einsaetze mit Einsatzzeit + Hin-/Rueckfahrt
+    <= kontext.max_tag_std. Returns ([(auftraege, dauer_inkl_fahrt_std)], nicht_planbar)."""
+    fahrt = 2.0 * fahrzeit_std
+    kapazitaet = kontext.max_tag_std - fahrt
+
+    def dauer(a: Auftrag) -> float:
+        return float(kontext.einsatzdauer_std.get(a.auftrag_id) or BUENDEL_STANDARD_DAUER_STD)
+
+    bins: list[list[Auftrag]] = []
+    last: list[float] = []
+    nicht_planbar: list[Auftrag] = []
+    for a in sorted(auftraege, key=dauer, reverse=True):
+        d = dauer(a)
+        if d > kapazitaet:
+            nicht_planbar.append(a)
+            continue
+        for i, b in enumerate(bins):
+            zusatz = d + RUESTZEIT_PRO_GERAET_STD
+            if last[i] + zusatz <= kapazitaet:
+                b.append(a)
+                last[i] += zusatz
+                break
+        else:
+            bins.append([a])
+            last.append(d)
+    return [(b, l + fahrt) for b, l in zip(bins, last)], nicht_planbar
+
+
+def _plan_echtdaten(
+    klinik_id: str, monat: str, gruppe: list[Auftrag], aktive: set[str],
+    matrix: dict[str, dict[str, str]], kontext: BuendelKontext,
+) -> Optional[QualifizierterBuendelPlan]:
+    """Buendelplan fuer eine Klinik/Monat-Gruppe im Echtdaten-Modus (Score-basierte
+    Technikerwahl, Tagesgrenze). None wenn kein Einsatz eingespart werden kann."""
+    name = gruppe[0].klinik_name
+    bekannt = monat != "unbekannt"
+    faellig_text = f"fällig im {monat}" if bekannt else "Fälligkeit unbekannt, Potenzial"
+    kopf = f"{_klinik_anzeige(name)} — {len(gruppe)} Geräte, {faellig_text}:"
+
+    klinik_xy = kontext.klinik_koordinaten.get(klinik_id)
+    if not klinik_xy:
+        return QualifizierterBuendelPlan(
+            klinik_id=klinik_id, klinik_name=name, monat=monat, fall="U", einsaetze=[],
+            alle_auftraege=list(gruppe), eingesparte_fahrten=0,
+            hinweis=kopf + "\n  → Standort unbekannt: keine Technikerzuweisung",
+            faelligkeit_bekannt=bekannt, standort_bekannt=False,
+        )
+
+    voll: list[str] = []
+    teil: dict[str, list[Auftrag]] = {}
+    for tid in aktive:
+        if tid not in kontext.techniker_koordinaten:
+            continue
+        abgedeckt, nicht = _tech_deckt_ab(matrix.get(tid, {}), gruppe)
+        if abgedeckt and not nicht:
+            voll.append(tid)
+        elif abgedeckt:
+            teil[tid] = abgedeckt
+
+    zuweisungen: list[tuple[str, list[Auftrag]]] = []
+    bew: dict[str, dict] = {}
+    if voll:
+        bew = _bewerte_techniker(voll, klinik_xy, kontext)
+        best = max(bew, key=lambda t: (bew[t]["score"], t))
+        zuweisungen.append((best, list(gruppe)))
+        fall = "A"
+    elif teil:
+        bew = _bewerte_techniker(list(teil), klinik_xy, kontext)
+        rest = list(gruppe)
+        while rest:
+            kand = {t: [a for a in abg if a in rest] for t, abg in teil.items()}
+            kand = {t: v for t, v in kand.items() if v}
+            if not kand:
+                break
+            t = max(kand, key=lambda x: (len(kand[x]), bew[x]["score"], x))
+            zuweisungen.append((t, kand[t]))
+            rest = [a for a in rest if a not in kand[t]]
+        fall = "B"
+    else:
+        return None
+
+    einsaetze: list[EinsatzZuweisung] = []
+    nicht_planbar: list[Auftrag] = []
+    for tid, auf in zuweisungen:
+        b = bew[tid]
+        teile, ueberlang = _teile_nach_tagesgrenze(auf, b["fahrzeit_std"], kontext)
+        nicht_planbar.extend(ueberlang)
+        for teil_auf, dauer_std in teile:
+            tf = sorted({a.produkt_familie for a in teil_auf})
+            einsaetze.append(EinsatzZuweisung(
+                techniker_id=tid, auftraege=teil_auf, abgedeckte_familien=tf,
+                qualifikationen={pf: matrix.get(tid, {}).get(pf, "?") for pf in tf},
+                dauer_std=dauer_std,
+                begruendung=(f"{tid} übernimmt {' + '.join(tf)} — Fahrzeit ~{b['fahrzeit_std']:.1f} h "
+                             f"(einfach), Auslastung {b['auslastung_pct']:.0f} %, Score {b['score']:.0f}"),
+            ))
+
+    platziert = sum(len(e.auftraege) for e in einsaetze)
+    eingespart = max(0, platziert - len(einsaetze))
+    if eingespart == 0:
+        return None
+
+    zeilen = [f"  → {e.begruendung} ({len(e.auftraege)} Gerät(e), {e.dauer_std:.1f} h inkl. Fahrt)"
+              for e in einsaetze]
+    extra = ""
+    if nicht_planbar:
+        extra += (f"\n  → {len(nicht_planbar)} Auftrag/Aufträge über {kontext.max_tag_std:g} h "
+                  f"pro Tag, separat planen")
+    fehlend = len(gruppe) - platziert - len(nicht_planbar)
+    if fehlend > 0:
+        extra += f"\n  → {fehlend} Auftrag/Aufträge ohne qualifizierten Techniker"
+    hinweis = (kopf + "\n" + "\n".join(zeilen) + extra
+               + f"\n  → {len(einsaetze)} Einsatz/Einsätze statt {platziert} — spart {eingespart} Fahrt(en)")
+    return QualifizierterBuendelPlan(
+        klinik_id=klinik_id, klinik_name=name, monat=monat, fall=fall, einsaetze=einsaetze,
+        alle_auftraege=list(gruppe), eingesparte_fahrten=eingespart, hinweis=hinweis,
+        aufteilungsgrund=(f"Tagesgrenze {kontext.max_tag_std:g} h" if len(einsaetze) > len(zuweisungen) else None),
+        faelligkeit_bekannt=bekannt, nicht_planbar=nicht_planbar,
+    )
+
+
 def buendle_mit_qualifikation(
     auftraege: list[Auftrag],
     avg_fahrzeit_std: float = 1.0,
     techniker_ids: Optional[set[str]] = None,
     qualifikationsmatrix: Optional[dict[str, dict[str, str]]] = None,
+    kontext: Optional[BuendelKontext] = None,
 ) -> list[QualifizierterBuendelPlan]:
     """Gruppiert Auftraege nach Klinik + Monat und prueft Qualifikation.
 
@@ -424,6 +609,13 @@ def buendle_mit_qualifikation(
                           reale SMax-Skillmatrix kennt keine abgestuften
                           Level), siehe reporting/dashboard.py.
 
+        kontext:          Optionaler Echtdaten-Kontext (BuendelKontext). Mit Kontext
+                          waehlt die Buendelung unter den abdeckenden Technikern den mit
+                          dem besten Score (Kompetenz/Fahrzeit/Auslastung) fuer den
+                          Klinikstandort, teilt nach BUENDEL_MAX_TAG_STD und fuehrt
+                          Gruppen ohne aufloesbaren Standort als Fall "U". None = Demo-
+                          Verhalten (breitestes Portfolio), unveraendert.
+
     Returns:
         Liste von QualifizierterBuendelPlan (nur Gruppen mit >= 2 Auftraegen).
     """
@@ -443,13 +635,26 @@ def buendle_mit_qualifikation(
     for a in auftraege:
         if a.klinik_id is None:
             continue
-        monat = a.faelligkeitsdatum.strftime("%Y-%m")
+        if kontext is not None and a.auftrag_id in kontext.faelligkeit_unbekannt:
+            monat = "unbekannt"
+        else:
+            monat = a.faelligkeitsdatum.strftime("%Y-%m")
         key = (a.klinik_id, monat)
         if key not in gruppen:
             gruppen[key] = []
         gruppen[key].append(a)
 
     ergebnisse: list[QualifizierterBuendelPlan] = []
+
+    if kontext is not None:
+        for (klinik_id, monat), gruppe in gruppen.items():
+            if len(gruppe) < 2:
+                continue
+            plan = _plan_echtdaten(klinik_id, monat, gruppe, aktive_techniker, matrix, kontext)
+            if plan is not None:
+                ergebnisse.append(plan)
+        ergebnisse.sort(key=lambda e: e.eingesparte_fahrten, reverse=True)
+        return ergebnisse
 
     for (klinik_id, monat), gruppe in gruppen.items():
         if len(gruppe) < 2:
@@ -526,7 +731,7 @@ def buendle_mit_qualifikation(
 
             eingesparte = len(gruppe) - 1
             hinweis = (
-                f"Klinik {klinik_name} — {len(gruppe)} Geraete faellig im {monat}:\n"
+                f"{_klinik_anzeige(klinik_name)} — {len(gruppe)} Geraete faellig im {monat}:\n"
                 f"  → {best_tid} uebernimmt {' + '.join(benoetigte_familien)} "
                 f"({', '.join(f'{l} {f}' for f, l in qual_details.items())})\n"
                 f"  → {dauer_text}\n"
@@ -633,7 +838,7 @@ def buendle_mit_qualifikation(
                 tech_zeilen.append(f"  → {e.techniker_id} uebernimmt {fam_text}")
 
             hinweis = (
-                f"Klinik {klinik_name} — {len(gruppe)} Geraete faellig im {monat}:\n"
+                f"{_klinik_anzeige(klinik_name)} — {len(gruppe)} Geraete faellig im {monat}:\n"
                 + "\n".join(tech_zeilen)
                 + fehlende_info
                 + f"\n  → {len(einsaetze)} Einsaetze statt {len(gruppe)} "

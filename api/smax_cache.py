@@ -276,6 +276,8 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
     # Auftrag-ID-Zellen im Dashboard leer. Synthetische, stabile Ersatz-ID
     # statt Leerstring; deutlich als "SMAX-" gekennzeichnet, keine echte
     # SMax-Referenznummer.
+    dauer_map = einsatzdauer_map(ergebnis.einsatzdauern)
+    fallback_dauer_min = durchschnittsdauer_min(ergebnis.einsatzdauern)
     offene_auftraege_liste: list[dict] = []
     for i, auftrag in enumerate(ergebnis.offene_auftraege, start=1):
         cluster_info = finde_cluster(auftrag.model_code)
@@ -283,6 +285,9 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
         faellig_dt = _parse_datum(auftrag.next_pm_due_date)
         offene_auftraege_liste.append({
             "auftragsnummer": auftrag.auftragsnummer or f"SMAX-{i:04d}",
+            # Einsatzdauer (Min.) je Model Code aus Sheet 2, sonst Durchschnitt aller Codes
+            # (fuer die Tagesgrenze der Buendelung); 0 = unbekannt.
+            "einsatzdauer_min": int(dauer_map.get(auftrag.model_code, fallback_dauer_min) or 0),
             "klinik": auftrag.account,
             "ort": auftrag.ort,
             "plz": auftrag.plz or "",
@@ -349,8 +354,6 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
     nicht_manager_closed = [
         a for a in ergebnis.geschlossene_auftraege if not a.historisch_manager_einsatz
     ]
-    dauer_map = einsatzdauer_map(ergebnis.einsatzdauern)
-    fallback_dauer_min = durchschnittsdauer_min(ergebnis.einsatzdauern)
     closed_je_tech_norm: dict[str, list] = {}
     for auftrag in nicht_manager_closed:
         if not auftrag.techniker:

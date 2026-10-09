@@ -239,3 +239,12 @@ BC_INVESTITION_EUR = 17_590                # Annahme: einmalige Implementierungs
 # Im Echtdaten-Modus ist der Chat standardmaessig AUS: Dashboard-Daten und Fragen wuerden an einen
 # Cloud-Dienst (Anthropic API) gesendet. Das Template-Erklaerungsfeld (lokal) bleibt immer aktiv.
 CHAT_MIT_ECHTDATEN_ERLAUBT = False
+
+# ─── Auftragsbuendelung (Echtdaten) ─────────
+# Maximale Dauer eines gebuendelten Einsatzes (Einsatzzeit + Hin-/Rueckfahrt) pro Tag.
+BUENDEL_MAX_TAG_STD = 8.0
+# Interne Medtronic-Accounts (keine Kundenkliniken) werden nicht gebuendelt. Kleingeschriebene
+# Teilstrings, die im Account-Namen vorkommen.
+BUENDEL_INTERNE_ACCOUNT_MUSTER = ("medtronic",)
+# Annahme fuer Auftraege ohne bekannte Einsatzdauer (Stunden).
+BUENDEL_STANDARD_DAUER_STD = 2.5
