@@ -16,6 +16,7 @@ Keine externen Abhaengigkeiten – reines HTML mit Inline-CSS/JS.
 from __future__ import annotations
 
 import csv
+import html as html_lib
 import json
 import math
 import re
@@ -68,6 +69,19 @@ from reporting.hugo_kerngebiet import (  # noqa: E402
     berechne_hugo_kerngebiete,
     hugo_standort_marker,
 )
+
+def _esc(wert) -> str:
+    """HTML-Escape fuer Importtextfelder (Text UND Attributwerte)."""
+    return html_lib.escape("" if wert is None else str(wert), quote=True)
+
+
+def _js_json(obj) -> str:
+    r"""JSON fuer die Einbettung in <script>: jedes "<" wird zu \u003c (gueltig in JSON-Strings),
+    damit weder "</script>" noch "<!--" oder "<script" aus Importdaten den Block verlassen koennen.
+    Zeilentrenner U+2028/2029 werden ebenfalls maskiert."""
+    return (json.dumps(obj, ensure_ascii=False).replace("<", r"\u003c")
+            .replace(chr(0x2028), r"\u2028").replace(chr(0x2029), r"\u2029"))
+
 
 _DATA_DIR = _ROOT / "daten"
 _OUT_PATH = Path(__file__).parent / "dashboard.html"
@@ -713,7 +727,7 @@ def _render_stk_tabelle(auftraege_rows: list[dict], zeige_empfehlung: bool = Fal
         css = _DRINGLICHKEIT_CSS.get(row["dringlichkeit"], "badge-normal")
         termine_html = row.get("termine_vorschlag", "&ndash;")
         empfehlung_td = (
-            f"<td><button onclick=\"showEmpfehlung('{row['auftrag_id']}')\" "
+            f"<td><button data-aid=\"{row['auftrag_id']}\" onclick=\"showEmpfehlung(this.dataset.aid)\" "
             f"style=\"{_EMPFEHLUNG_BTN_STYLE}\">&#127919; Empfehlung</button></td>"
             if zeige_empfehlung else ""
         )
@@ -799,10 +813,10 @@ def _baue_stk_rows_echtdaten(offene_auftraege: list[dict], heute: date, n: int =
             faelligkeit_str = "&ndash;"
             dringlichkeit = "NORMAL"
         rows.append({
-            "auftrag_id": o["auftragsnummer"],
-            "klinik": o["klinik"] or "&ndash;",
-            "geraet": o["model_code"],
-            "produkt": o["produktfamilie"],
+            "auftrag_id": _esc(o["auftragsnummer"]),
+            "klinik": _esc(o["klinik"]) if o["klinik"] else "&ndash;",
+            "geraet": _esc(o["model_code"]),
+            "produkt": _esc(o["produktfamilie"]),
             "faelligkeit": faelligkeit_str,
             "termine_vorschlag": "&ndash;",
             "dringlichkeit": dringlichkeit,
@@ -822,11 +836,11 @@ def _baue_repair_verdacht_rows_echtdaten(offene_auftraege: list[dict], n: int = 
 
     return [
         {
-            "auftrag_id": o["auftragsnummer"],
-            "klinik": o["klinik"] or "&ndash;",
-            "geraet": o["model_code"],
-            "produkt": o["produktfamilie"],
-            "status": o.get("status") or "&ndash;",
+            "auftrag_id": _esc(o["auftragsnummer"]),
+            "klinik": _esc(o["klinik"]) if o["klinik"] else "&ndash;",
+            "geraet": _esc(o["model_code"]),
+            "produkt": _esc(o["produktfamilie"]),
+            "status": _esc(o.get("status")) if o.get("status") else "&ndash;",
             "typ_hinweis": "Repair (Geraet reparaturfaehig)",
         }
         for o in ausgewaehlt
@@ -847,7 +861,7 @@ def _render_offene_echtdaten_tabelle(rows: list[dict]) -> str:
             f"<td>{row['produkt']}</td>"
             f"<td>{row['status']}</td>"
             f"<td><span class='badge badge-hoch'>{_label(row['typ_hinweis'])}</span></td>"
-            f"<td><button onclick=\"showEmpfehlung('{row['auftrag_id']}')\" "
+            f"<td><button data-aid=\"{row['auftrag_id']}\" onclick=\"showEmpfehlung(this.dataset.aid)\" "
             f"style=\"{_EMPFEHLUNG_BTN_STYLE}\">&#127919; Empfehlung</button></td>"
             f"</tr>"
         )
@@ -943,12 +957,12 @@ def _render_buendelung_echtdaten(plaene: list) -> str:
             f'spart {plan.eingesparte_fahrten} Fahrt(en) &middot; '
             f'Fall {plan.fall}: {fall_text}</div>'
         )
-        hinweis_html = plan.hinweis.replace("\n", "<br>")
+        hinweis_html = _esc(plan.hinweis).replace("\n", "<br>")
         karten.append(
             f'<div class="go-empf-card">'
             f'<div class="go-empf-num">{i}</div>'
             f'<div class="go-empf-body">'
-            f'<div class="go-empf-title">{plan.klinik_name}</div>'
+            f'<div class="go-empf-title">{_esc(plan.klinik_name)}</div>'
             f'{stats}'
             f'<div class="go-empf-text" '
             f'style="font-family:\'Courier New\',monospace;white-space:pre-wrap">'
@@ -1629,7 +1643,7 @@ def _render_techniker_detail_data(
             "haeufigste_klinik": hist.get("haeufigste_klinik", "–"),
             "haeufigste_familie": hist.get("haeufigste_familie", "–"),
         }
-    return json.dumps(detail_data, ensure_ascii=False)
+    return _js_json(detail_data)
 
 
 # ---------------------------------------------------------------------------
@@ -2906,8 +2920,8 @@ def _build_gebiets_script(
     gebiets_punkte: list[dict] | None = None,
 ) -> str:
     """Baut minimales JS fuer Modus-Umschaltung (aktuell/optimiert)."""
-    tc = json.dumps(_TECH_FARBEN, ensure_ascii=False)
-    pk = json.dumps(gebiets_punkte or [], ensure_ascii=False)
+    tc = _js_json(_TECH_FARBEN)
+    pk = _js_json(gebiets_punkte or [])
 
     return (
         "/* ── Gebietsoptimierung (offline, pre-rendered SVG) ── */\n"
@@ -5232,7 +5246,7 @@ def render_html(
     tooltip_portal_script = _build_tooltip_portal_script()
     tech_detail_json = _render_techniker_detail_data(
         techniker, demo_history or {})
-    empfehlungen_json = json.dumps(empfehlungen_echtdaten or {}, ensure_ascii=False)
+    empfehlungen_json = _js_json(empfehlungen_echtdaten or {})
     ts = erstellt_am.strftime("%d.%m.%Y %H:%M")
 
     gruen_count = sum(1 for a in ampeln if a["ampel_css"] == "ampel-gruen")
@@ -5241,10 +5255,10 @@ def render_html(
 
     # System-Prompt fuer Chat
     system_prompt = _build_system_prompt(ct_rows or [], techniker, ampeln)
-    system_prompt_js = json.dumps(system_prompt, ensure_ascii=False)
-    erklaerungen_json = json.dumps(erklaerungen or {}, ensure_ascii=False)
-    frage_typen_json = json.dumps(FRAGE_TYPEN, ensure_ascii=False)
-    frage_typen_en_json = json.dumps(FRAGE_TYPEN_EN, ensure_ascii=False)
+    system_prompt_js = _js_json(system_prompt)
+    erklaerungen_json = _js_json(erklaerungen or {})
+    frage_typen_json = _js_json(FRAGE_TYPEN)
+    frage_typen_en_json = _js_json(FRAGE_TYPEN_EN)
     erklaer_script = (
         "/* ── Template-Erklaerungen: aus Berechnungsdaten, kein API-Aufruf, DE+EN ── */\n"
         "(function(){\n"
@@ -5573,11 +5587,11 @@ def render_html(
    werden generisch ueber diese EINE Tabelle uebersetzt, statt jede
    Vorkommensstelle einzeln an einen data-i18n-Key zu binden. Siehe
    reporting/dashboard.py LABEL_MAP_EN. */
-var _LABEL_MAP_EN = {json.dumps(LABEL_MAP_EN, ensure_ascii=False)};
+var _LABEL_MAP_EN = {_js_json(LABEL_MAP_EN)};
 var _I18N = {{
   DE: {{
     'nav.manual': 'Handbuch',
-    'header.demo': {json.dumps(demo_badge_text_de, ensure_ascii=False)},
+    'header.demo': {_js_json(demo_badge_text_de)},
     'tab.overview': '\u00dcbersicht',
     'tab.orders': 'Auftr\u00e4ge',
     'tab.crosstraining': 'Cross-Training',
@@ -5592,17 +5606,17 @@ var _I18N = {{
     'summary.asOf': 'Stand',
     'summary.monThu': 'Mo\u2013Do',
     'h.overview': '\u00dcbersicht \u2014 Qualifikations-Ampel',
-    'hint.overview': {json.dumps(overview_hint_text_de, ensure_ascii=False)},
+    'hint.overview': {_js_json(overview_hint_text_de)},
     'sort.label': 'Sortierung:',
     'sort.standard': 'Standard (Gr\u00fcn / Gelb / Rot)',
     'sort.ct': 'Crosstraining-Bedarf (meiste L\u00fccken zuerst)',
     'sort.util': 'Auslastung (Stunden)',
     'sort.portfolio': 'Ger\u00e4te-Portfolio (meiste L3-Familien zuerst)',
     'sort.area': 'Gebietsgr\u00f6\u00dfe',
-    'hint.demo': {json.dumps(demo_hint_text_de, ensure_ascii=False)},
-    'h.stk': {json.dumps(h_stk_de, ensure_ascii=False)},
-    'hint.stk': {json.dumps(hint_stk_de, ensure_ascii=False)},
-    'hint.planInfo': {json.dumps(plan_hinweis_de, ensure_ascii=False)},
+    'hint.demo': {_js_json(demo_hint_text_de)},
+    'h.stk': {_js_json(h_stk_de)},
+    'hint.stk': {_js_json(hint_stk_de)},
+    'hint.planInfo': {_js_json(plan_hinweis_de)},
     'th.orderId': 'Auftrag-ID',
     'th.clinic': 'Klinik',
     'th.device': 'Ger\u00e4t',
@@ -5611,8 +5625,8 @@ var _I18N = {{
     'th.suggestedDates': 'Vorgeschlagene Termine',
     'th.urgency': 'Dringlichkeit',
     'th.days': 'Tage',
-    'h.repair': {json.dumps(h_repair_de, ensure_ascii=False)},
-    'hint.repair': {json.dumps(hint_repair_de, ensure_ascii=False)},
+    'h.repair': {_js_json(h_repair_de)},
+    'hint.repair': {_js_json(hint_repair_de)},
     'th.received': 'Eingang',
     'th.slaStatus': 'SLA-Status',
     'th.phase': 'Phase',
@@ -5689,7 +5703,7 @@ var _I18N = {{
   }},
   EN: {{
     'nav.manual': 'Manual',
-    'header.demo': {json.dumps(demo_badge_text_en, ensure_ascii=False)},
+    'header.demo': {_js_json(demo_badge_text_en)},
     'tab.overview': 'Overview',
     'tab.orders': 'Orders',
     'tab.crosstraining': 'Cross-Training',
@@ -5704,17 +5718,17 @@ var _I18N = {{
     'summary.asOf': 'As of',
     'summary.monThu': 'Mon\u2013Thu',
     'h.overview': 'Overview \u2014 Qualification Traffic Light',
-    'hint.overview': {json.dumps(overview_hint_text_en, ensure_ascii=False)},
+    'hint.overview': {_js_json(overview_hint_text_en)},
     'sort.label': 'Sort by:',
     'sort.standard': 'Default (Green / Yellow / Red)',
     'sort.ct': 'Cross-training need (most gaps first)',
     'sort.util': 'Utilization (hours)',
     'sort.portfolio': 'Device portfolio (most L3 families first)',
     'sort.area': 'Territory size',
-    'hint.demo': {json.dumps(demo_hint_text_en, ensure_ascii=False)},
-    'h.stk': {json.dumps(h_stk_en, ensure_ascii=False)},
-    'hint.stk': {json.dumps(hint_stk_en, ensure_ascii=False)},
-    'hint.planInfo': {json.dumps(plan_hinweis_en, ensure_ascii=False)},
+    'hint.demo': {_js_json(demo_hint_text_en)},
+    'h.stk': {_js_json(h_stk_en)},
+    'hint.stk': {_js_json(hint_stk_en)},
+    'hint.planInfo': {_js_json(plan_hinweis_en)},
     'th.orderId': 'Order ID',
     'th.clinic': 'Hospital',
     'th.device': 'Device',
@@ -5723,8 +5737,8 @@ var _I18N = {{
     'th.suggestedDates': 'Suggested Dates',
     'th.urgency': 'Urgency',
     'th.days': 'Days',
-    'h.repair': {json.dumps(h_repair_en, ensure_ascii=False)},
-    'hint.repair': {json.dumps(hint_repair_en, ensure_ascii=False)},
+    'h.repair': {_js_json(h_repair_en)},
+    'hint.repair': {_js_json(hint_repair_en)},
     'th.received': 'Received',
     'th.slaStatus': 'SLA Status',
     'th.phase': 'Phase',
@@ -5892,19 +5906,24 @@ function closeTechDetail() {{
    dasselbe Overlay wie showTechDetail(). ── */
 var EMPFEHLUNG_DATA = {empfehlungen_json};
 
+function _escH(s) {{
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}}
+
 function showEmpfehlung(auftragId) {{
   var d = EMPFEHLUNG_DATA[auftragId];
-  var html = '<div class="tech-detail-title">' + auftragId + ' &mdash; Techniker-Empfehlung</div>';
+  var html = '<div class="tech-detail-title">' + _escH(auftragId) + ' &mdash; Techniker-Empfehlung</div>';
   if (!d || !d.empfehlungen || !d.empfehlungen.length) {{
     html += '<p style="margin-top:12px;color:var(--text-muted)">Keine Empfehlung m&ouml;glich '
       + '(keine PLZ-Koordinaten aufl&ouml;sbar oder kein qualifizierter Techniker gefunden).</p>';
   }} else {{
     html += '<p style="margin:6px 0 16px;color:var(--text-muted);font-size:12.5px">'
-      + d.geraet + ' &middot; ' + d.klinik + '</p>';
+      + _escH(d.geraet) + ' &middot; ' + _escH(d.klinik) + '</p>';
     d.empfehlungen.forEach(function(e, i) {{
       html += '<div style="margin-bottom:14px">';
       html += '<div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:4px">'
-        + '<span>' + (i + 1) + '. ' + e.techniker_id + '</span><span>' + e.score.toFixed(1) + '</span></div>';
+        + '<span>' + (i + 1) + '. ' + _escH(e.techniker_id) + '</span><span>' + e.score.toFixed(1) + '</span></div>';
       html += '<div style="height:8px;background:var(--card-border);border-radius:4px;overflow:hidden;margin-bottom:4px">'
         + '<div style="height:100%;width:' + e.score + '%;background:var(--accent)"></div></div>';
       html += '<div style="font-size:11px;color:var(--text-muted)">'

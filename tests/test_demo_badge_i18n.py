@@ -132,5 +132,7 @@ class TestDemoBadgeImGerenderetenHtml:
         Techniker' als Rechenbeispiel zeigt)."""
         html = self._render(is_echtdaten=False)
         de, en = _overview_hint_texte(1)
+        from reporting.dashboard import _js_json
         assert de in html
-        assert en in html
+        # EN steht im JSON-Dict (dort wird '<' als Unicode-Escape ausgegeben)
+        assert en in html or _js_json(en)[1:-1] in html

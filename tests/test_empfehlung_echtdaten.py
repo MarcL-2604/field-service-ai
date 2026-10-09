@@ -161,7 +161,7 @@ class TestUiWiring:
 
     def test_stk_tabelle_mit_empfehlung_button_wenn_angefordert(self):
         html = dash._render_stk_tabelle([self._ROW], zeige_empfehlung=True)
-        assert "showEmpfehlung('SMAX-0001')" in html
+        assert 'data-aid="SMAX-0001"' in html
 
     def test_offene_echtdaten_tabelle_hat_immer_empfehlung_button(self):
         rows = dash._baue_repair_verdacht_rows_echtdaten(
@@ -173,7 +173,7 @@ class TestUiWiring:
             n=10,
         )
         html = dash._render_offene_echtdaten_tabelle(rows)
-        assert "showEmpfehlung('SMAX-0099')" in html
+        assert 'data-aid="SMAX-0099"' in html
 
     def test_abschnitt1_ohne_spalte_per_default(self):
         html = dash._render_auftraege_abschnitt1("<tr></tr>", "", "Titel", "Hinweis")

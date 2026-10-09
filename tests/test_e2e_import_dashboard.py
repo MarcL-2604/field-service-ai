@@ -21,7 +21,7 @@ OPEN_KOPF = ["Work Order Number", "Account", "City", "Zip", "Model Number",
 
 
 def _mini_excel(pfad, *, offene=None, ohne_sheet=None, offen_kopf=None,
-                techniker_zeilen=None):
+                techniker_zeilen=None, offen_account="Klinik A"):
     """Erzeugt eine kleine SMax-Excel. offene = Liste von (id, plz)."""
     offene = [] if offene is None else offene
     wb = openpyxl.Workbook()
@@ -45,7 +45,7 @@ def _mini_excel(pfad, *, offene=None, ohne_sheet=None, offen_kopf=None,
     ws = wb.create_sheet("4_Open_Jobs")
     ws.append(offen_kopf or OPEN_KOPF)
     for oid, plz in offene:
-        ws.append([oid, "Klinik A", "Ulm", plz, "MC-1", "2026-11-03", "Scheduled", None])
+        ws.append([oid, offen_account, "Ulm", plz, "MC-1", "2026-11-03", "Scheduled", None])
 
     ws = wb.create_sheet("5_Wohnorte")
     ws.append(["5", "Name", "Land", "Stadt"])
@@ -182,3 +182,30 @@ def test_cli_exitcodes(isoliert, capsys):
     ok = _mini_excel(isoliert / "ok.xlsx", offene=[("OFF-1", "89073")])
     assert smax_cache.main([str(ok)]) == 0
     assert "ZUSAMMENFASSUNG IMPORT" in capsys.readouterr().out
+
+
+# -- F02: Ausgabe absichern ---------------------------------------------------
+
+def test_importtext_wird_escaped_in_html_attributen_und_json(isoliert):
+    boese_klinik = '<script>alert(1)</script>" onmouseover="alert(2)'
+    boese_id = "X'\"><img src=x onerror=alert(3)>"
+    xlsx = _mini_excel(isoliert / "t.xlsx", offene=[(boese_id, "89073"), ("OFF-2", "89073")], offen_account=boese_klinik)
+    _, html = _pipeline(isoliert, xlsx)
+
+    # kein rohes Tag aus dem Import, keine ausbrechenden Attribute
+    assert "<script>alert(1)" not in html
+    assert "<img src=x" not in html
+    assert '" onmouseover="alert(2)' not in html
+    # escaped Darstellung vorhanden (Tabelle)
+    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html
+    # Inline-Handler enthaelt keine Importdaten
+    assert 'onclick="showEmpfehlung(this.dataset.aid)"' in html
+    assert "showEmpfehlung('" not in html
+    # eingebettetes JSON: kein "</" aus Importdaten
+    assert "</script>alert" not in html
+
+
+def test_js_json_neutralisiert_script_ende():
+    out = dashboard._js_json({"k": "</script><!-- <script>"})
+    assert "<" not in out
+    assert json.loads(out) == {"k": "</script><!-- <script>"}
