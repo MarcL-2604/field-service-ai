@@ -139,14 +139,10 @@ def _norm_umlaut(s: str) -> str:
             .replace("ß", "ss"))
 
 
-def _parse_datum(s: Optional[str]) -> Optional[datetime]:
-    """Parst 'DD.MM.YYYY, HH:MM' (SMax-Datumsformat) zu datetime, sonst None."""
-    if not s:
-        return None
-    try:
-        return datetime.strptime(s.split(",")[0].strip(), "%d.%m.%Y")
-    except ValueError:
-        return None
+def _parse_datum(s) -> Optional[datetime]:
+    """Parst date/datetime, ISO-Text und DD.MM.YYYY (mit/ohne Uhrzeit), sonst None."""
+    from api.import_real_data import parse_datum_wert
+    return parse_datum_wert(s)
 
 
 def _berechne_beobachtungszeitraum_jahre(datums: list) -> float:

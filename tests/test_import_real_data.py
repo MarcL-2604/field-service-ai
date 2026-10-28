@@ -216,7 +216,7 @@ class TestClosedJobMapping:
         assert job.ort == "Freiburg"
         assert job.model_code == "MC-12345"
         assert job.seriennummer == "SN-ABCDE"
-        assert job.erledigung_datum == "2025-12-01 14:30:00"
+        assert job.erledigung_datum == "01.12.2025, 14:30"
 
     def test_normaler_techniker_kein_manager_flag(self):
         job = map_closed_job_row(self._row(Technician="Marc Liebhardt"))

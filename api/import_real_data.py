@@ -22,7 +22,9 @@ Oeffentliche API:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
+from datetime import date, datetime
 from typing import Optional
 
 from pydantic import BaseModel
@@ -136,6 +138,112 @@ class SMaxImportErgebnis:
         return sum(1 for t in self.techniker if t.ist_aktiv)
 
 
+# ── Header- und Datums-Normalisierung (zentral) ───────────────────────────────
+
+# Felder, die die Mapper aus Sheet 3/4 lesen (fuer die Header-Diagnose)
+GELESENE_FELDER: dict[str, list[str]] = {
+    "3_Closed Jobs": ["Work Order Number", "Account", "City", "Zip", "Model Number",
+                      "Next PM Due Date", "Actual Resolution", "Serial Number",
+                      "Warranty End Date", "Technician"],
+    "4_Open_Jobs": ["Work Order Number", "Account", "City", "Zip", "Model Number",
+                    "Next PM Due Date", "Serial Number", "Warranty End Date",
+                    "Contract End Date", "Order Status", "On Hold Reason"],
+}
+
+_DATUMS_FORMATE = (
+    "%d.%m.%Y, %H:%M:%S", "%d.%m.%Y, %H:%M", "%d.%m.%Y %H:%M:%S", "%d.%m.%Y %H:%M", "%d.%m.%Y",
+    "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d",
+)
+
+
+def normalisiere_header(h) -> str:
+    """Header-Text: Leerraum vereinheitlicht, None -> ''."""
+    return " ".join(str(h or "").split())
+
+
+def baue_zeilen_dict(hdrs: list, row) -> dict:
+    """Zeile als dict: voller Header ("Objekt: Feld") UND der Teil nach dem
+    letzten ': ' ("Feld") als Schluessel -- volle Header haben Vorrang."""
+    d: dict = {}
+    paare = [(normalisiere_header(h), row[i]) for i, h in enumerate(hdrs) if i < len(row)]
+    for h, v in paare:
+        if h:
+            d.setdefault(h, v)
+    for h, v in paare:
+        if ": " in h:
+            d.setdefault(h.rsplit(": ", 1)[1].strip(), v)
+    return d
+
+
+def hole_feld(row: dict, name: str):
+    """Wert zum Feldnamen; exakt, sonst ohne Beachtung der Gross-/Kleinschreibung."""
+    if name in row:
+        return row[name]
+    low = name.casefold()
+    for k, v in row.items():
+        if str(k).casefold() == low:
+            return v
+    return None
+
+
+def parse_datum_wert(v) -> Optional[datetime]:
+    """date/datetime, ISO-Text, DD.MM.YYYY mit/ohne Uhrzeit -> datetime, sonst None."""
+    if v is None or v == "":
+        return None
+    if isinstance(v, datetime):
+        return v
+    if isinstance(v, date):
+        return datetime(v.year, v.month, v.day)
+    text = str(v).strip()
+    for fmt in _DATUMS_FORMATE:
+        try:
+            return datetime.strptime(text, fmt)
+        except ValueError:
+            continue
+    return None
+
+
+def datum_text(v) -> Optional[str]:
+    """Normalisiert auf 'DD.MM.YYYY' bzw. 'DD.MM.YYYY, HH:MM'; leer -> None;
+    unlesbare Werte bleiben als Rohtext erhalten (werden beim Import gezaehlt)."""
+    if v is None or str(v).strip() == "":
+        return None
+    dt = parse_datum_wert(v)
+    if dt is None:
+        return str(v).strip()
+    hat_uhrzeit = (dt.hour or dt.minute or dt.second) or (
+        isinstance(v, str) and re.search(r"\d:\d\d", v))
+    return dt.strftime("%d.%m.%Y, %H:%M") if hat_uhrzeit else dt.strftime("%d.%m.%Y")
+
+
+def pruefe_header(sheet: str, hdrs: list) -> list[str]:
+    """Warnungen fuer Felder, die die Mapper lesen, aber im Header fehlen
+    (mit aehnlichstem Header). Praefix 'Objekt: ' zaehlt als gefunden."""
+    import difflib
+    namen = [normalisiere_header(h) for h in hdrs if normalisiere_header(h)]
+    vorhanden = {n.casefold() for n in namen} | {n.rsplit(": ", 1)[1].strip().casefold()
+                                                  for n in namen if ": " in n}
+    warnungen = []
+    for feld in GELESENE_FELDER.get(sheet, []):
+        if feld.casefold() not in vorhanden:
+            nah = difflib.get_close_matches(feld, namen, n=1, cutoff=0.3)
+            warnungen.append(
+                f"Header-Feld '{feld}' nicht gefunden (aehnlichster Header: "
+                f"'{nah[0] if nah else '-'}')")
+    return warnungen
+
+
+def zaehle_unlesbare_datums(eintraege: list, felder: list[str]) -> dict[str, int]:
+    """Je Datumsfeld: Anzahl nicht leerer, aber nicht lesbarer Werte."""
+    ergebnis: dict[str, int] = {}
+    for f in felder:
+        n = sum(1 for e in eintraege
+                if getattr(e, f, None) and parse_datum_wert(getattr(e, f)) is None)
+        if n:
+            ergebnis[f] = n
+    return ergebnis
+
+
 # ── Zeilen-Mapper (reine Funktionen, testbar ohne XLSX) ───────────────────────
 
 def map_skill_row(model_code: str, tech_name: str, wert: str) -> SMaxSkillEintrag:
@@ -194,17 +302,17 @@ def map_closed_job_row(row: dict) -> SMaxGeschlossenAuftrag:
     Technician-Feld wird gegen MANAGER_NAMEN geprueft.
     GCH-Code-Filter ist deaktiviert (kein GCH in echten Daten).
     """
-    techniker = str(row.get("Technician", "") or "").strip() or None
+    techniker = str(hole_feld(row, "Technician") or "").strip() or None
     return SMaxGeschlossenAuftrag(
-        auftragsnummer=str(row.get("Work Order Number", "")).strip(),
-        account=str(row.get("Account", "")).strip(),
-        ort=str(row.get("City", "")).strip(),
-        plz=str(row.get("Zip", "") or "").strip() or None,
-        model_code=str(row.get("Model Number", "")).strip(),
-        next_pm_due_date=str(row.get("Next PM Due Date", "") or "").strip() or None,
-        erledigung_datum=str(row.get("Actual Resolution", "") or "").strip() or None,
-        seriennummer=str(row.get("Serial Number", "") or "").strip() or None,
-        warranty_date=str(row.get("Warranty End Date", "") or "").strip() or None,
+        auftragsnummer=str(hole_feld(row, "Work Order Number") or "").strip(),
+        account=str(hole_feld(row, "Account") or "").strip(),
+        ort=str(hole_feld(row, "City") or "").strip(),
+        plz=str(hole_feld(row, "Zip") or "").strip() or None,
+        model_code=str(hole_feld(row, "Model Number") or "").strip(),
+        next_pm_due_date=datum_text(hole_feld(row, "Next PM Due Date")),
+        erledigung_datum=datum_text(hole_feld(row, "Actual Resolution")),
+        seriennummer=str(hole_feld(row, "Serial Number") or "").strip() or None,
+        warranty_date=datum_text(hole_feld(row, "Warranty End Date")),
         techniker=techniker,
         historisch_manager_einsatz=ist_manager(techniker) if techniker else False,
     )
@@ -216,18 +324,18 @@ def map_open_job_row(row: dict) -> SMaxOffenerAuftrag:
     Auftragstyp wird als UNBEKANNT belassen — nicht raten.
     GCH-Code-Filter ist deaktiviert.
     """
-    status = str(row.get("Order Status", "") or "").strip()
-    on_hold = str(row.get("On Hold Reason", "") or "").strip() or None
+    status = str(hole_feld(row, "Order Status") or "").strip()
+    on_hold = str(hole_feld(row, "On Hold Reason") or "").strip() or None
     return SMaxOffenerAuftrag(
-        auftragsnummer=str(row.get("Work Order Number", "")).strip(),
-        account=str(row.get("Account", "")).strip(),
-        ort=str(row.get("City", "")).strip(),
-        plz=str(row.get("Zip", "") or "").strip() or None,
-        model_code=str(row.get("Model Number", "")).strip(),
-        next_pm_due_date=str(row.get("Next PM Due Date", "") or "").strip() or None,
-        seriennummer=str(row.get("Serial Number", "") or "").strip() or None,
-        warranty_date=str(row.get("Warranty End Date", "") or "").strip() or None,
-        contract_end_date=str(row.get("Contract End Date", "") or "").strip() or None,
+        auftragsnummer=str(hole_feld(row, "Work Order Number") or "").strip(),
+        account=str(hole_feld(row, "Account") or "").strip(),
+        ort=str(hole_feld(row, "City") or "").strip(),
+        plz=str(hole_feld(row, "Zip") or "").strip() or None,
+        model_code=str(hole_feld(row, "Model Number") or "").strip(),
+        next_pm_due_date=datum_text(hole_feld(row, "Next PM Due Date")),
+        seriennummer=str(hole_feld(row, "Serial Number") or "").strip() or None,
+        warranty_date=datum_text(hole_feld(row, "Warranty End Date")),
+        contract_end_date=datum_text(hole_feld(row, "Contract End Date")),
         auftrags_status=status,
         on_hold_grund=on_hold,
         auftragstyp="UNBEKANNT",
@@ -355,14 +463,15 @@ def parse_smax_xlsx(
         ws3 = wb["3_Closed Jobs"]
         rows3 = list(ws3.iter_rows(values_only=True))
         if rows3:
-            hdrs3 = [str(h or "").strip() for h in rows3[0]]
+            hdrs3 = [normalisiere_header(h) for h in rows3[0]]
+            sheet_res3.warnungen.extend(pruefe_header("3_Closed Jobs", hdrs3))
             daten3 = rows3[1:]
             if sample_limit:
                 daten3 = daten3[:sample_limit]
             manager_zaehler = 0
             for row in daten3:
                 sheet_res3.zeilen_gesamt += 1
-                row_dict = {hdrs3[i]: row[i] for i in range(min(len(hdrs3), len(row)))}
+                row_dict = baue_zeilen_dict(hdrs3, row)
                 try:
                     auftrag = map_closed_job_row(row_dict)
                     ergebnis.geschlossene_auftraege.append(auftrag)
@@ -371,6 +480,10 @@ def parse_smax_xlsx(
                     sheet_res3.zeilen_ok += 1
                 except Exception as e:
                     sheet_res3.fehler.append(f"Zeile: {e}")
+            for feld, n in zaehle_unlesbare_datums(
+                    ergebnis.geschlossene_auftraege,
+                    ["erledigung_datum", "next_pm_due_date", "warranty_date"]).items():
+                sheet_res3.warnungen.append(f"{n} Werte im Datumsfeld '{feld}' nicht lesbar")
             if manager_zaehler:
                 sheet_res3.warnungen.append(
                     f"{manager_zaehler} Eintraege mit Manager als Techniker "
@@ -386,18 +499,29 @@ def parse_smax_xlsx(
         ws4 = wb["4_Open_Jobs"]
         rows4 = list(ws4.iter_rows(values_only=True))
         if rows4:
-            hdrs4 = [str(h or "").strip() for h in rows4[0]]
+            hdrs4 = [normalisiere_header(h) for h in rows4[0]]
+            sheet_res4.warnungen.extend(pruefe_header("4_Open_Jobs", hdrs4))
             daten4 = rows4[1:]
             if sample_limit:
                 daten4 = daten4[:sample_limit]
             for row in daten4:
                 sheet_res4.zeilen_gesamt += 1
-                row_dict = {hdrs4[i]: row[i] for i in range(min(len(hdrs4), len(row)))}
+                row_dict = baue_zeilen_dict(hdrs4, row)
                 try:
                     ergebnis.offene_auftraege.append(map_open_job_row(row_dict))
                     sheet_res4.zeilen_ok += 1
                 except Exception as e:
                     sheet_res4.fehler.append(f"Zeile: {e}")
+        for feld, n in zaehle_unlesbare_datums(
+                ergebnis.offene_auftraege,
+                ["next_pm_due_date", "warranty_date", "contract_end_date"]).items():
+            sheet_res4.warnungen.append(f"{n} Werte im Datumsfeld '{feld}' nicht lesbar")
+        if ergebnis.offene_auftraege:
+            leer = sum(1 for a in ergebnis.offene_auftraege if not a.next_pm_due_date)
+            if leer:
+                sheet_res4.warnungen.append(
+                    f"{leer} von {len(ergebnis.offene_auftraege)} offenen Auftraegen ohne "
+                    f"Faelligkeit (Zelle 'Next PM Due Date' leer)")
     else:
         sheet_res4.warnungen.append("Sheet '4_Open_Jobs' nicht gefunden")
 

@@ -565,6 +565,13 @@ LABEL_MAP_EN: dict[str, str] = {
     "PLZ": "ZIP", "PLZ-Präfixe:": "ZIP prefixes:", "weitere": "more",
     "PLZ-Bereich vorher": "ZIP range before", "PLZ-Bereich nachher": "ZIP range after",
     "Keine Kliniken zugeordnet": "No clinics assigned",
+    "Auslastung (Vor-Ort- und Fahrzeit), alle Techniker: Median vorher":
+        "Utilization (on-site and travel time), all technicians: median before",
+    "Nur Techniker mit Klinik: Median vorher": "Only technicians with at least one clinic: median before",
+    "Nicht berücksichtigt:": "Not considered:", "Techniker ohne Klinik": "technicians without clinics",
+    "wegen fehlender Skills": "due to missing skills",
+    "Hinweis: Der Median kann sinken, weil die Gesamtlast gleich bleibt und nur umverteilt wird.":
+        "Note: the median can drop because the total load stays the same and is only redistributed.",
     # Datenstand (Header)
     "Beispieldaten": "Sample data",
     "Datenstand: Export vom": "Data status: export of",
@@ -5460,32 +5467,49 @@ def _render_gebietsoptimierung(
         (v for m in metriken_opt for v in m.get("abgaben", [])),
         key=lambda v: (-v["anzahl"], v["von"], v["nach"]))
     n_verschoben = sum(v["anzahl"] for v in verschiebungen)
-    # Auslastung (Gebietsmodell) vorher/nachher: Median und Spreizung ueber Techniker mit Kliniken
-    def _auslastungen(ms: list[dict]) -> list[float]:
-        return [m.get("auslastung_pct", 0) for m in ms if m["kliniken"]]
-    vor_werte = _auslastungen(metriken_akt)
-    nach_werte = _auslastungen(metriken_opt)
-
+    # Auslastung (Gebietsmodell) vorher/nachher: Median und Spreizung ueber ALLE
+    # Techniker und zusaetzlich nur ueber Techniker mit mindestens einer Klinik
+    # (Techniker ohne Klinik -- z.B. ohne Skills -- verzerren sonst die Spreizung).
     def _median(w: list[float]) -> int:
         return round(statistics.median(w)) if w else 0
 
     def _spreizung(w: list[float]) -> int:
         return round(max(w) - min(w)) if w else 0
-    spr_nachher = _spreizung(nach_werte)
-    k_vor = sum(1 for w in vor_werte if korridor_status(w, lo_pct, hi_pct)[0] == "im_korridor")
-    k_nach = sum(1 for w in nach_werte if korridor_status(w, lo_pct, hi_pct)[0] == "im_korridor")
+
+    def _paar(vor: list[float], nach: list[float], mit_label: str) -> str:
+        spr = _spreizung(nach)
+        return (
+            f'{_label(mit_label)} {_median(vor)}&nbsp;%, '
+            f'{_label("nachher")} {_median(nach)}&nbsp;%; '
+            f'{_label("Spreizung vorher")} {_spreizung(vor)}, {_label("nachher")} '
+            f'{spr} {_label("Prozentpunkt" if spr == 1 else "Prozentpunkte")}.'
+        )
+    alle_vor = [m.get("auslastung_pct", 0) for m in metriken_akt]
+    alle_nach = [m.get("auslastung_pct", 0) for m in metriken_opt]
+    mit_vor = [m.get("auslastung_pct", 0) for m in metriken_akt if m["kliniken"]]
+    mit_nach = [m.get("auslastung_pct", 0) for m in metriken_opt if m["kliniken"]]
+    ohne_klinik = [m for m in metriken_akt if not m["kliniken"]]
+    n_ohne_skills = sum(
+        1 for m in ohne_klinik if techniker.get(m["id"], {}).get("in_skills_matrix") is False)
+    if ohne_klinik:
+        auslastung_satz = (
+            _paar(alle_vor, alle_nach, "Auslastung (Vor-Ort- und Fahrzeit), alle Techniker: Median vorher")
+            + " " + _paar(mit_vor, mit_nach, "Nur Techniker mit Klinik: Median vorher")
+            + f' {_label("Nicht berücksichtigt:")} {len(ohne_klinik)} {_label("Techniker ohne Klinik")}'
+            + (f' ({n_ohne_skills} {_label("wegen fehlender Skills")})' if n_ohne_skills else "") + "."
+        )
+    else:
+        auslastung_satz = _paar(mit_vor, mit_nach, "Auslastung (Vor-Ort- und Fahrzeit): Median vorher")
+    k_vor = sum(1 for w in mit_vor if korridor_status(w, lo_pct, hi_pct)[0] == "im_korridor")
+    k_nach = sum(1 for w in mit_nach if korridor_status(w, lo_pct, hi_pct)[0] == "im_korridor")
     korridor_opt = (
         f' {_label("Im Zielkorridor: vorher")} {k_vor}, {_label("nachher")} {k_nach} {_label("Techniker")}.'
         if (k_vor or k_nach) else ""
     )
     headline_opt = (
         f'<p class="go-headline">{n_verschoben} {_label("von")} {n_klin} '
-        f'{_label("Kliniken wechseln.")} '
-        f'{_label("Auslastung (Vor-Ort- und Fahrzeit): Median vorher")} {_median(vor_werte)}&nbsp;%, '
-        f'{_label("nachher")} {_median(nach_werte)}&nbsp;%; '
-        f'{_label("Spreizung vorher")} {_spreizung(vor_werte)}, {_label("nachher")} '
-        f'{spr_nachher} {_label("Prozentpunkt" if spr_nachher == 1 else "Prozentpunkte")}.'
-        f'{korridor_opt}</p>'
+        f'{_label("Kliniken wechseln.")} {auslastung_satz}{korridor_opt}</p>'
+        f'<p class="go-details-text">{_label("Hinweis: Der Median kann sinken, weil die Gesamtlast gleich bleibt und nur umverteilt wird.")}</p>'
     )
     if verschiebungen:
         rows_versch = "".join(
