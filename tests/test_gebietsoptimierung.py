@@ -83,10 +83,16 @@ class TestSollKlinikVerschieben:
             auslastung_diff_pp=-10.0, fahrzeit_mehraufwand_min=1.0
         ) is False
 
-    def test_grenzwert_auslastung_exakt_schwelle_bleibt(self):
-        """Exakt am Schwellwert (nicht darueber) -> Regel ist 'echt groesser als'."""
+    def test_grenzwert_auslastung_exakt_schwelle_verschiebt(self):
+        """Exakt am Schwellwert -> 'mindestens' die Schwelle genuegt."""
         assert _soll_klinik_verschieben(
             auslastung_diff_pp=float(OPTIMIERUNG_AUSLASTUNGS_SCHWELLE),
+            fahrzeit_mehraufwand_min=0.0,
+        ) is True
+
+    def test_knapp_unter_schwelle_bleibt(self):
+        assert _soll_klinik_verschieben(
+            auslastung_diff_pp=OPTIMIERUNG_AUSLASTUNGS_SCHWELLE - 0.01,
             fahrzeit_mehraufwand_min=0.0,
         ) is False
 

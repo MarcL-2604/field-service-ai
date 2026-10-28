@@ -45,6 +45,7 @@ from config import (  # noqa: E402
     TESTS_ANZAHL,
     OPTIMIERUNG_AUSLASTUNGS_SCHWELLE,
     OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN,
+    OPTIMIERUNG_MAX_ABGABE_ANTEIL,
     ARBEITSWOCHEN_PRO_JAHR,
     HUGO_KERNGEBIET_MAX_FAHRZEIT_MIN,
     REPAIR_SLA_VERTRAGSKUNDE_TAGE,
@@ -2132,9 +2133,59 @@ def _soll_klinik_verschieben(
     dem Schwellwert) UND die zusaetzliche Fahrzeit vertretbar bleibt.
     """
     return (
-        auslastung_diff_pp > OPTIMIERUNG_AUSLASTUNGS_SCHWELLE
+        auslastung_diff_pp >= OPTIMIERUNG_AUSLASTUNGS_SCHWELLE
         and fahrzeit_mehraufwand_min <= OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN
     )
+
+
+def _verschiebe_kliniken(
+    kandidaten: list[dict],
+    last_h: dict[str, float],
+    anzahl_je_tech: dict[str, int],
+    kapazitaet_h: float,
+    max_abgabe_anteil: float | None = None,
+) -> list[dict]:
+    """Waehlt die Klinik-Verschiebungen mit LIVE-Auslastung.
+
+    kandidaten: je Klinik {"id", "tid1", "tid2", "mehrfahrt" (Min.),
+    "last1", "last2" (Jahresstunden der Klinik beim Abgeber bzw. Empfaenger)}.
+    Regeln: (1) Reihenfolge nach geringster Mehrfahrt; (2) Auslastung von
+    Abgeber und Empfaenger wird nach JEDER Verschiebung neu berechnet -- verschoben
+    wird nur, solange der Unterschied vorher >= OPTIMIERUNG_AUSLASTUNGS_SCHWELLE
+    ist (und die Mehrfahrt vertretbar) und der Empfaenger danach nicht ueber dem
+    Abgeber liegt; (3) kein Techniker gibt mehr als max_abgabe_anteil seiner
+    Kliniken ab (abgerundet); (4) keine Ketten: wer Kliniken bekommen hat, gibt
+    keine ab und umgekehrt. last_h wird nicht veraendert.
+    """
+    if kapazitaet_h <= 0:
+        return []
+    anteil = OPTIMIERUNG_MAX_ABGABE_ANTEIL if max_abgabe_anteil is None else max_abgabe_anteil
+    last = dict(last_h)
+    abgegeben: dict[str, int] = {}
+    empfaenger: set[str] = set()
+    geber: set[str] = set()
+    verschoben: list[dict] = []
+    for c in sorted(kandidaten, key=lambda k: (k["mehrfahrt"], k["id"])):
+        t1, t2 = c["tid1"], c["tid2"]
+        if t1 in empfaenger or t2 in geber:
+            continue
+        if abgegeben.get(t1, 0) >= int(anzahl_je_tech.get(t1, 0) * anteil + 1e-9):
+            continue
+        a1 = last.get(t1, 0.0) / kapazitaet_h * 100
+        a2 = last.get(t2, 0.0) / kapazitaet_h * 100
+        if not _soll_klinik_verschieben(a1 - a2, c["mehrfahrt"]):
+            continue
+        a1_neu = (last.get(t1, 0.0) - c["last1"]) / kapazitaet_h * 100
+        a2_neu = (last.get(t2, 0.0) + c["last2"]) / kapazitaet_h * 100
+        if a2_neu > a1_neu:
+            continue
+        last[t1] = last.get(t1, 0.0) - c["last1"]
+        last[t2] = last.get(t2, 0.0) + c["last2"]
+        abgegeben[t1] = abgegeben.get(t1, 0) + 1
+        geber.add(t1)
+        empfaenger.add(t2)
+        verschoben.append(c)
+    return verschoben
 
 
 def _klassifiziere_gebiete_luecken_ueberschneidungen(
@@ -2519,7 +2570,7 @@ def _berechne_gebietsmetriken(
             gesamt_h / jahreskapazitaet_h * 100 if jahreskapazitaet_h else 0.0
         )
 
-    # ── Schritt 2: Optimierungsschritt (2.-naechster Techniker vs. Auslastung) ──
+    # ── Schritt 2: Optimierung mit LIVE-Auslastung (siehe _verschiebe_kliniken) ──
     zuweisung_opt = dict(zuweisung_akt)
     fahrzeit_opt = dict(fahrzeit_akt)
     gewonnen: dict[str, int] = {tid: 0 for tid in techniker}
@@ -2529,23 +2580,37 @@ def _berechne_gebietsmetriken(
     # Je Techniker: Abstand zum 2.-naechsten (Alternativ-)Techniker ueber alle Kliniken
     alt_zaehler: dict[str, dict[str, list[float]]] = {tid: {} for tid in techniker}
 
+    last_h: dict[str, float] = {tid: 0.0 for tid in techniker}
+    anzahl_je_tech: dict[str, int] = {tid: 0 for tid in techniker}
+    kandidaten_liste: list[dict] = []
     for k in kliniken:
         dists = kandidaten.get(k["id"], [])
+        if not dists:
+            continue
+        stk = stk_count.get(k["id"], 0)
+        eff_speed = 100.0 / _strassenfaktor(k["plz"])
+        tid1, dist1 = dists[0]
+        fz1 = dist1 / eff_speed * 60
+        last_h[tid1] += stk * (2 * fz1 / 60 + stunden_pro_einsatz)
+        anzahl_je_tech[tid1] += 1
         if len(dists) < 2:
             continue
-        tid1, dist1 = dists[0]
         tid2, dist2 = dists[1]
-        eff_speed = 100.0 / _strassenfaktor(k["plz"])
-        fz1 = dist1 / eff_speed * 60
         fz2 = dist2 / eff_speed * 60
-        auslastung_diff = auslastung_pct.get(tid1, 0.0) - auslastung_pct.get(tid2, 0.0)
         alt_zaehler[tid1].setdefault(tid2, []).append(fz2 - fz1)
-        if _soll_klinik_verschieben(auslastung_diff, fz2 - fz1):
-            zuweisung_opt[k["id"]] = tid2
-            fahrzeit_opt[k["id"]] = fz2
-            abgegeben[tid1] += 1
-            gewonnen[tid2] += 1
-            paar_mehrfahrt.setdefault((tid1, tid2), []).append(fz2 - fz1)
+        kandidaten_liste.append({
+            "id": k["id"], "tid1": tid1, "tid2": tid2, "fz2": fz2,
+            "mehrfahrt": fz2 - fz1,
+            "last1": stk * (2 * fz1 / 60 + stunden_pro_einsatz),
+            "last2": stk * (2 * fz2 / 60 + stunden_pro_einsatz),
+        })
+
+    for v in _verschiebe_kliniken(kandidaten_liste, last_h, anzahl_je_tech, jahreskapazitaet_h):
+        zuweisung_opt[v["id"]] = v["tid2"]
+        fahrzeit_opt[v["id"]] = v["fz2"]
+        abgegeben[v["tid1"]] += 1
+        gewonnen[v["tid2"]] += 1
+        paar_mehrfahrt.setdefault((v["tid1"], v["tid2"]), []).append(v["mehrfahrt"])
 
     metriken_opt = _aggregiere(zuweisung_opt, fahrzeit_opt)
     for m in metriken_opt:

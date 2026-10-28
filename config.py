@@ -131,6 +131,12 @@ CROSSTRAINING_AUSGESCHLOSSENE_CLUSTER_PRAEFIXE = [
 # Fahrzeit-Mehrbelastung vertretbar bleibt.
 OPTIMIERUNG_AUSLASTUNGS_SCHWELLE = 15            # Mindest-Auslastungsdifferenz in Prozentpunkten
 OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN = 20    # max. akzeptierte Fahrzeit-Mehrbelastung (Minuten)
+# Obergrenze je Techniker: Anteil seiner (Ist-)Kliniken, den er hoechstens abgibt.
+# Begruendung: ein Gebietszuschnitt soll Auslastung angleichen, nicht ein Gebiet
+# aufloesen -- wer mehr als etwa ein Drittel seiner Kunden verliert, verliert
+# Ortskenntnis und Kundenbeziehung; 0,3 haelt mindestens 70 % der Kliniken stabil
+# und begrenzt die Umstellung auf einen Schritt, der im Alltag tragbar ist.
+OPTIMIERUNG_MAX_ABGABE_ANTEIL = 0.3
 ARBEITSWOCHEN_PRO_JAHR = 46                      # Kapazitaetsbasis fuer Auslastungs-Berechnung
 
 # ─── Gebietsoptimierung: Luecken & Ueberschneidungen (generisch) ───
