@@ -58,20 +58,156 @@ def _nearest_alternativtechniker(
     return best_id, techniker[best_id].get("standort", "–"), round(best_km)
 
 
+def korridor_status(pct: float, ziel_min_pct: float = 80.0, ziel_max_pct: float = 95.0) -> tuple[str, int]:
+    """Ampel gegen den Auslastungs-Zielkorridor: ("unter"|"im_korridor"|"ueber",
+    Abstand zur naechsten Korridorgrenze in Prozentpunkten, 0 im Korridor)."""
+    if pct < ziel_min_pct:
+        return "unter", round(ziel_min_pct - pct)
+    if pct > ziel_max_pct:
+        return "ueber", round(pct - ziel_max_pct)
+    return "im_korridor", 0
+
+
+def _plz_text(info: dict | None, sprache: str) -> str:
+    """PLZ-Uebersicht als Klartext (Von-Bis-Bereich oder Praefix-Liste)."""
+    en = sprache == "en"
+    kl = "clinics" if en else "Kliniken"
+    if not info or not info.get("anzahl"):
+        return "No clinics assigned." if en else "Keine Kliniken zugeordnet."
+    if info.get("bereich"):
+        lo, hi = info["bereich"]
+        bereich = f"{lo:02d}xxx" if lo == hi else f"{lo:02d}xxx–{hi:02d}xxx"
+        return f"{'ZIP' if en else 'PLZ'} {bereich} ({info['anzahl']} {kl})"
+    top = info["praefixe"][:5]
+    rest = len(info["praefixe"]) - len(top)
+    teile = ", ".join(f"{p}xxx ({n})" for p, n in top)
+    if rest > 0:
+        teile += f" + {rest} {'more' if en else 'weitere'}"
+    return f"{'ZIP prefixes' if en else 'PLZ-Präfixe'}: {teile}"
+
+
+def gebiets_begruendung(
+    tid: str,
+    techniker: dict[str, dict],
+    metriken_akt: list[dict],
+    sprache: str = "de",
+    ziel_min_pct: float = 80.0,
+    ziel_max_pct: float = 95.0,
+) -> dict[str, str] | None:
+    """Eine Quelle fuer 'Warum dieses Gebiet?': feste Abschnitte regel,
+    kennzahlen, alternative, plz, einschraenkung. Genutzt vom Detailbereich
+    der Gebietsoptimierung UND vom Erklaerfeld im Chat-Panel (keine
+    Doppelpflege). None, wenn der Techniker keine Kliniken hat."""
+    td = techniker.get(tid) or {}
+    m = _find(metriken_akt, tid)
+    if not m or not m.get("kliniken"):
+        return None
+    en = sprache == "en"
+    standort = td.get("standort", "–")
+    real = td.get("auslastung_pct_real")
+    pct = round(real) if real is not None else m.get("auslastung_pct")
+    basis_de = (
+        "Vor-Ort-Zeit im Verhältnis zur Jahreskapazität, ohne Fahrzeit" if real is not None
+        else "Vor-Ort- plus Fahrtstunden im Verhältnis zur Jahreskapazität"
+    )
+    basis_en = (
+        "on-site time relative to annual capacity, excluding travel time" if real is not None
+        else "on-site plus travel hours relative to annual capacity"
+    )
+    if en:
+        regel = (
+            "Each clinic goes to the technician with the shortest travel time, as long "
+            "as that technician's utilization is not significantly above that of the "
+            "next-nearest technician."
+        )
+        kenn = (
+            f"{tid} ({standort}) covers {m['kliniken']} clinics, on average "
+            f"{m['avg_fahrzeit']} min travel time (max. {m['max_fahrzeit']} min)."
+        )
+        if pct is not None:
+            status, diff = korridor_status(pct, ziel_min_pct, ziel_max_pct)
+            kenn += (
+                f" Utilization {pct} % ({basis_en}); target corridor {ziel_min_pct:.0f}–{ziel_max_pct:.0f} %: "
+            )
+            kenn += {
+                "unter": f"{diff} percentage points below the corridor.",
+                "ueber": f"{diff} percentage points above the corridor.",
+                "im_korridor": "within the corridor.",
+            }[status]
+        einschr = (
+            "Scenario: considers travel time and utilization, not yet device "
+            "qualification. No assignment."
+        )
+    else:
+        regel = (
+            "Jede Klinik geht an den Techniker mit der kürzesten Fahrzeit, solange "
+            "dessen Auslastung nicht deutlich über der des nächsten Technikers liegt."
+        )
+        kenn = (
+            f"{tid} ({standort}) betreut {m['kliniken']} Kliniken, im Schnitt "
+            f"{m['avg_fahrzeit']} Min. Fahrzeit (max. {m['max_fahrzeit']} Min.)."
+        )
+        if pct is not None:
+            status, diff = korridor_status(pct, ziel_min_pct, ziel_max_pct)
+            kenn += (
+                f" Auslastung {pct} % ({basis_de}); Zielkorridor {ziel_min_pct:.0f}–{ziel_max_pct:.0f} %: "
+            )
+            kenn += {
+                "unter": f"{diff} Prozentpunkte unter dem Korridor.",
+                "ueber": f"{diff} Prozentpunkte über dem Korridor.",
+                "im_korridor": "im Korridor.",
+            }[status]
+        einschr = (
+            "Szenario: berücksichtigt Fahrzeit und Auslastung, noch nicht die "
+            "Gerätequalifikation. Keine Zuweisung."
+        )
+    alt = m.get("alternative")
+    if alt:
+        diff_pp = round(alt["auslastung_pct"] - (pct or 0))
+        alt_td = techniker.get(alt["id"], {})
+        if en:
+            vgl = (
+                f"Next alternative technician: {alt['id']} ({alt_td.get('standort', '–')}): "
+                f"on average {alt['mehrfahrt_min']} min more travel time, utilization "
+                f"{alt['auslastung_pct']} % ({abs(diff_pp)} percentage points "
+                f"{'lower' if diff_pp < 0 else 'higher'})."
+            )
+        else:
+            vgl = (
+                f"Nächster Alternativ-Techniker: {alt['id']} ({alt_td.get('standort', '–')}): "
+                f"im Schnitt {alt['mehrfahrt_min']} Min. mehr Fahrzeit, Auslastung "
+                f"{alt['auslastung_pct']} % ({abs(diff_pp)} Prozentpunkte "
+                f"{'niedriger' if diff_pp < 0 else 'höher'})."
+            )
+    else:
+        vgl = "No alternative technician available." if en else "Kein Alternativ-Techniker verfügbar."
+    return {
+        "regel": regel,
+        "kennzahlen": kenn,
+        "alternative": vgl,
+        "plz": _plz_text(m.get("plz_info"), sprache),
+        "einschraenkung": einschr,
+    }
+
+
 def erklaere_warum_gebiet(
     tid: str,
     techniker: dict[str, dict],
     metriken_akt: list[dict],
     umweg_faktor: float = 1.35,
     sprache: str = "de",
+    ziel_min_pct: float = 80.0,
+    ziel_max_pct: float = 95.0,
 ) -> str:
+    """Erklaerfeld-Text: dieselben Abschnitte wie der Detailbereich 'Warum
+    dieses Gebiet?' (Quelle: gebiets_begruendung), als ein Text."""
     td = techniker.get(tid)
     if td is None:
         if sprache == "en":
             return f"No technician found with ID {tid}."
         return f"Kein Techniker mit der ID {tid} gefunden."
-    m = _find(metriken_akt, tid)
-    if not m or not m.get("kliniken"):
+    abschnitte = gebiets_begruendung(tid, techniker, metriken_akt, sprache, ziel_min_pct, ziel_max_pct)
+    if abschnitte is None:
         if sprache == "en":
             return (
                 f"{tid} ({td.get('standort', '–')}) currently has no clinics assigned "
@@ -83,39 +219,9 @@ def erklaere_warum_gebiet(
             f"in der Gebietsberechnung — entweder liegt kein gültiger Standort vor "
             f"oder es wurden keine Kliniken in erreichbarer Nähe gefunden."
         )
-    alt = _nearest_alternativtechniker(tid, techniker)
-    if sprache == "en":
-        alt_txt = (
-            f" Geographically nearest alternative technician: {alt[0]} ({alt[1]}, "
-            f"~{alt[2]} km away)."
-            if alt
-            else ""
-        )
-        return (
-            f"{tid} ({td.get('standort', '–')}) currently covers {m['kliniken']} clinics with "
-            f"an avg. travel time of {m['avg_fahrzeit']} min (max. {m['max_fahrzeit']} min) and "
-            f"a utilization ratio of {m['ratio']} (on-site hours per travel hour). The "
-            f"territory assignment follows the existing scoring model (competency 40% + travel time 35% + "
-            f"utilization 25%, travel time = Haversine distance × {umweg_faktor} road factor): "
-            f"each clinic goes to the technician with the shortest effective travel time, as long "
-            f"as their utilization is not significantly higher than that of a closer technician."
-            f"{alt_txt}"
-        )
-    alt_txt = (
-        f" Geografisch nächstgelegener Alternativtechniker: {alt[0]} ({alt[1]}, "
-        f"~{alt[2]} km entfernt)."
-        if alt
-        else ""
-    )
-    return (
-        f"{tid} ({td.get('standort', '–')}) betreut aktuell {m['kliniken']} Kliniken mit "
-        f"einer Ø Fahrzeit von {m['avg_fahrzeit']} min (max. {m['max_fahrzeit']} min) und "
-        f"einer Auslastungs-Ratio von {m['ratio']} (Vor-Ort-Stunden je Fahrtstunde). Die "
-        f"Gebietszuordnung folgt dem bestehenden Scoring-Modell (Kompetenz 40% + Fahrzeit 35% + "
-        f"Auslastung 25%, Fahrzeit = Haversine-Distanz × {umweg_faktor} Straßenfaktor): "
-        f"jede Klinik geht an den Techniker mit der kürzesten effektiven Fahrzeit, solange "
-        f"dessen Auslastung nicht deutlich höher liegt als bei einem näheren Techniker."
-        f"{alt_txt}"
+    return " ".join(
+        abschnitte[k] if abschnitte[k].endswith(".") else abschnitte[k] + "."
+        for k in ("regel", "kennzahlen", "alternative", "plz", "einschraenkung")
     )
 
 
@@ -391,7 +497,10 @@ def generiere_erklaerung(
     metriken_opt = metriken_opt or []
     ampeln = ampeln or []
     if frage_typ == "warum_gebiet":
-        return erklaere_warum_gebiet(techniker_id, techniker, metriken_akt, umweg_faktor, sprache)
+        return erklaere_warum_gebiet(
+            techniker_id, techniker, metriken_akt, umweg_faktor, sprache,
+            auslastung_ziel_min_pct, auslastung_ziel_max_pct,
+        )
     if frage_typ == "warum_auslastung":
         return erklaere_warum_auslastung(techniker_id, techniker, metriken_akt, ampeln, sprache)
     if frage_typ == "warum_verschoben":

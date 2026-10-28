@@ -313,12 +313,12 @@ class TestKlassifiziereGebieteLueckenUeberschneidungen:
     def test_keine_kliniken_ergibt_leeres_ergebnis_ohne_absturz(self):
         assert _klassifiziere_gebiete_luecken_ueberschneidungen([], {}, self.topo_paths) == {}
 
-    def test_klinik_ohne_kandidaten_wird_uebersprungen(self):
+    def test_klinik_ohne_kandidaten_ist_nicht_berechenbar(self):
         kliniken = [self._klinik("K1", _HAMBURG)]
         ergebnis = _klassifiziere_gebiete_luecken_ueberschneidungen(
             kliniken, {}, self.topo_paths,
         )
-        assert ergebnis == {}
+        assert ergebnis == {"Hamburg": {"typ": "not_computable", "techs": []}}
 
     def test_funktioniert_mit_demo_technikern_end_to_end(self):
         """Regressionstest: reale Demo-Techniker (T1-T14) liefern ein

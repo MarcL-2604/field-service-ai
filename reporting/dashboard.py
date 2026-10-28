@@ -64,7 +64,9 @@ from auftraege.workflow import _berechne_dringlichkeit, schlage_termine_vor  # n
 from auftraege.models import Auftrag, AuftragsTyp  # noqa: E402
 from auftraege.tour_optimierung import buendle_mit_qualifikation  # noqa: E402
 from techniker.plz_koordinaten import normalisiere_plz  # noqa: E402
-from reporting.erklaerungen import generiere_erklaerung, FRAGE_TYPEN, FRAGE_TYPEN_EN  # noqa: E402
+from reporting.erklaerungen import (  # noqa: E402
+    generiere_erklaerung, FRAGE_TYPEN, FRAGE_TYPEN_EN, gebiets_begruendung, korridor_status,
+)
 from config_hugo_standorte import HUGO_SPRINGER, HUGO_STANDORTE, HUGO_TEAM_GROESSE  # noqa: E402
 from reporting.hugo_kerngebiet import (  # noqa: E402
     berechne_hugo_kerngebiete,
@@ -559,6 +561,47 @@ LABEL_MAP_EN: dict[str, str] = {
     "PLZ": "ZIP", "PLZ-Präfixe:": "ZIP prefixes:", "weitere": "more",
     "PLZ-Bereich vorher": "ZIP range before", "PLZ-Bereich nachher": "ZIP range after",
     "Keine Kliniken zugeordnet": "No clinics assigned",
+    # Gebietsplanung: Gesamtaussagen, Begruendungen, Verschiebungen, Luecken-Status
+    "Techniker betreuen": "technicians cover", "Kliniken;": "clinics;", "von": "of",
+    "liegen im Auslastungs-Zielkorridor": "are within the utilization target corridor",
+    "Kliniken wechseln;": "clinics change technician;",
+    "Techniker liegen vorher und nachher im Zielkorridor.":
+        "technicians are within the target corridor both before and after.",
+    "Nächster Techniker für": "Nearest technician for",
+    "Kliniken, im Schnitt": "clinics, on average",
+    "Min. Fahrzeit; Auslastung": "min travel time; utilization",
+    "Prozentpunkte unter dem Korridor": "percentage points below the corridor",
+    "Prozentpunkte über dem Korridor": "percentage points above the corridor",
+    "Auslastung Abgeber": "Donor utilization", "Empfänger": "recipient", "Mehrfahrt": "extra travel",
+    "Min.": "min",
+    "Keine Verschiebungen — alle Kliniken liegen bereits innerhalb der Schwellwerte beim nächstgelegenen Techniker.":
+        "No relocations — all clinics are already within the thresholds at the nearest technician.",
+    "Keine Lücke": "No gap", "Nicht berechenbar": "Not computable", "Keine Daten": "No data",
+    "Bundesländer mit Lücke,": "federal states with a gap,",
+    "mit Überschneidung;": "with an overlap;", "ohne Befund.": "without findings.",
+    "Min. zum nächsten Techniker (Schwelle: über 90 Min.)":
+        "min to the nearest technician (threshold: over 90 min)",
+    "der Kliniken haben einen zweiten Techniker höchstens 20 Min. dahinter (Schwelle: mindestens 30 %)":
+        "of clinics have a second technician at most 20 min behind (threshold: at least 30 %)",
+    "Min. zum nächsten Techniker; weder Lücke noch Überschneidung":
+        "min to the nearest technician; neither gap nor overlap",
+    "Kliniken vorhanden, aber kein Techniker mit Standort für die Fahrzeitberechnung":
+        "Clinics present, but no technician with a location for the travel time calculation",
+    "Keine Kliniken im Bundesland im Datensatz": "No clinics in this federal state in the dataset",
+    "Zielkorridor 80–95 % (Referenzwert, keine harte Regel). Echtdaten: Vor-Ort-Zeit ÷ "
+    "Jahreskapazität; Gebietsmodell: Vor-Ort- plus Fahrtstunden ÷ Jahreskapazität.":
+        "Target corridor 80–95 % (reference value, not a hard rule). Real data: on-site time ÷ "
+        "annual capacity; territory model: on-site plus travel hours ÷ annual capacity.",
+    "Ratio = Vor-Ort-Stunden ÷ Fahrtstunden pro Jahr. Grün ab 3,0, Gelb 2,0 bis 3,0, Rot unter 2,0.":
+        "Ratio = on-site hours ÷ travel hours per year. Green from 3.0, yellow 2.0 to 3.0, red below 2.0.",
+    "Veränderung der jährlichen Fahrtstunden durch die Optimierung — nicht die "
+    "Fahrzeit eines einzelnen Termins.":
+        "Change in annual travel hours caused by the optimization — not the travel "
+        "time of a single appointment.",
+    "Lücke: durchschnittlich über 90 Min. zum nächsten Techniker. Überschneidung: "
+    "mindestens 30 % der Kliniken haben einen zweiten Techniker höchstens 20 Min. dahinter.":
+        "Gap: on average over 90 min to the nearest technician. Overlap: at least 30 % "
+        "of clinics have a second technician at most 20 min behind.",
 }
 
 
@@ -2038,29 +2081,37 @@ def _klassifiziere_gebiete_luecken_ueberschneidungen(
                     kontest_techs.add(tid2)
 
         if not fahrzeiten:
+            # Kliniken vorhanden, aber kein Techniker mit Standort -> keine Fahrzeit
+            ergebnis[bl] = {"typ": "not_computable", "techs": []}
             continue
 
         avg_fz = sum(fahrzeiten) / len(fahrzeiten)
         kontest_anteil = kontestiert / len(fahrzeiten)
         haupttech = max(naechste_zaehler, key=lambda t: naechste_zaehler[t])
+        gemeinsam = {
+            "fahrzeit_min": round(avg_fz),
+            "anteil_pct": round(kontest_anteil * 100),
+            "kliniken": len(fahrzeiten),
+        }
 
         if avg_fz > LUECKE_FAHRZEIT_SCHWELLE_MIN:
             ergebnis[bl] = {
                 "typ": "gap",
                 "techs": [haupttech],
                 "naechster": haupttech,
-                "fahrzeit_min": round(avg_fz),
+                **gemeinsam,
             }
         elif kontest_anteil >= UEBERSCHNEIDUNG_ANTEIL_SCHWELLE:
             ergebnis[bl] = {
                 "typ": "overlap",
                 "techs": sorted(kontest_techs),
-                "anteil_pct": round(kontest_anteil * 100),
+                **gemeinsam,
             }
         else:
             ergebnis[bl] = {
                 "typ": "optimal",
                 "techs": [haupttech],
+                **gemeinsam,
             }
     return ergebnis
 
@@ -2363,6 +2414,10 @@ def _berechne_gebietsmetriken(
     fahrzeit_opt = dict(fahrzeit_akt)
     gewonnen: dict[str, int] = {tid: 0 for tid in techniker}
     abgegeben: dict[str, int] = {tid: 0 for tid in techniker}
+    # Je Techniker-Paar (Abgeber, Empfaenger): Mehrfahrt je verschobener Klinik
+    paar_mehrfahrt: dict[tuple[str, str], list[float]] = {}
+    # Je Techniker: Abstand zum 2.-naechsten (Alternativ-)Techniker ueber alle Kliniken
+    alt_zaehler: dict[str, dict[str, list[float]]] = {tid: {} for tid in techniker}
 
     for k in kliniken:
         dists = kandidaten.get(k["id"], [])
@@ -2374,17 +2429,52 @@ def _berechne_gebietsmetriken(
         fz1 = dist1 / eff_speed * 60
         fz2 = dist2 / eff_speed * 60
         auslastung_diff = auslastung_pct.get(tid1, 0.0) - auslastung_pct.get(tid2, 0.0)
+        alt_zaehler[tid1].setdefault(tid2, []).append(fz2 - fz1)
         if _soll_klinik_verschieben(auslastung_diff, fz2 - fz1):
             zuweisung_opt[k["id"]] = tid2
             fahrzeit_opt[k["id"]] = fz2
             abgegeben[tid1] += 1
             gewonnen[tid2] += 1
+            paar_mehrfahrt.setdefault((tid1, tid2), []).append(fz2 - fz1)
 
     metriken_opt = _aggregiere(zuweisung_opt, fahrzeit_opt)
     for m in metriken_opt:
         m["verschoben"] = gewonnen.get(m["id"], 0) + abgegeben.get(m["id"], 0)
         m["verschoben_gewonnen"] = gewonnen.get(m["id"], 0)
         m["verschoben_abgegeben"] = abgegeben.get(m["id"], 0)
+        m["abgaben"] = [
+            {
+                "von": von, "nach": nach, "anzahl": len(mf),
+                "mehrfahrt_min": round(sum(mf) / len(mf)),
+                "auslastung_von": round(auslastung_pct.get(von, 0.0)),
+                "auslastung_nach": round(auslastung_pct.get(nach, 0.0)),
+            }
+            for (von, nach), mf in sorted(
+                paar_mehrfahrt.items(), key=lambda kv: (-len(kv[1]), kv[0]))
+            if von == m["id"]
+        ]
+
+    # Auslastung (Gebietsmodell: Vor-Ort- plus Fahrtstunden / Jahreskapazitaet)
+    for m in metriken_akt + metriken_opt:
+        gesamt_h = m["fahrtstunden_jahr"] + m["onsite_stunden"]
+        m["auslastung_pct"] = round(
+            gesamt_h / jahreskapazitaet_h * 100 if jahreskapazitaet_h else 0.0)
+    # Naechster Alternativ-Techniker je Techniker (haeufigster 2.-naechster)
+    for m in metriken_akt:
+        kand = alt_zaehler.get(m["id"], {})
+        if not kand:
+            m["alternative"] = None
+            continue
+        alt_id = max(kand, key=lambda t: (len(kand[t]), -sum(kand[t])))
+        m["alternative"] = {
+            "id": alt_id,
+            "mehrfahrt_min": round(sum(kand[alt_id]) / len(kand[alt_id])),
+            "auslastung_pct": 0,
+        }
+    auslastung_je_tid = {x["id"]: x["auslastung_pct"] for x in metriken_akt}
+    for m in metriken_akt:
+        if m.get("alternative"):
+            m["alternative"]["auslastung_pct"] = auslastung_je_tid.get(m["alternative"]["id"], 0)
 
     # ── PLZ-Uebersicht je Techniker (aktuell + optimiert) fuer die Tabelle ──
     plz_info_akt = _plz_uebersicht_je_techniker(kliniken, zuweisung_akt)
@@ -2821,6 +2911,7 @@ def _build_gebiets_svg(
     plz_abdeckung: list[dict] | None = None,
     hugo_kerngebiete: list[dict] | None = None,
     hugo_standorte_marker: list[dict] | None = None,
+    gebiete_status: dict[str, dict] | None = None,
 ) -> str:
     """Baut statische SVG-Karte (100% offline, kein CDN, kein JavaScript noetig)."""
     paths = _topo_to_svg_paths()
@@ -2838,9 +2929,8 @@ def _build_gebiets_svg(
         fill_opt = _TECH_FARBEN.get(tid_opt, "#E8EFF7")
         tooltip = f"{name} → {tid}" if tid else f"{name} (nicht zugewiesen)"
         # Overlap/Gap Marker fuer Luecken-Ansicht
-        _OVERLAP_STATES = {"Nordrhein-Westfalen": "1", "Bayern": "1"}
-        _GAP_STATES = {"Mecklenburg-Vorpommern": "gap", "Brandenburg": "gap"}
-        overlap = _OVERLAP_STATES.get(name, _GAP_STATES.get(name, ""))
+        _typ = (gebiete_status or {}).get(name, {}).get("typ")
+        overlap = {"overlap": "1", "gap": "gap"}.get(_typ, "")
         ov_attr = f' data-overlap="{overlap}"' if overlap else ''
         svg_parts.append(
             f'<path class="st" d="{p["d"]}" fill="{fill}" '
@@ -2874,7 +2964,8 @@ def _build_gebiets_svg(
 
     for p in tech_punkte:
         svg_parts.append(
-            f'<circle class="td" cx="{p["px"]}" cy="{p["py"]}" r="6" fill="{p["fc"]}" '
+            f'<circle class="td" data-tech="{p["id"]}" style="cursor:pointer" '
+            f'cx="{p["px"]}" cy="{p["py"]}" r="6" fill="{p["fc"]}" '
             f'stroke="#fff" stroke-width="2">'
             f'<title>{p["id"]} ({p["standort"]})</title></circle>'
         )
@@ -2887,7 +2978,8 @@ def _build_gebiets_svg(
                 f'stroke="{p["fc"]}" stroke-width="1" opacity="0.55"/>'
             )
         svg_parts.append(
-            f'<text class="tl" x="{p["lx"]:.1f}" y="{p["ly"]:.1f}" '
+            f'<text class="tl" data-tech="{p["id"]}" style="cursor:pointer" '
+            f'x="{p["lx"]:.1f}" y="{p["ly"]:.1f}" '
             f'font-family="Plus Jakarta Sans,sans-serif" font-size="10px" font-weight="700" fill="#1A1A1A">'
             f'{p["id"]}</text>'
         )
@@ -3029,10 +3121,12 @@ def _build_gebiets_script(
     techniker: dict[str, dict],
     plz_abdeckung: list[dict] | None = None,
     gebiets_punkte: list[dict] | None = None,
+    gebiets_detail: dict[str, dict] | None = None,
 ) -> str:
     """Baut minimales JS fuer Modus-Umschaltung (aktuell/optimiert)."""
     tc = _js_json(_TECH_FARBEN)
     pk = _js_json(gebiets_punkte or [])
+    gd = _js_json(gebiets_detail or {})
 
     return (
         "/* ── Gebietsoptimierung (offline, pre-rendered SVG) ── */\n"
@@ -3225,7 +3319,25 @@ def _build_gebiets_script(
         "    svg.querySelectorAll('path.st').forEach(function(p){ p.classList.remove('go-dim','go-hl'); });\n"
         "    clearPunkte();\n"
         "    updateUiState(null);\n"
+        "    showDetail(null);\n"
         "  }\n"
+        "  var DETAIL=" + gd + ";\n"
+        "  function showDetail(tid){\n"
+        "    var box=document.getElementById('go-detail');\n"
+        "    if(!box) return;\n"
+        "    var d=DETAIL[tid];\n"
+        "    if(!tid||!d){ box.style.display='none'; return; }\n"
+        "    var lang=(typeof _currentLang!=='undefined'&&_currentLang==='EN')?'en':'de';\n"
+        "    var t=d[lang]||d.de||{};\n"
+        "    box.querySelectorAll('.go-detail-sec').forEach(function(sec){\n"
+        "      var txt=t[sec.getAttribute('data-sec')];\n"
+        "      sec.style.display=txt?'':'none';\n"
+        "      sec.querySelector('p').textContent=txt||'';\n"
+        "    });\n"
+        "    document.getElementById('go-detail-tech').textContent=tid;\n"
+        "    box.style.display='block';\n"
+        "  }\n"
+        "  window.addEventListener('fsa_lang_changed',function(){ if(selected) showDetail(selected); });\n"
         "  function selectTech(tid){\n"
         "    if(!tid) return;\n"
         "    if(selected===tid){ clearAll(); return; }\n"
@@ -3233,6 +3345,7 @@ def _build_gebiets_script(
         "    highlightState(tid);\n"
         "    renderPunkte(tid);\n"
         "    updateUiState(tid);\n"
+        "    showDetail(tid);\n"
         "  }\n"
         "\n"
         "  document.querySelectorAll('tr[data-tech]').forEach(function(tr){\n"
@@ -3245,6 +3358,8 @@ def _build_gebiets_script(
         "  document.body.addEventListener('click',function(e){\n"
         "    var link=e.target.closest('.go-tech-link');\n"
         "    if(link){ e.stopPropagation(); selectTech(link.getAttribute('data-tech')); return; }\n"
+        "    var marker=e.target.closest('#germany-map-opt .td, #germany-map-opt .tl');\n"
+        "    if(marker){ selectTech(marker.getAttribute('data-tech')); return; }\n"
         "    var item=e.target.closest('.gebiets-legende-item');\n"
         "    if(item){ selectTech(item.getAttribute('data-tech')); }\n"
         "  });\n"
@@ -4719,6 +4834,34 @@ _CSS = """\
     .go-view-content { display: none; }
     .go-view-content.active { display: block; }
 
+    .go-headline { font-size: 15px; font-weight: 600; color: var(--text); margin: 0 0 10px; line-height: 1.45; }
+    .go-szenario-band {
+      background: rgba(0,81,149,.07); border-left: 3px solid var(--primary);
+      padding: 8px 12px; font-size: 12.5px; color: var(--text); margin-bottom: 12px; border-radius: 4px;
+    }
+    .go-begruendung { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+    tr.go-main td { border-bottom: none !important; padding-bottom: 2px; }
+    tr.go-begr-row td { padding-top: 0 !important; padding-bottom: 8px; }
+    .go-detail { margin: 0 0 14px !important; }
+    .go-subhead { font-size: 14px; margin: 14px 0 8px; color: var(--text); }
+    .go-opt-tabelle { margin-top: 14px; }
+    .go-details-text { font-size: 12.5px; margin: 6px 0 10px; line-height: 1.5; }
+    .go-legende-satz { font-size: 12px; color: var(--text-muted); margin: 8px 0 4px; }
+    .go-dot-grau { background: #9AA5B1; }
+    .go-nodata td { color: var(--text-muted); }
+    .go-detail {
+      margin-top: 16px; padding: 14px 16px; border: 1px solid var(--card-border);
+      border-radius: 10px; background: rgba(0,81,149,.04);
+    }
+    .go-detail h3 { font-size: 15px; margin: 0 0 4px; color: var(--primary); }
+    .go-detail-tech { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .go-detail-sec h4 { font-size: 12px; margin: 10px 0 2px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
+    .go-detail-sec p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--text); }
+    .go-weitere { margin-top: 18px; border: 1px solid var(--card-border); border-radius: 10px; padding: 0 14px; }
+    .go-weitere > summary { cursor: pointer; padding: 12px 0; font-weight: 600; color: var(--primary); }
+    .go-weitere-body { padding-bottom: 14px; }
+    .go-weitere-body h4 { font-size: 13px; margin: 16px 0 6px; color: var(--text); }
+
     .go-delta-pos td:last-child,
     .go-delta-pos { color: var(--success-text) !important; }
     .go-delta-neg td:last-child,
@@ -4921,6 +5064,41 @@ def _info_tip(text: str) -> str:
     )
 
 
+def _auslastung_badge(pct: float, lo: float, hi: float) -> str:
+    """Ampel-Badge der Auslastung (Gebietsmodell) gegen den Zielkorridor lo-hi %."""
+    status, _ = korridor_status(pct, lo, hi)
+    return (
+        f'<span class="korridor-badge {_KORRIDOR_CSS[status]}">{pct:.0f}%&thinsp;'
+        f'{_label(_KORRIDOR_LABEL[status])}</span>'
+    )
+
+
+def _gebiets_auslastung(m: dict, td: dict | None) -> float:
+    """Auslastung fuer die Korridor-Ampel: echte Einsatzhistorie, wenn
+    vorhanden (Echtdaten-Modus), sonst der Wert des Gebietsmodells."""
+    real = (td or {}).get("auslastung_pct_real")
+    return real if real is not None else m.get("auslastung_pct", 0)
+
+
+def _gebiets_begruendung_zeile(m: dict, lo: float, hi: float, td: dict | None = None) -> str:
+    """Begruendung in einem Satz je Techniker, aus echten Kennzahlen; Textteile
+    stammen aus LABEL_MAP_EN (DE/EN), Zahlen werden dazwischen gesetzt."""
+    if not m["kliniken"]:
+        return _label("Keine Kliniken zugeordnet")
+    pct = _gebiets_auslastung(m, td)
+    status, diff = korridor_status(pct, lo, hi)
+    kopf = (
+        f'{_label("Nächster Techniker für")} {m["kliniken"]} '
+        f'{_label("Kliniken, im Schnitt")} {m["avg_fahrzeit"]} '
+        f'{_label("Min. Fahrzeit; Auslastung")} '
+    )
+    if status == "im_korridor":
+        return kopf + f'{pct:.0f}&thinsp;% {_label("im Korridor")}'
+    if status == "unter":
+        return kopf + f'{diff} {_label("Prozentpunkte unter dem Korridor")}'
+    return kopf + f'{diff} {_label("Prozentpunkte über dem Korridor")}'
+
+
 def _render_gebietsoptimierung(
     metriken_akt: list[dict],
     metriken_opt: list[dict],
@@ -4973,200 +5151,226 @@ def _render_gebietsoptimierung(
         f'</div>'
     )
 
-    umweg_faktor_text = f"{HAVERSINE_UMWEG_FAKTOR:.2f}".replace(".", ",")
+    # ── Hilfs-Zahlen fuer Gesamtaussagen ──
+    lo_pct, hi_pct = AUSLASTUNG_ZIEL_MIN_PCT, AUSLASTUNG_ZIEL_MAX_PCT
+    korridor_txt = f"{lo_pct}&ndash;{hi_pct}&thinsp;%"
+    szenario_band = '<div class="go-szenario-band" data-i18n="go.szenario">Szenario: ber&uuml;cksichtigt Fahrzeit und Auslastung, noch nicht die Ger&auml;tequalifikation. Keine Zuweisung.</div>'
 
-    # ── Tooltips fuer Kennzahlen-Spalten (direkt am Ort der Verwirrung) ──
-    ratio_tip = _info_tip(
-        "Vor-Ort-Stunden &divide; Fahrtstunden pro Jahr. Gr&uuml;n &ge;3,0 "
-        "(effizient) &middot; Gelb 2,0&ndash;3,0 &middot; Rot &lt;2,0 "
-        "(zu viel Fahrzeit im Verh&auml;ltnis zur Servicezeit)."
-    )
-    korridor_spalte_tip = _info_tip(
-        f"Auslastungs-Zielkorridor ({AUSLASTUNG_ZIEL_MIN_PCT}&ndash;{AUSLASTUNG_ZIEL_MAX_PCT}%, "
-        f"Referenzwert) aus echter Einsatzhistorie (Vor-Ort-Zeit &divide; "
-        f"Jahreskapazit&auml;t, ohne Fahrzeit) &mdash; nur im Echtdaten-Modus "
-        f"verf&uuml;gbar."
-    )
-    delta_fahrzeit_tip = _info_tip(
-        "Ver&auml;nderung der j&auml;hrlichen Fahrtstunden durch die "
-        "Gebietsoptimierung &mdash; nicht die Fahrzeit eines einzelnen "
-        "Termins. Negativ (gr&uuml;n) = Entlastung, positiv (rot) = "
-        "Mehrbelastung."
-    )
-    luecken_status_tip = _info_tip(
-        f"L&uuml;cke: &Oslash; Fahrzeit zum n&auml;chsten Techniker im "
-        f"Bundesland &uuml;ber {LUECKE_FAHRZEIT_SCHWELLE_MIN} Minuten. "
-        f"&Uuml;berschneidung: bei mindestens "
-        f"{round(UEBERSCHNEIDUNG_ANTEIL_SCHWELLE * 100)}% der Kliniken liegt "
-        f"der 2.-n&auml;chste Techniker h&ouml;chstens "
-        f"{UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN} Minuten hinter dem "
-        f"1.-n&auml;chsten (Gebiet kontestiert). Optimal: weder noch."
-    )
+    auslastung_tip = _info_tip(_label(
+        "Zielkorridor 80–95 % (Referenzwert, keine harte Regel). Echtdaten: Vor-Ort-Zeit ÷ "
+        "Jahreskapazität; Gebietsmodell: Vor-Ort- plus Fahrtstunden ÷ Jahreskapazität."))
+    ratio_tip = _info_tip(_label(
+        "Ratio = Vor-Ort-Stunden ÷ Fahrtstunden pro Jahr. Grün ab 3,0, Gelb 2,0 bis 3,0, Rot unter 2,0."))
+    delta_fahrzeit_tip = _info_tip(_label(
+        "Veränderung der jährlichen Fahrtstunden durch die Optimierung — nicht die "
+        "Fahrzeit eines einzelnen Termins."))
+    luecken_status_tip = _info_tip(_label(
+        "Lücke: durchschnittlich über 90 Min. zum nächsten Techniker. Überschneidung: "
+        "mindestens 30 % der Kliniken haben einen zweiten Techniker höchstens 20 Min. dahinter."))
 
-    info_aktuell = _go_info_box(
-        "&#128506;",
-        "Was zeigt diese Ansicht?",
-        "Zeigt die IST-Gebietsaufteilung basierend auf den aktuellen "
-        "Techniker-Wohnorten und den ihnen historisch zugeordneten "
-        "Klinik-PLZ-Gebieten. Jede Farbe entspricht einem Techniker-Gebiet. "
-        "Ratio = Vor-Ort-Stunden &divide; Fahrtstunden pro Jahr &mdash; "
-        "Gr&uuml;n &ge;3,0 (effizient), Gelb 2,0&ndash;3,0, Rot &lt;2,0 "
-        "(zu viel Fahrzeit im Verh&auml;ltnis zur Servicezeit).",
-    )
     zeitraum_hinweis = ""
     if _ECHTDATEN:
         try:
             from api.smax_cache import load_dashboard_data as _load_smax_meta
-            _smax_meta = _load_smax_meta() or {}
-            _zeitraum_jahre = _smax_meta.get("beobachtungszeitraum_jahre")
+            _zeitraum_jahre = (_load_smax_meta() or {}).get("beobachtungszeitraum_jahre")
             if _zeitraum_jahre:
                 zeitraum_hinweis = (
-                    f' {_label("Auslastung basiert auf der Ø jährlichen Auftragsrate aus")} '
+                    f'<p class="go-details-text">{_label("Auslastung basiert auf der Ø jährlichen Auftragsrate aus")} '
                     f"{_zeitraum_jahre:.1f} "
-                    f'{_label("Jahren Historie (Closed Jobs) zzgl. aktuellem Auftragsrückstand (Open Jobs).")}'
+                    f'{_label("Jahren Historie (Closed Jobs) zzgl. aktuellem Auftragsrückstand (Open Jobs).")}</p>'
                 )
         except Exception:
             pass
-    info_optimiert_text = (
-        f'{_label("Für jede Klinik werden der 1.- und 2.-nächstgelegene Techniker (Fahrzeit, Haversine-Distanz ×")} '
-        f'{umweg_faktor_text} '
-        f'{_label("Straßenfaktor) verglichen. Ist der 2.-nächste um mehr als")} '
-        f'{OPTIMIERUNG_AUSLASTUNGS_SCHWELLE} '
-        f'{_label("Prozentpunkte weniger ausgelastet und beträgt die Fahrzeit-Mehrbelastung höchstens")} '
-        f'{OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN} '
-        f'{_label("Minuten, wandert die Klinik zu ihm. Ziel: gleichmäßigere Auslastung bei vertretbaren Anfahrtswegen — unabhängig von Techniker-Anzahl oder -Bezeichnung.")}'
-        f'{zeitraum_hinweis} '
-        f'{_label("Ratio vorher/nachher = Vor-Ort-Stunden ÷ Fahrtstunden pro Jahr vor bzw. nach der Optimierung (siehe „Aktuelle Gebiete“ für die Farbskala). Δ Fahrzeit zeigt die Veränderung der jährlichen Fahrtstunden — negativ (grün) = Entlastung, positiv (rot) = Mehrbelastung.")}'
-    )
-    info_optimiert = _go_info_box(
-        "&#129504;",
-        "Wie und warum wird optimiert?",
-        info_optimiert_text,
-        text_bereits_uebersetzt=True,
-    )
-    info_luecken = _go_info_box(
-        "&#9888;",
-        "Was ist hier zu sehen?",
-        "Zeigt Gebiete mit doppelter Abdeckung (mehrere Techniker nah "
-        "beieinander = &Uuml;berschneidung, Optimierungspotenzial) und "
-        "Gebiete ohne nahen Techniker (L&uuml;cke = l&auml;ngere "
-        "Anfahrtszeiten f&uuml;r Kunden in dieser Region).",
-    )
 
-    # ── Ansicht 1: Aktuelle Gebiete – Tabelle ──
-    # Alle Techniker anzeigen, auch mit 0 zugewiesenen Kliniken (nicht filtern).
+    # ── Ansicht 1: Aktuelle Gebiete ──
+    n_tech = len(metriken_akt)
+    n_klin = sum(m["kliniken"] for m in metriken_akt)
+    n_im_korr = sum(
+        1 for m in metriken_akt
+        if m["kliniken"] and korridor_status(
+            _gebiets_auslastung(m, techniker.get(m["id"])), lo_pct, hi_pct)[0] == "im_korridor")
+    headline_aktuell = (
+        f'<p class="go-headline">{n_tech} {_label("Techniker betreuen")} {n_klin} '
+        f'{_label("Kliniken;")} {n_im_korr} {_label("von")} {n_tech} '
+        f'{_label("liegen im Auslastungs-Zielkorridor")} ({korridor_txt}).</p>'
+    )
     rows_aktuell = ""
     for m in metriken_akt:
-        css = "go-gruen" if m["ratio"] >= 3.0 else ("go-gelb" if m["ratio"] >= 2.0 else "go-rot")
-        td_tech = techniker.get(m["id"], {})
-        korridor_zelle = _render_korridor_badge(
-            td_tech.get("auslastung_korridor"), td_tech.get("auslastung_pct_real"),
-        ) or "&ndash;"
-        plz_tip = _info_tip(_render_plz_uebersicht(m.get("plz_info")))
+        td_m = techniker.get(m["id"])
+        zeile = _gebiets_begruendung_zeile(m, lo_pct, hi_pct, td_m)
+        auslastung_zelle = (
+            _auslastung_badge(_gebiets_auslastung(m, td_m), lo_pct, hi_pct) if m["kliniken"] else "&ndash;")
         rows_aktuell += (
-            f'<tr class="{css}" data-tech="{m["id"]}">'
-            f'<td><strong>{m["id"]}</strong>{plz_tip}</td>'
+            f'<tr class="go-main" data-tech="{m["id"]}">'
+            f'<td><strong>{m["id"]}</strong></td>'
             f'<td>{m["standort"]}</td>'
             f'<td>{m["kliniken"]}</td>'
             f'<td>{m["avg_fahrzeit"]} min</td>'
-            f'<td><span class="badge badge-ratio {css.replace("go-","gebiets-")}">{m["ratio"]}</span></td>'
-            f'<td>{korridor_zelle}</td>'
+            f'<td>{auslastung_zelle}</td>'
+            f'</tr>'
+            f'<tr class="go-begr-row" data-tech="{m["id"]}">'
+            f'<td colspan="5" class="go-begruendung">{zeile}</td>'
             f'</tr>')
 
-    # ── Ansicht 2: Optimierte Gebiete – Vorher/Nachher Tabelle ──
-    # Alle Techniker anzeigen, auch mit 0 (verbliebenen) Kliniken (nicht filtern).
+    # ── Ansicht 2: Optimierte Gebiete – Verschiebungsliste ──
+    verschiebungen = sorted(
+        (v for m in metriken_opt for v in m.get("abgaben", [])),
+        key=lambda v: (-v["anzahl"], v["von"], v["nach"]))
+    n_verschoben = sum(v["anzahl"] for v in verschiebungen)
+    n_im_vorher_nachher = 0
+    for m_o in metriken_opt:
+        m_a = next((x for x in metriken_akt if x["id"] == m_o["id"]), None)
+        if (m_a and m_a["kliniken"] and m_o["kliniken"]
+                and korridor_status(m_a.get("auslastung_pct", 0), lo_pct, hi_pct)[0] == "im_korridor"
+                and korridor_status(m_o.get("auslastung_pct", 0), lo_pct, hi_pct)[0] == "im_korridor"):
+            n_im_vorher_nachher += 1
+    headline_opt = (
+        f'<p class="go-headline">{n_verschoben} {_label("von")} {n_klin} '
+        f'{_label("Kliniken wechseln;")} {n_im_vorher_nachher} '
+        f'{_label("Techniker liegen vorher und nachher im Zielkorridor.")}</p>'
+    )
+    if verschiebungen:
+        rows_versch = "".join(
+            f'<tr class="go-main" data-tech="{v["von"]}">'
+            f'<td><strong>{v["von"]}</strong></td>'
+            f'<td><strong>{v["nach"]}</strong></td>'
+            f'<td>{v["anzahl"]}</td>'
+            f'</tr>'
+            f'<tr class="go-begr-row" data-tech="{v["von"]}">'
+            f'<td colspan="3" class="go-begruendung">{_label("Auslastung Abgeber")} {v["auslastung_von"]}&thinsp;%, '
+            f'{_label("Empfänger")} {v["auslastung_nach"]}&thinsp;%; '
+            f'{_label("Mehrfahrt")} {v["mehrfahrt_min"]} {_label("Min.")}</td>'
+            f'</tr>'
+            for v in verschiebungen)
+        versch_html = (
+            '<table class="go-versch-tabelle"><thead><tr>'
+            '<th data-i18n="th.von">Von</th><th data-i18n="th.nach">Nach</th>'
+            '<th data-i18n="th.kliniken">Kliniken</th>'
+            f'</tr></thead><tbody>{rows_versch}</tbody></table>')
+    else:
+        versch_html = (
+            f'<p class="go-details-text">{_label("Keine Verschiebungen — alle Kliniken liegen bereits innerhalb der Schwellwerte beim nächstgelegenen Techniker.")}</p>')
     rows_optimiert = ""
     for m_o in metriken_opt:
         m_a = next((x for x in metriken_akt if x["id"] == m_o["id"]), None)
-        ratio_vorher = m_a["ratio"] if m_a else 0.0
-        ratio_nachher = m_o["ratio"]
-        delta_fz = (m_o["fahrtstunden_jahr"] - m_a["fahrtstunden_jahr"]) if m_a else 0
-        delta_sign = "+" if delta_fz >= 0 else ""
-        if ratio_nachher > ratio_vorher:
-            delta_css = "go-delta-pos"
-        elif ratio_nachher < ratio_vorher:
-            delta_css = "go-delta-neg"
-        else:
-            delta_css = "go-delta-neutral"
-        verschoben = m_o.get("verschoben", 0)
-        plz_vorher = _render_plz_uebersicht(m_a.get("plz_info") if m_a else None)
-        plz_nachher = _render_plz_uebersicht(m_o.get("plz_info"))
-        plz_tip_opt = _info_tip(
-            f'<strong>{_label("PLZ-Bereich vorher")}:</strong> {plz_vorher}<br>'
-            f'<strong>{_label("PLZ-Bereich nachher")}:</strong> {plz_nachher}'
-        )
+        vorher = m_a.get("auslastung_pct", 0) if m_a else 0
+        nachher = m_o.get("auslastung_pct", 0)
+        gew, abg = m_o.get("verschoben_gewonnen", 0), m_o.get("verschoben_abgegeben", 0)
+        delta_css = "go-delta-neutral" if gew == abg else ("go-delta-pos" if gew > abg else "go-delta-neg")
         rows_optimiert += (
             f'<tr data-tech="{m_o["id"]}">'
-            f'<td><strong>{m_o["id"]}</strong>{plz_tip_opt}</td>'
-            f'<td>{m_o["standort"]}</td>'
-            f'<td>{ratio_vorher}</td>'
-            f'<td>{ratio_nachher}</td>'
-            f'<td class="{delta_css}">{delta_sign}{delta_fz} h</td>'
-            f'<td>{verschoben}</td>'
+            f'<td><strong>{m_o["id"]}</strong></td>'
+            f'<td>{vorher}&thinsp;%</td><td>{nachher}&thinsp;%</td>'
+            f'<td class="{delta_css}">+{gew} / &minus;{abg}</td>'
             f'</tr>')
 
-    # Top-Verschiebungen fuer die Erlaeuterungsbox (dynamisch aus dem Algorithmus)
-    top_verschiebungen = sorted(
-        (m for m in metriken_opt if m.get("verschoben", 0) > 0),
-        key=lambda m: m["verschoben"],
-        reverse=True,
-    )[:3]
-    if top_verschiebungen:
-        changes_html = "\n".join(
-            f'<div class="go-change-item">{m["id"]} ({m["standort"]}): '
-            f'+{m["verschoben_gewonnen"]} / &minus;{m["verschoben_abgegeben"]} Kliniken</div>'
-            for m in top_verschiebungen
-        )
-    else:
-        changes_html = (
-            '<div class="go-change-item">Keine Verschiebungen &mdash; alle Kliniken '
-            'liegen bereits innerhalb der Schwellwerte beim n&auml;chstgelegenen '
-            'Techniker.</div>'
-        )
-
-    # ── Ansicht 3: Lücken & Überschneidungen ──
-    # Generisch aus den echten Techniker-Standorten/Klinik-Fahrzeiten
-    # abgeleitet (siehe _klassifiziere_gebiete_luecken_ueberschneidungen) --
-    # kein festes T1-T14-Schema, funktioniert fuer Demo- und
-    # Echtdaten-Techniker gleichermassen.
+    # ── Ansicht 3: Lücken & Überschneidungen (je Bundesland Status + Begründung) ──
     gebiete_status = gebiete_status or {}
-
+    alle_bl = sorted({p["name"] for p in _topo_to_svg_paths()} | set(gebiete_status))
+    z_gap = z_over = z_ok = 0
     rows_luecken = ""
-    for gebiet in sorted(gebiete_status):
-        info = gebiete_status[gebiet]
-        typ = info["typ"]
-        if typ == "overlap":
-            primaer = info["techs"][0]
-            techs_html = ", ".join(
-                f'<span class="go-tech-link" data-tech="{t}">{t}</span>' for t in info["techs"]
-            )
-            rows_luecken += (
-                f'<tr class="go-overlap" data-tech="{primaer}">'
-                f'<td><span class="go-dot go-dot-orange"></span>{gebiet}</td>'
-                f'<td>{_label("Überschneidung")}</td>'
-                f'<td>{techs_html}</td>'
-                f'<td>{info["anteil_pct"]}% {_label("der Kliniken zwischen 1./2.-nächstem Techniker kontestiert (≤")}'
-                f'{UEBERSCHNEIDUNG_FAHRZEIT_DIFF_MIN} {_label("min Fahrzeit-Differenz) — Gebiete konsolidieren")}</td>'
-                f'</tr>')
-        elif typ == "gap":
+    for gebiet in alle_bl:
+        info = gebiete_status.get(gebiet)
+        typ = info["typ"] if info else "no_data"
+        if typ == "gap":
+            z_gap += 1
             tid = info["naechster"]
-            rows_luecken += (
-                f'<tr class="go-gap" data-tech="{tid}">'
-                f'<td><span class="go-dot go-dot-rot"></span>{gebiet}</td>'
-                f'<td>{_label("Lücke")}</td>'
-                f'<td><span class="go-tech-link" data-tech="{tid}">{tid}</span> '
-                f'(&#216; {info["fahrzeit_min"]} min)</td>'
-                f'<td>{_label("Neueinstellung oder Gebiets-Erweiterung empfohlen")}</td>'
-                f'</tr>')
-        else:
+            dot, status_label, css = "go-dot-rot", "Lücke", "go-gap"
+            grund = (f'&Oslash; {info["fahrzeit_min"]} {_label("Min. zum nächsten Techniker (Schwelle: über 90 Min.)")}')
+        elif typ == "overlap":
+            z_over += 1
             tid = info["techs"][0]
-            rows_luecken += (
-                f'<tr class="go-optimal" data-tech="{tid}">'
-                f'<td><span class="go-dot go-dot-gruen"></span>{gebiet}</td>'
-                f'<td>{_label("Optimal")}</td>'
-                f'<td><span class="go-tech-link" data-tech="{tid}">{tid}</span></td>'
-                f'<td>{_label("Keine Anpassung nötig")}</td>'
-                f'</tr>')
+            dot, status_label, css = "go-dot-orange", "Überschneidung", "go-overlap"
+            grund = (f'{info["anteil_pct"]}&thinsp;% {_label("der Kliniken haben einen zweiten Techniker höchstens 20 Min. dahinter (Schwelle: mindestens 30 %)")}')
+        elif typ == "optimal":
+            z_ok += 1
+            tid = info["techs"][0]
+            dot, status_label, css = "go-dot-gruen", "Keine Lücke", "go-optimal"
+            grund = (f'&Oslash; {info["fahrzeit_min"]} {_label("Min. zum nächsten Techniker; weder Lücke noch Überschneidung")}')
+        elif typ == "not_computable":
+            tid = ""
+            dot, status_label, css = "go-dot-grau", "Nicht berechenbar", "go-nodata"
+            grund = _label("Kliniken vorhanden, aber kein Techniker mit Standort für die Fahrzeitberechnung")
+        else:
+            tid = ""
+            dot, status_label, css = "go-dot-grau", "Keine Daten", "go-nodata"
+            grund = _label("Keine Kliniken im Bundesland im Datensatz")
+        tr_attr = f' data-tech="{tid}"' if tid else ""
+        techs_html = (f'<span class="go-tech-link" data-tech="{tid}">{tid}</span>' if tid else "&ndash;")
+        rows_luecken += (
+            f'<tr class="go-main {css}"{tr_attr}>'
+            f'<td><span class="go-dot {dot}"></span>{gebiet}</td>'
+            f'<td>{_label(status_label)}</td>'
+            f'<td>{techs_html}</td>'
+            f'</tr>'
+            f'<tr class="go-begr-row {css}"{tr_attr}>'
+            f'<td colspan="3" class="go-begruendung">{grund}</td>'
+            f'</tr>')
+    headline_luecken = (
+        f'<p class="go-headline">{z_gap} {_label("Bundesländer mit Lücke,")} {z_over} '
+        f'{_label("mit Überschneidung;")} {z_ok} {_label("ohne Befund.")}</p>'
+    )
+
+    # ── Weitere Details und Optionen (einklappbar, standardmaessig zu) ──
+    ratio_rows = ""
+    plz_rows = ""
+    for m_o in metriken_opt:
+        m_a = next((x for x in metriken_akt if x["id"] == m_o["id"]), None)
+        ratio_vorher = m_a["ratio"] if m_a else 0.0
+        delta_fz = (m_o["fahrtstunden_jahr"] - m_a["fahrtstunden_jahr"]) if m_a else 0
+        ratio_rows += (
+            f'<tr><td><strong>{m_o["id"]}</strong></td><td>{ratio_vorher}</td>'
+            f'<td>{m_o["ratio"]}</td><td>{"+" if delta_fz >= 0 else ""}{delta_fz} h</td></tr>')
+        plz_rows += (
+            f'<tr><td><strong>{m_o["id"]}</strong></td>'
+            f'<td>{_render_plz_uebersicht(m_a.get("plz_info") if m_a else None)}</td>'
+            f'<td>{_render_plz_uebersicht(m_o.get("plz_info"))}</td></tr>')
+    algo_zeile = (
+        f'<p class="go-details-text">&#9733; {_label("Algorithmus: Klinik wechselt zum 2.-nächsten Techniker, wenn dessen Auslastung ≥")} '
+        f'{OPTIMIERUNG_AUSLASTUNGS_SCHWELLE} {_label("Prozentpunkte niedriger ist und die Fahrzeit-Mehrbelastung ≤")} '
+        f'{OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN} {_label("min bleibt")}</p>')
+    details_html = f"""
+    <details class="go-weitere" id="go-weitere">
+      <summary data-i18n="go.weitere">Weitere Details und Optionen</summary>
+      <div class="go-weitere-body">
+        {algo_zeile}
+        {zeitraum_hinweis}
+        <h4 data-i18n="go.sec.ratio">Ratio und Fahrtstunden</h4>
+        <table>
+          <thead><tr>
+            <th data-i18n="th.technician">Techniker</th>
+            <th><span data-i18n="th.ratioVorher">Ratio vorher</span>{ratio_tip}</th>
+            <th><span data-i18n="th.ratioNachher">Ratio nachher</span></th>
+            <th><span data-i18n="th.deltaFahrzeit">&Delta; Fahrzeit</span>{delta_fahrzeit_tip}</th>
+          </tr></thead>
+          <tbody>{ratio_rows}</tbody>
+        </table>
+        <h4 data-i18n="go.sec.plz">PLZ-&Uuml;bersicht</h4>
+        <table>
+          <thead><tr>
+            <th data-i18n="th.technician">Techniker</th>
+            <th data-i18n="go.plzVorher">PLZ aktuell</th>
+            <th data-i18n="go.plzNachher">PLZ optimiert</th>
+          </tr></thead>
+          <tbody>{plz_rows}</tbody>
+        </table>
+        <h4 data-i18n="go.sec.legende">Legende</h4>
+        <div class="gebiets-legende" id="gebiets-legende-opt"></div>
+        <h4 data-i18n="go.sec.optionen">Optionen</h4>
+        {hugo_kg_html}
+      </div>
+    </details>"""
+
+    detail_panel = """
+        <div class="go-detail" id="go-detail" style="display:none" aria-live="polite">
+          <h3 data-i18n="go.detailTitle">Warum dieses Gebiet?</h3>
+          <div class="go-detail-tech" id="go-detail-tech"></div>
+          <div class="go-detail-sec" data-sec="regel"><h4 data-i18n="go.sec.regel">Regel</h4><p></p></div>
+          <div class="go-detail-sec" data-sec="kennzahlen"><h4 data-i18n="go.sec.kennzahlen">Kennzahlen</h4><p></p></div>
+          <div class="go-detail-sec" data-sec="alternative"><h4 data-i18n="go.sec.alternative">Vergleich mit dem n&auml;chsten Alternativ-Techniker</h4><p></p></div>
+          <div class="go-detail-sec" data-sec="plz"><h4 data-i18n="go.sec.plz">PLZ-&Uuml;bersicht</h4><p></p></div>
+          <div class="go-detail-sec" data-sec="einschraenkung"><h4 data-i18n="go.sec.einschraenkung">Einschr&auml;nkung</h4><p></p></div>
+        </div>"""
 
     # Top-3 Empfehlungen
     top3 = []
@@ -5214,17 +5418,18 @@ def _render_gebietsoptimierung(
     <div class="gebiets-layout">
       <div class="gebiets-karte">
         <svg id="germany-map-opt" width="480" height="{opt_height}" viewBox="{viewbox}" preserveAspectRatio="xMidYMid meet"><!-- filled by _build_gebiets_svg --></svg>
-        <div class="gebiets-legende" id="gebiets-legende-opt"></div>
+        <p class="go-legende-satz" data-i18n="go.legendeSatz">Farbe = Gebiet des Technikers, Kreis = Standort.</p>
         <div class="gebiets-karte-tools">
-          <span class="go-hint" data-i18n="go.hint">Techniker anklicken, um sein Gebiet hervorzuheben</span>
+          <span class="go-hint" data-i18n="go.hint">Techniker anklicken: Gebiet hervorheben und Begr&uuml;ndung anzeigen</span>
           <button class="go-reset-btn" id="go-reset-btn" disabled data-i18n="go.reset">&#10005; Zur&uuml;cksetzen</button>
         </div>
-        {hugo_kg_html}
       </div>
       <div class="gebiets-metriken">
+        {detail_panel}
         <!-- Ansicht 1: Aktuelle Gebiete -->
         <div class="go-view-content active" id="go-view-aktuell">
-          {info_aktuell}
+          {headline_aktuell}
+          {szenario_band}
           <table>
             <thead>
               <tr>
@@ -5232,8 +5437,7 @@ def _render_gebietsoptimierung(
                 <th data-i18n="th.standort">Standort</th>
                 <th data-i18n="th.kliniken">Kliniken</th>
                 <th data-i18n="th.oFahrzeit">&Oslash; Fahrzeit</th>
-                <th><span data-i18n="th.ratio">Ratio</span>{ratio_tip}</th>
-                <th><span data-i18n="th.auslastung">Auslastung</span>{korridor_spalte_tip}</th>
+                <th><span data-i18n="th.auslastung">Auslastung</span>{auslastung_tip}</th>
               </tr>
             </thead>
             <tbody>
@@ -5243,41 +5447,34 @@ def _render_gebietsoptimierung(
         </div>
         <!-- Ansicht 2: Optimierte Gebiete -->
         <div class="go-view-content" id="go-view-optimiert">
-          {info_optimiert}
-          <div class="bc-gold-hint" style="margin-bottom:14px">
-            &#9733; {_label("Algorithmus: Klinik wechselt zum 2.-nächsten Techniker, wenn dessen Auslastung ≥")}
-            {OPTIMIERUNG_AUSLASTUNGS_SCHWELLE} {_label("Prozentpunkte niedriger ist und die Fahrzeit-Mehrbelastung ≤")}
-            {OPTIMIERUNG_MAX_FAHRZEIT_MEHRAUFWAND_MIN} {_label("min bleibt")}
-          </div>
-          <table>
+          {headline_opt}
+          {szenario_band}
+          <h3 class="go-subhead" data-i18n="go.verschiebungen">Verschiebungen</h3>
+          {versch_html}
+          <table class="go-opt-tabelle">
             <thead>
               <tr>
                 <th data-i18n="th.technician">Techniker</th>
-                <th data-i18n="th.standort">Standort</th>
-                <th><span data-i18n="th.ratioVorher">Ratio vorher</span>{ratio_tip}</th>
-                <th><span data-i18n="th.ratioNachher">Ratio nachher</span>{ratio_tip}</th>
-                <th><span data-i18n="th.deltaFahrzeit">&Delta; Fahrzeit</span>{delta_fahrzeit_tip}</th>
-                <th data-i18n="th.verschobeneKliniken">Verschobene Kliniken</th>
+                <th data-i18n="th.auslVorher">Auslastung vorher</th>
+                <th data-i18n="th.auslNachher">Auslastung nachher</th>
+                <th data-i18n="th.kliniPlusMinus">Kliniken +/&minus;</th>
               </tr>
             </thead>
             <tbody>
 {rows_optimiert}
             </tbody>
           </table>
-          <div class="go-changes-highlight">
-{changes_html}
-          </div>
         </div>
         <!-- Ansicht 3: Lücken & Überschneidungen -->
         <div class="go-view-content" id="go-view-luecken">
-          {info_luecken}
+          {headline_luecken}
+          {szenario_band}
           <table>
             <thead>
               <tr>
                 <th data-i18n="th.gebiet">Gebiet</th>
                 <th><span data-i18n="th.status">Status</span>{luecken_status_tip}</th>
                 <th data-i18n="th.technician">Techniker</th>
-                <th data-i18n="th.empfehlung">Empfehlung</th>
               </tr>
             </thead>
             <tbody>
@@ -5287,6 +5484,7 @@ def _render_gebietsoptimierung(
         </div>
       </div>
     </div>
+    {details_html}
   </section>
 
   <section>
@@ -5353,8 +5551,16 @@ def render_html(
         m_akt, m_opt, techniker, hugo_kerngebiete, gebiete_status,
         gebiets_viewbox, gebiets_opt_height)
     gebiets_svg_content = _build_gebiets_svg(
-        techniker, plz_abd, hugo_kerngebiete, hugo_standorte_marker)
-    gebiets_script = _build_gebiets_script(techniker, plz_abd, gebiets_punkte or [])
+        techniker, plz_abd, hugo_kerngebiete, hugo_standorte_marker, gebiete_status)
+    gebiets_detail = {}
+    for _tid in techniker:
+        _de = gebiets_begruendung(_tid, techniker, m_akt, "de", AUSLASTUNG_ZIEL_MIN_PCT, AUSLASTUNG_ZIEL_MAX_PCT)
+        if _de is not None:
+            gebiets_detail[_tid] = {
+                "de": _de,
+                "en": gebiets_begruendung(_tid, techniker, m_akt, "en", AUSLASTUNG_ZIEL_MIN_PCT, AUSLASTUNG_ZIEL_MAX_PCT),
+            }
+    gebiets_script = _build_gebiets_script(techniker, plz_abd, gebiets_punkte or [], gebiets_detail)
     tooltip_portal_script = _build_tooltip_portal_script()
     tech_detail_json = _render_techniker_detail_data(
         techniker, demo_history or {})
@@ -5828,8 +6034,29 @@ var _I18N = {{
     'go.viewAktuell': 'Aktuelle Gebiete',
     'go.viewOptimiert': 'Optimierte Gebiete',
     'go.viewLuecken': 'L\u00fccken & \u00dcberschneidungen',
-    'go.hint': 'Techniker anklicken, um sein Gebiet hervorzuheben',
-    'go.reset': '\u2715 Zur\u00fccksetzen'
+    'go.hint': 'Techniker anklicken: Gebiet hervorheben und Begr\u00fcndung anzeigen',
+    'go.reset': '\u2715 Zur\u00fccksetzen',
+    'go.szenario': 'Szenario: ber\u00fccksichtigt Fahrzeit und Auslastung, noch nicht die Ger\u00e4tequalifikation. Keine Zuweisung.',
+    'go.detailTitle': 'Warum dieses Gebiet?',
+    'go.sec.regel': 'Regel',
+    'go.sec.kennzahlen': 'Kennzahlen',
+    'go.sec.alternative': 'Vergleich mit dem n\u00e4chsten Alternativ-Techniker',
+    'go.sec.plz': 'PLZ-\u00dcbersicht',
+    'go.sec.einschraenkung': 'Einschr\u00e4nkung',
+    'go.sec.ratio': 'Ratio und Fahrtstunden',
+    'go.sec.legende': 'Legende',
+    'go.sec.optionen': 'Optionen',
+    'go.weitere': 'Weitere Details und Optionen',
+    'go.verschiebungen': 'Verschiebungen',
+    'go.legendeSatz': 'Farbe = Gebiet des Technikers, Kreis = Standort.',
+    'go.plzVorher': 'PLZ aktuell',
+    'go.plzNachher': 'PLZ optimiert',
+    'th.von': 'Von',
+    'th.nach': 'Nach',
+    'th.grund': 'Grund',
+    'th.auslVorher': 'Auslastung vorher',
+    'th.auslNachher': 'Auslastung nachher',
+    'th.kliniPlusMinus': 'Kliniken +/\u2212'
   }},
   EN: {{
     'nav.manual': 'Manual',
@@ -5941,8 +6168,29 @@ var _I18N = {{
     'go.viewAktuell': 'Current Territories',
     'go.viewOptimiert': 'Optimized Territories',
     'go.viewLuecken': 'Gaps & Overlaps',
-    'go.hint': 'Click a technician to highlight their territory',
-    'go.reset': '\u2715 Reset'
+    'go.hint': 'Click a technician: highlight territory and show reasoning',
+    'go.reset': '\u2715 Reset',
+    'go.szenario': 'Scenario: considers travel time and utilization, not yet device qualification. No assignment.',
+    'go.detailTitle': 'Why this territory?',
+    'go.sec.regel': 'Rule',
+    'go.sec.kennzahlen': 'Key figures',
+    'go.sec.alternative': 'Comparison with the next alternative technician',
+    'go.sec.plz': 'ZIP overview',
+    'go.sec.einschraenkung': 'Limitation',
+    'go.sec.ratio': 'Ratio and travel hours',
+    'go.sec.legende': 'Legend',
+    'go.sec.optionen': 'Options',
+    'go.weitere': 'More details and options',
+    'go.verschiebungen': 'Relocations',
+    'go.legendeSatz': 'Color = technician territory, circle = location.',
+    'go.plzVorher': 'ZIP current',
+    'go.plzNachher': 'ZIP optimized',
+    'th.von': 'From',
+    'th.nach': 'To',
+    'th.grund': 'Reason',
+    'th.auslVorher': 'Utilization before',
+    'th.auslNachher': 'Utilization after',
+    'th.kliniPlusMinus': 'Clinics +/\u2212'
   }}
 }};
 var _currentLang = localStorage.getItem('fsa_lang') || 'DE';

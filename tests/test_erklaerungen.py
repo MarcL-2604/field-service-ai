@@ -13,7 +13,9 @@ TECHNIKER = {
 
 METRIKEN_AKT = [
     {"id": "T1", "standort": "Hamburg", "kliniken": 12, "avg_fahrzeit": 45,
-     "max_fahrzeit": 90, "fahrtstunden_jahr": 200, "onsite_stunden": 400, "ratio": 2.0},
+     "max_fahrzeit": 90, "fahrtstunden_jahr": 200, "onsite_stunden": 400, "ratio": 2.0,
+     "auslastung_pct": 24, "plz_info": {"anzahl": 12, "bereich": (20, 22), "praefixe": []},
+     "alternative": {"id": "T2", "mehrfahrt_min": 12, "auslastung_pct": 10}},
     {"id": "T2", "standort": "München", "kliniken": 0, "avg_fahrzeit": 0,
      "max_fahrzeit": 0, "fahrtstunden_jahr": 0, "onsite_stunden": 0, "ratio": 0.0},
 ]
@@ -41,10 +43,14 @@ class TestGeneriereErklaerung:
             ampeln=AMPELN, umweg_faktor=1.35,
         )
         assert "12 Kliniken" in text
-        assert "45 min" in text
-        assert "2.0" in text
-        assert "40%" in text and "35%" in text and "25%" in text
-        assert "T2" in text  # naechstgelegener Alternativtechniker
+        assert "45 Min." in text
+        assert "24 %" in text and "56 Prozentpunkte unter dem Korridor" in text
+        assert "T2" in text  # Alternativ-Techniker
+        assert "12 Min. mehr Fahrzeit" in text
+        assert "PLZ 20xxx–22xxx" in text
+        assert "Keine Zuweisung" in text
+        # Gebietsheuristik nutzt das 40/35/25-Scoring nicht
+        assert "40%" not in text and "35%" not in text
 
     def test_warum_gebiet_ohne_kliniken(self):
         text = generiere_erklaerung(
@@ -119,9 +125,10 @@ class TestGeneriereErklaerungEnglisch:
         )
         assert "12 clinics" in text
         assert "45 min" in text
-        assert "2.0" in text
-        assert "40%" in text and "35%" in text and "25%" in text
+        assert "24 %" in text and "56 percentage points below the corridor" in text
         assert "T2" in text
+        assert "No assignment" in text
+        assert "40%" not in text and "35%" not in text
         # keine deutschen Woerter aus der DE-Formulierung
         assert "Kliniken" not in text and "Fahrzeit" not in text
 

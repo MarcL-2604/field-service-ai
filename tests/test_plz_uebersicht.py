@@ -187,15 +187,17 @@ class TestGebietsoptimierungRenderingMitPlz:
         self.akt, self.opt, _, _, status = _berechne_gebietsmetriken(self.techniker)
         self.html = _render_gebietsoptimierung(self.akt, self.opt, self.techniker, gebiete_status=status)
 
-    def test_plz_tooltip_erscheint_in_aktuelle_gebiete_ansicht(self):
-        aktuell_teil = self.html.split('id="go-view-optimiert"')[0]
-        assert 'class="info-tip"' in aktuell_teil
+    def test_plz_uebersicht_steht_in_weitere_details_vorher_nachher(self):
+        # A6: PLZ-Uebersicht liegt im einklappbaren Bereich (standardmaessig zu)
+        details = self.html.split('id="go-weitere"')[1]
+        assert 'data-i18n="go.plzVorher"' in details
+        assert 'data-i18n="go.plzNachher"' in details
+        assert "<details" in self.html and 'id="go-weitere" open' not in self.html
 
-    def test_plz_tooltip_erscheint_in_optimierte_gebiete_ansicht_mit_vorher_nachher(self):
-        optimiert_teil = self.html.split('id="go-view-optimiert"')[1].split('id="go-view-luecken"')[0]
-        assert 'class="info-tip"' in optimiert_teil
-        assert 'data-label-de="PLZ-Bereich vorher"' in optimiert_teil
-        assert 'data-label-de="PLZ-Bereich nachher"' in optimiert_teil
+    def test_plz_tooltip_nicht_mehr_in_haupttabelle(self):
+        aktuell_teil = self.html.split('id="go-view-optimiert"')[0]
+        assert 'class="info-tip"' in aktuell_teil          # nur Fachbegriff (Auslastung)
+        assert "PLZ" not in aktuell_teil.split("<tbody>")[1].split("</tbody>")[0]
 
     def test_alle_plz_bezogenen_label_werte_haben_uebersetzung(self):
         # "Optimal" ist bewusst DE/EN identisch (siehe test_i18n_label_map.py
