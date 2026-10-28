@@ -220,3 +220,90 @@ class TestCrosstrainingEinblick:
         assert f" {dash.MIN_GERAETE_FUER_CROSSTRAINING} " in wozu
         assert f" {dash.MIN_STK_POTENZIAL_CROSSTRAINING} " in wozu
         assert "Hugo, O-arm und CAS" in wozu
+
+
+# ===================================================================
+# Gesamtsatz, Ampelkarte, Grammatik (Fix 2)
+# ===================================================================
+
+class TestGesamtsatzUndAmpel:
+    def test_gesamtsatz_optimiert_median_und_spreizung(self, daten, gebiets_html):
+        import statistics
+        _, akt, opt, _ = daten
+        vor = [m["auslastung_pct"] for m in akt if m["kliniken"]]
+        nach = [m["auslastung_pct"] for m in opt if m["kliniken"]]
+        kopf = re.search(r'<p class="go-headline">(.*?)</p>', _view(gebiets_html, "optimiert"), re.S).group(1)
+        text = html.unescape(re.sub(r"<[^>]+>", "", kopf))
+        assert f"Median vorher {round(statistics.median(vor))}" in text
+        assert f"nachher {round(statistics.median(nach))}" in text
+        assert f"Spreizung vorher {round(max(vor) - min(vor))}" in text
+        assert f"nachher {round(max(nach) - min(nach))}" in text
+        assert "Kliniken wechseln." in text
+
+    def test_korridoraussage_nur_wenn_ein_techniker_im_korridor(self, daten, gebiets_html):
+        _, akt, opt, _ = daten
+        lo, hi = dash.AUSLASTUNG_ZIEL_MIN_PCT, dash.AUSLASTUNG_ZIEL_MAX_PCT
+        im = [m for m in akt + opt if m["kliniken"] and lo <= m["auslastung_pct"] <= hi]
+        kopf_opt = _view(gebiets_html, "optimiert").split("</p>")[0]
+        kopf_akt = _view(gebiets_html, "aktuell").split("</p>")[0]
+        assert ("Im Zielkorridor: vorher" in kopf_opt) == bool(im)
+        assert "Auslastungs-Zielkorridor" not in kopf_akt or any(
+            lo <= m["auslastung_pct"] <= hi for m in akt if m["kliniken"])
+
+    def test_korridoraussage_erscheint_bei_techniker_im_korridor(self, daten):
+        techniker, akt, opt, status = daten
+        akt2 = [dict(m) for m in akt]
+        opt2 = [dict(m) for m in opt]
+        for liste in (akt2, opt2):
+            liste[0]["kliniken"] = max(liste[0]["kliniken"], 1)
+            liste[0]["auslastung_pct"] = 88
+        seite = _render_gebietsoptimierung(akt2, opt2, techniker, gebiete_status=status)
+        assert "Im Zielkorridor: vorher" in _view(seite, "optimiert")
+        assert "Auslastungs-Zielkorridor" in _view(seite, "aktuell")
+
+    def test_ampelkarte_format_und_tooltip_abstand(self):
+        out = dash._render_korridor_badge("unter", 24.0)
+        assert "Auslastung</span> 24&nbsp;% &middot; " in out
+        assert 'data-label-de="unter Korridor"' in out
+        assert "Abstand zum Korridor:" in out and "56 " in out
+        assert "Prozentpunkte" in out
+
+    def test_badge_wert_gleich_detailtext(self, daten):
+        techniker, akt, _, _ = daten
+        m = next(x for x in akt if x["kliniken"])
+        badge = dash._auslastung_badge(m["auslastung_pct"], 80, 95)
+        detail = gebiets_begruendung(m["id"], techniker, akt, "de")["kennzahlen"]
+        assert f"{m['auslastung_pct']}&nbsp;%" in badge
+        assert f"Auslastung {m['auslastung_pct']} %" in detail
+
+
+class TestGrammatikProzentpunkte:
+    def test_de_singular_plural(self):
+        from reporting.erklaerungen import prozentpunkte
+        assert prozentpunkte(1) == "1 Prozentpunkt"
+        assert prozentpunkte(0) == "0 Prozentpunkte"
+        assert prozentpunkte(2) == "2 Prozentpunkte"
+        assert prozentpunkte(-1) == "1 Prozentpunkt"
+
+    def test_en_singular_plural(self):
+        from reporting.erklaerungen import prozentpunkte
+        assert prozentpunkte(1, "en") == "1 percentage point"
+        assert prozentpunkte(5, "en") == "5 percentage points"
+
+    def test_detailtext_nutzt_singular(self):
+        techniker = {"T1": {"standort": "X"}, "T2": {"standort": "Y"}}
+        akt = [{"id": "T1", "kliniken": 3, "avg_fahrzeit": 10, "max_fahrzeit": 20,
+                "auslastung_pct": 79, "plz_info": None,
+                "alternative": {"id": "T2", "mehrfahrt_min": 5, "auslastung_pct": 80}}]
+        de = gebiets_begruendung("T1", techniker, akt, "de")
+        en = gebiets_begruendung("T1", techniker, akt, "en")
+        assert "1 Prozentpunkt unter dem Korridor" in de["kennzahlen"]
+        assert "1 Prozentpunkt höher" in de["alternative"]
+        assert "1 percentage point below the corridor" in en["kennzahlen"]
+        assert "1 percentage point higher" in en["alternative"]
+
+    def test_label_pp(self):
+        assert dash._pp_label(1).endswith('data-label-de="Prozentpunkt">Prozentpunkt</span>')
+        assert dash._pp_label(3).endswith('data-label-de="Prozentpunkte">Prozentpunkte</span>')
+        assert LABEL_MAP_EN["Prozentpunkt"] == "percentage point"
+        assert LABEL_MAP_EN["Prozentpunkte"] == "percentage points"

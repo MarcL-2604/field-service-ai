@@ -16,6 +16,7 @@ Keine externen Abhaengigkeiten – reines HTML mit Inline-CSS/JS.
 from __future__ import annotations
 
 import csv
+import statistics
 import html as html_lib
 import json
 import math
@@ -67,6 +68,7 @@ from auftraege.tour_optimierung import buendle_mit_qualifikation  # noqa: E402
 from techniker.plz_koordinaten import normalisiere_plz  # noqa: E402
 from reporting.erklaerungen import (  # noqa: E402
     generiere_erklaerung, FRAGE_TYPEN, FRAGE_TYPEN_EN, gebiets_begruendung, korridor_status,
+    prozentpunkte,
 )
 from config_hugo_standorte import HUGO_SPRINGER, HUGO_STANDORTE, HUGO_TEAM_GROESSE  # noqa: E402
 from reporting.hugo_kerngebiet import (  # noqa: E402
@@ -584,14 +586,18 @@ LABEL_MAP_EN: dict[str, str] = {
     # Gebietsplanung: Gesamtaussagen, Begruendungen, Verschiebungen, Luecken-Status
     "Techniker betreuen": "technicians cover", "Kliniken;": "clinics;", "von": "of",
     "liegen im Auslastungs-Zielkorridor": "are within the utilization target corridor",
-    "Kliniken wechseln;": "clinics change technician;",
     "Techniker liegen vorher und nachher im Zielkorridor.":
         "technicians are within the target corridor both before and after.",
     "Nächster Techniker für": "Nearest technician for",
     "Kliniken, im Schnitt": "clinics, on average",
     "Min. Fahrzeit; Auslastung": "min travel time; utilization",
-    "Prozentpunkte unter dem Korridor": "percentage points below the corridor",
-    "Prozentpunkte über dem Korridor": "percentage points above the corridor",
+    "Prozentpunkt": "percentage point", "Prozentpunkte": "percentage points",
+    "unter dem Korridor": "below the corridor", "über dem Korridor": "above the corridor",
+    "Abstand zum Korridor:": "Distance to the corridor:", "Auslastung": "Utilization",
+    "Kliniken wechseln.": "clinics change technician.",
+    "Auslastung (Vor-Ort- und Fahrzeit): Median vorher": "Utilization (on-site and travel time): median before",
+    "nachher": "after", "Spreizung vorher": "spread before",
+    "Im Zielkorridor: vorher": "Within the target corridor: before",
     "Auslastung Abgeber": "Donor utilization", "Empfänger": "recipient", "Mehrfahrt": "extra travel",
     "Min.": "min",
     "Keine Verschiebungen — alle Kliniken liegen bereits innerhalb der Schwellwerte beim nächstgelegenen Techniker.":
@@ -668,9 +674,15 @@ def _render_korridor_badge(korridor: str | None, pct: float | None) -> str:
         f"Referenzwert, keine harte Regel. Fahrzeit ist nicht enthalten, daher "
         f"liegt Vollauslastung strukturell unter 100%."
     )
+    _, diff = korridor_status(pct, AUSLASTUNG_ZIEL_MIN_PCT, AUSLASTUNG_ZIEL_MAX_PCT)
+    abstand = ""
+    if diff:
+        richtung = "unter dem Korridor" if korridor == "unter" else "über dem Korridor"
+        abstand = f'<br>{_label("Abstand zum Korridor:")} {_pp_label(diff)} {_label(richtung)}'
     return (
-        f'<span class="korridor-badge {css}" tabindex="0">{pct:.0f}%&thinsp;{_label(label)}'
-        f'<span class="info-tip-bubble">{_label(tip_de)}</span></span>'
+        f'<span class="korridor-badge {css}" tabindex="0">{_label("Auslastung")} {round(pct)}&nbsp;% &middot; '
+        f'{_label(label)}'
+        f'<span class="info-tip-bubble">{_label(tip_de)}{abstand}</span></span>'
     )
 
 
@@ -5252,13 +5264,14 @@ def _info_tip(text: str) -> str:
     )
 
 
+def _pp_label(n: float) -> str:
+    """'1 Prozentpunkt' / 'N Prozentpunkte' als uebersetzbares Label (Zahl ausserhalb)."""
+    return f'{abs(round(n))} {_label("Prozentpunkt" if abs(round(n)) == 1 else "Prozentpunkte")}'
+
+
 def _auslastung_badge(pct: float, lo: float, hi: float) -> str:
     """Ampel-Badge der Auslastung (Gebietsmodell) gegen den Zielkorridor lo-hi %."""
-    status, _ = korridor_status(pct, lo, hi)
-    return (
-        f'<span class="korridor-badge {_KORRIDOR_CSS[status]}">{pct:.0f}%&thinsp;'
-        f'{_label(_KORRIDOR_LABEL[status])}</span>'
-    )
+    return _render_korridor_badge(korridor_status(pct, lo, hi)[0], pct)
 
 
 def _gebiets_auslastung(m: dict, td: dict | None) -> float:
@@ -5281,10 +5294,9 @@ def _gebiets_begruendung_zeile(m: dict, lo: float, hi: float, td: dict | None = 
         f'{_label("Min. Fahrzeit; Auslastung")} '
     )
     if status == "im_korridor":
-        return kopf + f'{pct:.0f}&thinsp;% {_label("im Korridor")}'
-    if status == "unter":
-        return kopf + f'{diff} {_label("Prozentpunkte unter dem Korridor")}'
-    return kopf + f'{diff} {_label("Prozentpunkte über dem Korridor")}'
+        return kopf + f'{round(pct)}&thinsp;% {_label("im Korridor")}'
+    richtung = "unter dem Korridor" if status == "unter" else "über dem Korridor"
+    return kopf + f'{_pp_label(diff)} {_label(richtung)}'
 
 
 def _render_gebietsoptimierung(
@@ -5377,10 +5389,14 @@ def _render_gebietsoptimierung(
         1 for m in metriken_akt
         if m["kliniken"] and korridor_status(
             _gebiets_auslastung(m, techniker.get(m["id"])), lo_pct, hi_pct)[0] == "im_korridor")
+    korridor_satz = (
+        f'; {n_im_korr} {_label("von")} {n_tech} '
+        f'{_label("liegen im Auslastungs-Zielkorridor")} ({korridor_txt})'
+        if n_im_korr else ""
+    )
     headline_aktuell = (
         f'<p class="go-headline">{n_tech} {_label("Techniker betreuen")} {n_klin} '
-        f'{_label("Kliniken;")} {n_im_korr} {_label("von")} {n_tech} '
-        f'{_label("liegen im Auslastungs-Zielkorridor")} ({korridor_txt}).</p>'
+        f'{_label("Kliniken")}{korridor_satz}.</p>'
     )
     rows_aktuell = ""
     for m in metriken_akt:
@@ -5405,17 +5421,32 @@ def _render_gebietsoptimierung(
         (v for m in metriken_opt for v in m.get("abgaben", [])),
         key=lambda v: (-v["anzahl"], v["von"], v["nach"]))
     n_verschoben = sum(v["anzahl"] for v in verschiebungen)
-    n_im_vorher_nachher = 0
-    for m_o in metriken_opt:
-        m_a = next((x for x in metriken_akt if x["id"] == m_o["id"]), None)
-        if (m_a and m_a["kliniken"] and m_o["kliniken"]
-                and korridor_status(m_a.get("auslastung_pct", 0), lo_pct, hi_pct)[0] == "im_korridor"
-                and korridor_status(m_o.get("auslastung_pct", 0), lo_pct, hi_pct)[0] == "im_korridor"):
-            n_im_vorher_nachher += 1
+    # Auslastung (Gebietsmodell) vorher/nachher: Median und Spreizung ueber Techniker mit Kliniken
+    def _auslastungen(ms: list[dict]) -> list[float]:
+        return [m.get("auslastung_pct", 0) for m in ms if m["kliniken"]]
+    vor_werte = _auslastungen(metriken_akt)
+    nach_werte = _auslastungen(metriken_opt)
+
+    def _median(w: list[float]) -> int:
+        return round(statistics.median(w)) if w else 0
+
+    def _spreizung(w: list[float]) -> int:
+        return round(max(w) - min(w)) if w else 0
+    spr_nachher = _spreizung(nach_werte)
+    k_vor = sum(1 for w in vor_werte if korridor_status(w, lo_pct, hi_pct)[0] == "im_korridor")
+    k_nach = sum(1 for w in nach_werte if korridor_status(w, lo_pct, hi_pct)[0] == "im_korridor")
+    korridor_opt = (
+        f' {_label("Im Zielkorridor: vorher")} {k_vor}, {_label("nachher")} {k_nach} {_label("Techniker")}.'
+        if (k_vor or k_nach) else ""
+    )
     headline_opt = (
         f'<p class="go-headline">{n_verschoben} {_label("von")} {n_klin} '
-        f'{_label("Kliniken wechseln;")} {n_im_vorher_nachher} '
-        f'{_label("Techniker liegen vorher und nachher im Zielkorridor.")}</p>'
+        f'{_label("Kliniken wechseln.")} '
+        f'{_label("Auslastung (Vor-Ort- und Fahrzeit): Median vorher")} {_median(vor_werte)}&nbsp;%, '
+        f'{_label("nachher")} {_median(nach_werte)}&nbsp;%; '
+        f'{_label("Spreizung vorher")} {_spreizung(vor_werte)}, {_label("nachher")} '
+        f'{spr_nachher} {_label("Prozentpunkt" if spr_nachher == 1 else "Prozentpunkte")}.'
+        f'{korridor_opt}</p>'
     )
     if verschiebungen:
         rows_versch = "".join(

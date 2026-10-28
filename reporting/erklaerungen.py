@@ -68,6 +68,14 @@ def korridor_status(pct: float, ziel_min_pct: float = 80.0, ziel_max_pct: float 
     return "im_korridor", 0
 
 
+def prozentpunkte(n: int | float, sprache: str = "de") -> str:
+    """'1 Prozentpunkt' / 'N Prozentpunkte' (EN: percentage point/points)."""
+    n = abs(round(n))
+    if sprache == "en":
+        return f"{n} percentage point{'' if n == 1 else 's'}"
+    return f"{n} Prozentpunkt{'' if n == 1 else 'e'}"
+
+
 def _plz_text(info: dict | None, sprache: str) -> str:
     """PLZ-Uebersicht als Klartext (Von-Bis-Bereich oder Praefix-Liste)."""
     en = sprache == "en"
@@ -130,8 +138,8 @@ def gebiets_begruendung(
                 f" Utilization {pct} % ({basis_en}); target corridor {ziel_min_pct:.0f}–{ziel_max_pct:.0f} %: "
             )
             kenn += {
-                "unter": f"{diff} percentage points below the corridor.",
-                "ueber": f"{diff} percentage points above the corridor.",
+                "unter": f"{prozentpunkte(diff, 'en')} below the corridor.",
+                "ueber": f"{prozentpunkte(diff, 'en')} above the corridor.",
                 "im_korridor": "within the corridor.",
             }[status]
         einschr = (
@@ -153,8 +161,8 @@ def gebiets_begruendung(
                 f" Auslastung {pct} % ({basis_de}); Zielkorridor {ziel_min_pct:.0f}–{ziel_max_pct:.0f} %: "
             )
             kenn += {
-                "unter": f"{diff} Prozentpunkte unter dem Korridor.",
-                "ueber": f"{diff} Prozentpunkte über dem Korridor.",
+                "unter": f"{prozentpunkte(diff)} unter dem Korridor.",
+                "ueber": f"{prozentpunkte(diff)} über dem Korridor.",
                 "im_korridor": "im Korridor.",
             }[status]
         einschr = (
@@ -169,14 +177,14 @@ def gebiets_begruendung(
             vgl = (
                 f"Next alternative technician: {alt['id']} ({alt_td.get('standort', '–')}): "
                 f"on average {alt['mehrfahrt_min']} min more travel time, utilization "
-                f"{alt['auslastung_pct']} % ({abs(diff_pp)} percentage points "
+                f"{alt['auslastung_pct']} % ({prozentpunkte(diff_pp, 'en')} "
                 f"{'lower' if diff_pp < 0 else 'higher'})."
             )
         else:
             vgl = (
                 f"Nächster Alternativ-Techniker: {alt['id']} ({alt_td.get('standort', '–')}): "
                 f"im Schnitt {alt['mehrfahrt_min']} Min. mehr Fahrzeit, Auslastung "
-                f"{alt['auslastung_pct']} % ({abs(diff_pp)} Prozentpunkte "
+                f"{alt['auslastung_pct']} % ({prozentpunkte(diff_pp)} "
                 f"{'niedriger' if diff_pp < 0 else 'höher'})."
             )
     else:

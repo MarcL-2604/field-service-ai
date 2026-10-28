@@ -16,19 +16,20 @@ class TestKorridorKonstanten:
 class TestRenderKorridorBadge:
     def test_unter_korridor(self):
         html = _render_korridor_badge("unter", 24.5)
-        assert "24%" in html
+        assert "Auslastung</span> 24&nbsp;% &middot; " in html
         assert "korridor-unter" in html
         assert "unter Korridor" in html
+        assert "Abstand zum Korridor:" in html and "56 " in html
 
     def test_im_korridor(self):
         html = _render_korridor_badge("im_korridor", 87.0)
-        assert "87%" in html
+        assert "87&nbsp;% &middot; " in html
         assert "korridor-im" in html
         assert "im Korridor" in html
 
     def test_ueber_korridor(self):
         html = _render_korridor_badge("ueber", 130.0)
-        assert "130%" in html
+        assert "130&nbsp;% &middot; " in html
         assert "korridor-ueber" in html
 
     def test_fehlende_daten_leerer_string(self):
@@ -84,7 +85,7 @@ class TestGebietsoptimierungKorridorSpalte:
         }}
         html = _render_gebietsoptimierung(self.M_AKT, self.M_OPT, techniker)
         assert "korridor-badge" in html
-        assert "88%" in html
+        assert "88&nbsp;%" in html and "Auslastung" in html
 
     def test_bindestrich_ohne_echtdaten(self):
         techniker = {"T1": {"standort": "Hamburg", "lat": 53.55, "lon": 9.99}}
