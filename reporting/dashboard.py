@@ -5112,18 +5112,18 @@ _CSS = """\
       background: rgba(0,81,149,0.97);
       display: flex;
       gap: 0;
-      padding: 0 32px;
+      padding: 0 16px;
       position: sticky;
       top: 60px;
       z-index: 99;
       border-bottom: 1px solid rgba(255,255,255,.15);
-      overflow-x: auto;
+      flex-wrap: wrap;
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
     .nav-tabs::-webkit-scrollbar { display: none; }
     .nav-tab {
-      padding: 13px 20px;
+      padding: 13px 14px;
       font-family: var(--font-body);
       font-size: 12px;
       font-weight: 600;
@@ -5143,8 +5143,8 @@ _CSS = """\
     }
     .modul-badge {
       display: inline-block;
-      margin-left: 8px;
-      padding: 2px 7px;
+      margin-left: 6px;
+      padding: 2px 6px;
       font-size: 9.5px;
       font-weight: 700;
       letter-spacing: .02em;
@@ -5945,9 +5945,9 @@ def render_html(
 
     # ── Modulaufbau Pilotphase (config.MODUL_2_AKTIV/MODUL_3_AKTIV): Tabs
     # spaeterer Module bleiben sichtbar, erhalten aber einen Hinweis-Badge ──
-    _modul_badge = '<span class="modul-badge" data-i18n="tab.modulBadge">Modul 2/3 &mdash; folgt nach Pilotphase</span>'
+    _modul_badge = '<span class="modul-badge" data-i18n="tab.modulBadge" title="Modul 3 &mdash; folgt nach Pilotphase / coming after pilot phase">Modul 3</span>'
     modul2_badge = "" if MODUL_2_AKTIV else (
-        '<span class="modul-badge" data-i18n="tab.modulBadge2">Modul 2 &mdash; Einblick</span>')
+        '<span class="modul-badge" data-i18n="tab.modulBadge2" title="Modul 2 &mdash; Einblick / Preview">Modul 2</span>')
     modul3_badge = "" if MODUL_3_AKTIV else _modul_badge
 
     html = f"""<!DOCTYPE html>
@@ -6173,8 +6173,8 @@ var _I18N = {{
     'tab.business': 'Business Case',
     'tab.territory': 'Gebietsoptimierung',
     'tab.hiring': 'Einstellungsbedarf',
-    'tab.modulBadge': 'Modul 2/3 \u2014 folgt nach Pilotphase',
-    'tab.modulBadge2': 'Modul 2 \u2014 Einblick',
+    'tab.modulBadge': 'Modul 3',
+    'tab.modulBadge2': 'Modul 2',
     'ct.alle': 'Alle Empfehlungen', 'ct.wozu': 'Wozu?',
     'th.produktfamilie': 'Produktfamilie', 'th.geraete': 'Ger\u00e4te', 'th.auftraegeJahr': 'Auftr\u00e4ge/Jahr',
     'th.stunden': 'Stunden', 'th.aufwand': 'Aufwand',
@@ -6311,8 +6311,8 @@ var _I18N = {{
     'tab.business': 'Business Case',
     'tab.territory': 'Territory Optimization',
     'tab.hiring': 'Hiring Needs',
-    'tab.modulBadge': 'Module 2/3 — coming after pilot phase',
-    'tab.modulBadge2': 'Module 2 \u2014 Preview',
+    'tab.modulBadge': 'Module 3',
+    'tab.modulBadge2': 'Module 2',
     'ct.alle': 'All recommendations', 'ct.wozu': 'Purpose?',
     'th.produktfamilie': 'Product family', 'th.geraete': 'Devices', 'th.auftraegeJahr': 'Orders/year',
     'th.stunden': 'Hours', 'th.aufwand': 'Effort',

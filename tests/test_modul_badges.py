@@ -73,3 +73,24 @@ class TestModulBadgeI18n:
     def test_badge_span_nutzt_data_i18n(self):
         html = _render()
         assert 'class="modul-badge" data-i18n="tab.modulBadge"' in html
+
+
+class TestKurzeBadgesUndDatenstand:
+    def test_badges_kurz_mit_tooltip(self):
+        import reporting.dashboard as dash
+        assert "'tab.modulBadge': 'Modul 3'" in open(dash.__file__, encoding="utf-8").read()
+        assert "'tab.modulBadge2': 'Modul 2'" in open(dash.__file__, encoding="utf-8").read()
+
+    def test_datenstand_texte(self):
+        import datetime
+        import reporting.dashboard as dash
+        heute = datetime.date(2026, 10, 28)
+        assert "Beispieldaten" in dash._render_datenstand(False, None, heute)
+        frisch = dash._render_datenstand(
+            True, {"datenstand_excel": "2026-10-20", "datenstand_letzter_auftrag": "2026-10-15"}, heute)
+        assert "20.10.2026" in frisch and "15.10.2026" in frisch and "datenstand-warn" not in frisch
+        alt = dash._render_datenstand(
+            True, {"datenstand_excel": "2026-09-01", "datenstand_letzter_auftrag": "2026-08-30"}, heute)
+        assert "datenstand-warn" in alt
+        for text in ("Datenstand: Export vom", "Beispieldaten", "Daten älter als 30 Tage — neuen Export einspielen."):
+            assert text in dash.LABEL_MAP_EN
