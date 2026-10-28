@@ -205,6 +205,7 @@ def _baue_ct_rows_echtdaten(smax_techniker: list[dict]) -> list[dict]:
             "fehlende_familien": ";".join(luecken),
             "top_familie": top_familie,
             "top_familie_stk_potenzial": str(top_stk),
+            "top_familie_geraete_anzahl": str(geraete.get(top_familie, 0) if top_familie else 0),
             "potentielles_zusatz_stk_pa": str(t.get("stk_potenzial", 0)),
             "idealer_crosstraining_partner": "",
             "top_schulung_typ": "",
@@ -561,6 +562,24 @@ LABEL_MAP_EN: dict[str, str] = {
     "PLZ": "ZIP", "PLZ-Präfixe:": "ZIP prefixes:", "weitere": "more",
     "PLZ-Bereich vorher": "ZIP range before", "PLZ-Bereich nachher": "ZIP range after",
     "Keine Kliniken zugeordnet": "No clinics assigned",
+    # Crosstraining-Einblick
+    "Keine wirtschaftlich sinnvollen Empfehlungen im aktuellen Gebiet.":
+        "No economically viable recommendations in the current territory.",
+    "Warum": "Why", "Nutzen": "Benefit", "Aufwand": "Effort",
+    "2 Tage + 4 begleitete Einsaetze": "2 days + 4 accompanied visits",
+    "5 Tage Kurs + 6 begleitete Einsaetze": "5-day course + 6 accompanied visits",
+    "5 Tage Kurs + 8 begleitete Einsaetze": "5-day course + 8 accompanied visits",
+    "Geräte im Gebiet,": "devices in the territory,", "Aufträge pro Jahr": "orders per year",
+    "zusätzliche Aufträge pro Jahr": "additional orders per year", "Stunden": "hours",
+    "T&E anfragen *": "request from T&E *", "Weitere Familien": "More families",
+    "* Kosten und Termine sind bei T&E (Training & Education) anzufragen; es werden keine Euro-Beträge ausgewiesen.":
+        "* Costs and dates are to be requested from T&E (Training & Education); no euro amounts are shown.",
+    "Zeigt, welche zusätzliche Produktfamilie einem Techniker im eigenen Gebiet die meisten Aufträge erschließen würde.":
+        "Shows which additional product family would open up the most orders for a technician in their own territory.",
+    "Berücksichtigt werden Familien mit mindestens": "Families are considered with at least",
+    "Geräten im Gebiet und mindestens": "devices in the territory and at least",
+    "Aufträgen pro Jahr; Hugo, O-arm und CAS sind ausgeschlossen.":
+        "orders per year; Hugo, O-arm and CAS are excluded.",
     # Gebietsplanung: Gesamtaussagen, Begruendungen, Verschiebungen, Luecken-Status
     "Techniker betreuen": "technicians cover", "Kliniken;": "clinics;", "von": "of",
     "liegen im Auslastungs-Zielkorridor": "are within the utilization target corridor",
@@ -1440,6 +1459,97 @@ def _render_ct_tabelle(
             f"</tr>"
         )
     return "\n".join(zeilen)
+
+
+def _render_ct_einblick(
+    ct_rows: list[dict],
+    techniker: dict[str, dict],
+    labor_zeiten: list[dict] | None = None,
+) -> str:
+    """Crosstraining 'Einblick' (Modul 2): drei Top-Karten + einklappbare
+    Tabelle aller Empfehlungen. Bewusst OHNE Summen (Gebiete ueberlappen, die
+    Werte je Techniker sind nicht aufsummierbar) und ohne Euro-Betraege."""
+    labor_zeiten = labor_zeiten or []
+    kandidaten = sorted(
+        (r for r in ct_rows if r.get("wirtschaftlich_sinnvoll") == "Ja" and r.get("top_familie")),
+        key=lambda r: float(r.get("top_familie_stk_potenzial", 0) or 0),
+        reverse=True,
+    )
+    if not kandidaten:
+        return f'<p class="go-details-text">{_label("Keine wirtschaftlich sinnvollen Empfehlungen im aktuellen Gebiet.")}</p>'
+
+    def _werte(row: dict) -> dict:
+        fam = row["top_familie"]
+        auftraege = float(row.get("top_familie_stk_potenzial", 0) or 0)
+        geraete = int(float(row.get("top_familie_geraete_anzahl", 0) or 0))
+        stunden = round(auftraege * _avg_einsatzdauer_stunden(labor_zeiten, fam))
+        dauer = (row.get("top_schulung_dauer") or "").strip()
+        aufwand = _label(_esc(dauer)) if dauer and dauer.upper() != "PLATZHALTER" else _label("T&amp;E anfragen *")
+        css = _CLUSTER_MAP.get(fam, ("cluster-small-capital", ""))[0]
+        standort = techniker.get(row["techniker_id"], {}).get("standort", "")
+        return {"fam": fam, "auftraege": auftraege, "geraete": geraete, "stunden": stunden,
+                "aufwand": aufwand, "css": css, "standort": standort}
+
+    karten = ""
+    for i, row in enumerate(kandidaten[:3], 1):
+        w = _werte(row)
+        karten += (
+            f'<div class="ct-karte">'
+            f'<div class="ct-karte-kopf"><span class="go-empf-num">{i}</span>'
+            f'<div><strong>{row["techniker_id"]}</strong> <span class="sub">({w["standort"]})</span><br>'
+            f'<span class="cluster-badge {w["css"]}">{_esc(w["fam"])}</span></div></div>'
+            f'<div class="ct-zeile"><span class="ct-label">{_label("Warum")}</span> '
+            f'{w["geraete"]} {_label("Geräte im Gebiet,")} {w["auftraege"]:.0f} {_label("Aufträge pro Jahr")}</div>'
+            f'<div class="ct-zeile"><span class="ct-label">{_label("Nutzen")}</span> '
+            f'+{w["auftraege"]:.0f} {_label("zusätzliche Aufträge pro Jahr")} '
+            f'(&asymp;&thinsp;{w["stunden"]} {_label("Stunden")})</div>'
+            f'<div class="ct-zeile"><span class="ct-label">{_label("Aufwand")}</span> {w["aufwand"]}</div>'
+            f'</div>'
+        )
+
+    zeilen = ""
+    for row in kandidaten:
+        w = _werte(row)
+        weitere = [f for f in row["fehlende_familien"].split(";") if f and f != w["fam"]]
+        weitere_html = ""
+        if weitere:
+            weitere_html = (
+                f'<details class="ct-weitere"><summary>{_label("Weitere Familien")} ({len(weitere)})</summary>'
+                f'{", ".join(_esc(f) for f in weitere)}</details>'
+            )
+        zeilen += (
+            f'<tr><td><strong>{row["techniker_id"]}</strong> <span class="sub">({w["standort"]})</span></td>'
+            f'<td><span class="cluster-badge {w["css"]}">{_esc(w["fam"])}</span>{weitere_html}</td>'
+            f'<td>{w["geraete"]}</td><td>{w["auftraege"]:.0f}</td><td>{w["stunden"]}</td>'
+            f'<td>{w["aufwand"]}</td></tr>'
+        )
+    tabelle = (
+        '<table class="ct-kompakt"><thead><tr>'
+        '<th data-i18n="th.technician">Techniker</th>'
+        '<th data-i18n="th.produktfamilie">Produktfamilie</th>'
+        '<th data-i18n="th.geraete">Ger&auml;te</th>'
+        '<th data-i18n="th.auftraegeJahr">Auftr&auml;ge/Jahr</th>'
+        '<th data-i18n="th.stunden">Stunden</th>'
+        '<th data-i18n="th.aufwand">Aufwand</th>'
+        f'</tr></thead><tbody>{zeilen}</tbody></table>'
+    )
+    return (
+        f'<div class="ct-karten">{karten}</div>'
+        f'<details class="ct-alle"><summary class="ct-alle-btn" data-i18n="ct.alle">Alle Empfehlungen</summary>'
+        f'{tabelle}</details>'
+        f'<p class="ct-fussnote">{_label("* Kosten und Termine sind bei T&amp;E (Training &amp; Education) anzufragen; es werden keine Euro-Beträge ausgewiesen.")}</p>'
+    )
+
+
+def _render_ct_wozu() -> str:
+    """Kasten 'Wozu?' in zwei Saetzen mit den Auswahlkriterien (aus config)."""
+    return (
+        f'<div class="ct-wozu"><strong data-i18n="ct.wozu">Wozu?</strong> '
+        f'{_label("Zeigt, welche zusätzliche Produktfamilie einem Techniker im eigenen Gebiet die meisten Aufträge erschließen würde.")} '
+        f'{_label("Berücksichtigt werden Familien mit mindestens")} {MIN_GERAETE_FUER_CROSSTRAINING} '
+        f'{_label("Geräten im Gebiet und mindestens")} {MIN_STK_POTENZIAL_CROSSTRAINING} '
+        f'{_label("Aufträgen pro Jahr; Hugo, O-arm und CAS sind ausgeschlossen.")}</div>'
+    )
 
 
 def _render_ct_ausschluss_hint(ct_rows: list[dict]) -> str:
@@ -4834,6 +4944,19 @@ _CSS = """\
     .go-view-content { display: none; }
     .go-view-content.active { display: block; }
 
+    .ct-wozu { background: rgba(0,81,149,.07); border-left: 3px solid var(--primary); padding: 10px 14px; margin: 0 0 16px; border-radius: 4px; font-size: 13px; line-height: 1.5; }
+    .ct-karten { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 14px; }
+    .ct-karte { border: 1px solid var(--card-border); border-radius: 10px; padding: 14px; background: rgba(0,81,149,.04); }
+    .ct-karte-kopf { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .ct-zeile { font-size: 13px; line-height: 1.5; margin-top: 6px; }
+    .ct-label { display: inline-block; min-width: 58px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); font-weight: 700; }
+    .ct-alle { margin: 6px 0 12px; }
+    .ct-alle-btn { display: inline-block; cursor: pointer; padding: 8px 16px; border: 1px solid var(--primary); border-radius: 8px; color: var(--primary); font-weight: 600; font-size: 13px; list-style: none; }
+    .ct-alle[open] .ct-alle-btn { background: var(--primary); color: #fff; }
+    .ct-alle table { margin-top: 12px; }
+    .ct-weitere { font-size: 12px; margin-top: 4px; color: var(--text-muted); }
+    .ct-fussnote { font-size: 12px; color: var(--text-muted); margin-top: 10px; }
+
     .go-headline { font-size: 15px; font-weight: 600; color: var(--text); margin: 0 0 10px; line-height: 1.45; }
     .go-szenario-band {
       background: rgba(0,81,149,.07); border-left: 3px solid var(--primary);
@@ -5531,9 +5654,9 @@ def render_html(
     stk_html      = _render_stk_tabelle(stk_rows, zeige_empfehlung=is_echtdaten)
     h_stk_de, h_stk_en, hint_stk_de, hint_stk_en = _stk_section_texte(is_echtdaten)
     h_repair_de, h_repair_en, hint_repair_de, hint_repair_en = _repair_section_texte(is_echtdaten)
-    ct_html       = _render_ct_tabelle(ct_top5, techniker, labor_zeiten or [])
+    ct_html       = _render_ct_einblick(ct_rows or [], techniker, labor_zeiten or [])
+    ct_wozu_html  = _render_ct_wozu()
     ct_ausschluss_html = _render_ct_ausschluss_hint(ct_rows or [])
-    warnung_html  = _render_nrw_warnung(nrw_warnung)
     puffer_html   = _render_puffer_section(labor_zeiten or [])
     workflow_html = _render_workflow_status()
     _ct = ct_kennzahlen or {}
@@ -5650,16 +5773,6 @@ def render_html(
         "&middot; Normal (&gt;30 Tage)."
     )
     sla_status_tip = _info_tip(_repair_sla_tooltip_text())
-    ct_luecken_tip = _info_tip(
-        "Anzahl Produktfamilien mit Ger&auml;ten im Gebiet dieses Technikers, "
-        "f&uuml;r die er aktuell nicht qualifiziert ist."
-    )
-    ct_stk_jahr_tip = _info_tip(
-        "Gesch&auml;tztes zus&auml;tzliches Servicevolumen pro Jahr, das durch "
-        "Crosstraining auf die wirtschaftlich attraktivste fehlende "
-        "Produktfamilie erschlossen werden k&ouml;nnte."
-    )
-
     # ── Datenmodus-Texte (Header-Badge + Tab-1-Hinweis): je EIN DE/EN-Paar,
     # das sowohl den initialen Render als auch den i18n-Dict-Eintrag speist
     # (siehe _demo_badge_texte/_demo_hint_texte-Docstring) ──
@@ -5696,7 +5809,8 @@ def render_html(
     # ── Modulaufbau Pilotphase (config.MODUL_2_AKTIV/MODUL_3_AKTIV): Tabs
     # spaeterer Module bleiben sichtbar, erhalten aber einen Hinweis-Badge ──
     _modul_badge = '<span class="modul-badge" data-i18n="tab.modulBadge">Modul 2/3 &mdash; folgt nach Pilotphase</span>'
-    modul2_badge = "" if MODUL_2_AKTIV else _modul_badge
+    modul2_badge = "" if MODUL_2_AKTIV else (
+        '<span class="modul-badge" data-i18n="tab.modulBadge2">Modul 2 &mdash; Einblick</span>')
     modul3_badge = "" if MODUL_3_AKTIV else _modul_badge
 
     html = f"""<!DOCTYPE html>
@@ -5791,28 +5905,15 @@ def render_html(
   <!-- Tab 3: Cross-Training + NRW -->
   <div id="tab-crosstraining" class="tab-content">
   <section>
-    <h2 data-i18n="h.ct">Crosstraining Top 5</h2>
+    <h2 data-i18n="h.ct">Top-3-Empfehlungen</h2>
     <p class="section-hint" data-i18n="hint.ct">
-      Nur Techniker mit wirtschaftlich sinnvollem Crosstraining (Ger&auml;tedichte
-      &amp; STK-Potenzial &uuml;ber Schwellwert) &middot; sortiert nach STK-Potenzial pro Jahr
+      Potenzial = historische Auftr&auml;ge pro Jahr im Gebiet. Werte je Techniker, nicht
+      aufsummierbar, da sich Gebiete &uuml;berlappen.
     </p>
-    <table>
-      <thead>
-        <tr>
-          <th data-i18n="th.technician">Techniker</th>
-          <th><span data-i18n="th.gaps">L&uuml;cken</span>{ct_luecken_tip}</th>
-          <th><span data-i18n="th.stkYear">+STK/Jahr</span>{ct_stk_jahr_tip}</th>
-          <th data-i18n="th.missingFamilies">Fehlende Produktfamilien</th>
-          <th data-i18n="th.recPartner">Empf. Partner</th>
-        </tr>
-      </thead>
-      <tbody>
-{ct_html}
-      </tbody>
-    </table>
+    {ct_wozu_html}
+    {ct_html}
 {ct_ausschluss_html}
   </section>
-{warnung_html}
   </div>
 
   <!-- Tab 4: Workflow -->
@@ -5935,6 +6036,10 @@ var _I18N = {{
     'tab.territory': 'Gebietsoptimierung',
     'tab.hiring': 'Einstellungsbedarf',
     'tab.modulBadge': 'Modul 2/3 \u2014 folgt nach Pilotphase',
+    'tab.modulBadge2': 'Modul 2 \u2014 Einblick',
+    'ct.alle': 'Alle Empfehlungen', 'ct.wozu': 'Wozu?',
+    'th.produktfamilie': 'Produktfamilie', 'th.geraete': 'Ger\u00e4te', 'th.auftraegeJahr': 'Auftr\u00e4ge/Jahr',
+    'th.stunden': 'Stunden', 'th.aufwand': 'Aufwand',
     'summary.green': 'Gr\u00fcn',
     'summary.yellow': 'Gelb',
     'summary.red': 'Rot',
@@ -5970,8 +6075,8 @@ var _I18N = {{
     'th.recommendation': 'Empfehlung',
     'h.buendelung': 'Auftragsbündelung — Kliniken mit mehreren offenen Aufträgen',
     'hint.buendelung': 'Gruppiert nach Klinik (Standort+PLZ) · Qualifikationsprüfung gegen die echte SMax-Skillmatrix (binär qualifiziert/nicht qualifiziert) · unbekannte Fälligkeit wird als aktueller Bestand behandelt, nicht als konkretes Datum',
-    'h.ct': 'Crosstraining Top 5',
-    'hint.ct': 'Nur Techniker mit wirtschaftlich sinnvollem Crosstraining (Ger\u00e4tedichte & STK-Potenzial \u00fcber Schwellwert) \u00b7 sortiert nach STK-Potenzial pro Jahr',
+    'h.ct': 'Top-3-Empfehlungen',
+    'hint.ct': 'Potenzial = historische Auftr\u00e4ge pro Jahr im Gebiet. Werte je Techniker, nicht aufsummierbar, da sich Gebiete \u00fcberlappen.',
     'th.technician': 'Techniker',
     'th.gaps': 'L\u00fccken',
     'th.stkYear': '+STK/Jahr',
@@ -6069,6 +6174,10 @@ var _I18N = {{
     'tab.territory': 'Territory Optimization',
     'tab.hiring': 'Hiring Needs',
     'tab.modulBadge': 'Module 2/3 — coming after pilot phase',
+    'tab.modulBadge2': 'Module 2 \u2014 Preview',
+    'ct.alle': 'All recommendations', 'ct.wozu': 'Purpose?',
+    'th.produktfamilie': 'Product family', 'th.geraete': 'Devices', 'th.auftraegeJahr': 'Orders/year',
+    'th.stunden': 'Hours', 'th.aufwand': 'Effort',
     'summary.green': 'Green',
     'summary.yellow': 'Yellow',
     'summary.red': 'Red',
@@ -6104,8 +6213,8 @@ var _I18N = {{
     'th.recommendation': 'Recommendation',
     'h.buendelung': 'Order bundling — hospitals with multiple open orders',
     'hint.buendelung': 'Grouped by hospital (location+ZIP) · qualification checked against the real SMax skill matrix (binary qualified/not qualified) · unknown due date is treated as current backlog, not a specific date',
-    'h.ct': 'Cross-Training Top 5',
-    'hint.ct': 'Only technicians with an economically viable crosstraining case (device density & STK potential above threshold) \u00b7 sorted by STK potential per year',
+    'h.ct': 'Top 3 recommendations',
+    'hint.ct': 'Potential = historical orders per year in the territory. Values per technician, not additive because territories overlap.',
     'th.technician': 'Technician',
     'th.gaps': 'Gaps',
     'th.stkYear': '+STK/Year',
