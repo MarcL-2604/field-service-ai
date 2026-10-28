@@ -64,7 +64,7 @@ class TestDemoHintTexte:
 
     def test_englisch_nutzt_as_of_statt_stand(self):
         _, en = _demo_hint_texte(is_echtdaten=True, technikeranzahl=24, stand_datum="14.08.2026")
-        assert "As of" in en
+        assert "Generated" in en
         assert "Stand" not in en
 
 

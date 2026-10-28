@@ -345,6 +345,10 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
         if d is not None
     ]
     beobachtungszeitraum_jahre = _berechne_beobachtungszeitraum_jahre(closed_datums)
+    # Datenstand: Aenderungsdatum der Excel (= Exportzeitpunkt) und spaetestes
+    # Actual Resolution (= letzter abgeschlossener Auftrag).
+    datenstand_excel = datetime.fromtimestamp(xlsx.stat().st_mtime).date().isoformat()
+    datenstand_letzter_auftrag = max(closed_datums).date().isoformat() if closed_datums else None
 
     # ── Auslastungs-Zielkorridor: reale Einsatzhistorie ALLER Geraete ──────────
     # (nicht nur Hugo) je Techniker auswerten. Manager-Einsaetze bleiben in der
@@ -549,6 +553,8 @@ def build_dashboard_data(xlsx_pfad: Optional[Path] = None) -> dict:
         "auftragstyp_unterscheidbar": False,  # kein Auftragstyp-Feld in Closed/Open Jobs (siehe api/auslastung_analyse.py)
         "offene_auftraege":           offene_auftraege_liste,
         "offene_ohne_standort":       offene_ohne_standort,
+        "datenstand_excel":           datenstand_excel,
+        "datenstand_letzter_auftrag": datenstand_letzter_auftrag,
         "generated_at":               datetime.now().isoformat(timespec="seconds"),
     }
 
@@ -579,6 +585,14 @@ def load_dashboard_data() -> Optional[dict]:
         return None
 
 
+def formatiere_datum(iso: Optional[str]) -> str:
+    """'2026-10-05' -> '05.10.2026'; fehlend/ungueltig -> 'unbekannt'."""
+    try:
+        return datetime.strptime(str(iso)[:10], "%Y-%m-%d").strftime("%d.%m.%Y")
+    except (ValueError, TypeError):
+        return "unbekannt"
+
+
 def _drucke_zusammenfassung(data: dict) -> None:
     """Kurze Ergebnis-Zusammenfassung fuer Koordinatoren (kein Techniker-Detail)."""
     gesamt = data["jobs_gesamt"]
@@ -593,6 +607,8 @@ def _drucke_zusammenfassung(data: dict) -> None:
     print(f"  Jobs gesamt:                           {gesamt} "
           f"(geschlossen {data['closed_jobs']}, offen {offen})")
     print(f"  PLZ aufgeloest:                        {data['jobs_plz_aufgeloest']}/{gesamt} ({pct:.1f}%)")
+    print(f"  Datenstand Excel (Export):             {formatiere_datum(data.get('datenstand_excel'))}")
+    print(f"  Letzter abgeschlossener Auftrag:       {formatiere_datum(data.get('datenstand_letzter_auftrag'))}")
     print(f"  Offene Auftraege ohne Standort:        {ohne}"
           f"{' (nicht planbar, z.B. AT/CH oder fehlende PLZ)' if ohne else ''}")
     if offen == 0:

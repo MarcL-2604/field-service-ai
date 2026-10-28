@@ -565,6 +565,12 @@ LABEL_MAP_EN: dict[str, str] = {
     "PLZ": "ZIP", "PLZ-Präfixe:": "ZIP prefixes:", "weitere": "more",
     "PLZ-Bereich vorher": "ZIP range before", "PLZ-Bereich nachher": "ZIP range after",
     "Keine Kliniken zugeordnet": "No clinics assigned",
+    # Datenstand (Header)
+    "Beispieldaten": "Sample data",
+    "Datenstand: Export vom": "Data status: export of",
+    ", letzter abgeschlossener Auftrag": ", last completed order",
+    "Datenstand: unbekannt (Import neu ausführen)": "Data status: unknown (re-run the import)",
+    "Daten älter als 30 Tage — neuen Export einspielen.": "Data older than 30 days — load a new export.",
     # Crosstraining-Einblick
     "Keine wirtschaftlich sinnvollen Empfehlungen im aktuellen Gebiet.":
         "No economically viable recommendations in the current territory.",
@@ -5020,6 +5026,8 @@ _CSS = """\
     }
     .go-view-content { display: none; }
     .go-view-content.active { display: block; }
+    .datenstand-bar { font-size: 11px; color: var(--text-muted); }
+    .datenstand-warn { background: #FFF3CD; color: #6B4E00; border: 1px solid #F0C36D; border-radius: 4px; padding: 1px 8px; font-weight: 600; margin-left: 6px; }
 
     .ct-wozu { background: rgba(0,81,149,.07); border-left: 3px solid var(--primary); padding: 10px 14px; margin: 0 0 16px; border-radius: 4px; font-size: 13px; line-height: 1.5; }
     .ct-karten { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 14px; }
@@ -5198,6 +5206,37 @@ def _demo_badge_texte(is_echtdaten: bool, pseudonymisiert: bool) -> tuple[str, s
     return "Demo-Daten · Konfigurierbar", "Demo Data · Configurable"
 
 
+DATENSTAND_VERALTET_TAGE = 30
+
+
+def _render_datenstand(is_echtdaten: bool, datenstand: dict | None, heute: date) -> str:
+    """Header-Hinweis zum Datenstand: Export-Datum und letzter abgeschlossener
+    Auftrag (Echtdaten), 'Beispieldaten' im Demo-Modus, gelber Hinweis wenn der
+    Export aelter als DATENSTAND_VERALTET_TAGE Tage ist. Texte ueber _label
+    (LABEL_MAP_EN), die Daten stehen zwischen den Textteilen."""
+    if not is_echtdaten:
+        return f'<span class="datenstand">{_label("Beispieldaten")}</span>'
+    from api.smax_cache import formatiere_datum
+    ds = datenstand or {}
+    excel, letzter = ds.get("datenstand_excel") or ds.get("excel"), \
+        ds.get("datenstand_letzter_auftrag") or ds.get("letzter_auftrag")
+    if not excel and not letzter:
+        return f'<span class="datenstand">{_label("Datenstand: unbekannt (Import neu ausführen)")}</span>'
+    html_out = (
+        f'<span class="datenstand">{_label("Datenstand: Export vom")} {formatiere_datum(excel)}'
+        f'{_label(", letzter abgeschlossener Auftrag")} {formatiere_datum(letzter)}</span>'
+    )
+    bezug = excel or letzter
+    try:
+        alter_tage = (heute - date.fromisoformat(str(bezug)[:10])).days
+    except ValueError:
+        alter_tage = 0
+    if alter_tage > DATENSTAND_VERALTET_TAGE:
+        html_out += (
+            f' <span class="datenstand-warn">{_label("Daten älter als 30 Tage — neuen Export einspielen.")}</span>')
+    return html_out
+
+
 def _demo_hint_texte(is_echtdaten: bool, technikeranzahl: int, stand_datum: str) -> tuple[str, str]:
     """DE/EN-Text fuer den Techniker-Anzahl-Hinweis (Tab 1, .demo-hint).
 
@@ -5209,8 +5248,8 @@ def _demo_hint_texte(is_echtdaten: bool, technikeranzahl: int, stand_datum: str)
     """
     modus_de = "Echtdaten" if is_echtdaten else "Demo-Daten"
     modus_en = "Real Data" if is_echtdaten else "Demo Data"
-    de = f"{modus_de} · {technikeranzahl} Techniker · Stand: {stand_datum}"
-    en = f"{modus_en} · {technikeranzahl} technicians · As of: {stand_datum}"
+    de = f"{modus_de} · {technikeranzahl} Techniker · Erzeugt: {stand_datum}"
+    en = f"{modus_en} · {technikeranzahl} technicians · Generated: {stand_datum}"
     return de, en
 
 
@@ -5745,6 +5784,7 @@ def render_html(
     empfehlungen_echtdaten: dict | None = None,
     offene_gesamt: int | None = None,
     offene_ohne_standort: int = 0,
+    datenstand: dict | None = None,
 ) -> str:
     ampel_html    = _render_ampel_karten(ampeln, labor_zeiten, techniker)
     stk_html      = _render_stk_tabelle(stk_rows, zeige_empfehlung=is_echtdaten)
@@ -5876,6 +5916,7 @@ def render_html(
     demo_hint_text_de, demo_hint_text_en = _demo_hint_texte(
         is_echtdaten, len(techniker), erstellt_am.strftime("%d.%m.%Y"))
     overview_hint_text_de, overview_hint_text_en = _overview_hint_texte(len(techniker))
+    datenstand_html = _render_datenstand(is_echtdaten, datenstand, erstellt_am.date())
 
     # ── Auftraege-Tab, Abschnitt 2: Demo-SLA-Tabelle vs. Echtdaten-
     # Repair-Verdacht-Tabelle (unterschiedliche Spaltenstruktur, siehe
@@ -5962,7 +6003,8 @@ def render_html(
   <span><span class="dot dot-gruen"></span> <span data-i18n="summary.green">Gr&uuml;n</span>: <strong>{gruen_count}</strong> (&ge;60&thinsp;% L3)</span>
   <span><span class="dot dot-gelb"></span> <span data-i18n="summary.yellow">Gelb</span>: <strong>{gelb_count}</strong> (30&ndash;59&thinsp;%)</span>
   <span><span class="dot dot-rot"></span> <span data-i18n="summary.red">Rot</span>: <strong>{rot_count}</strong> (&lt;30&thinsp;%)</span>
-  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Stand</span>: {ts} &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
+  <span class="datenstand-bar">{datenstand_html}</span>
+  <span style="margin-left:auto;color:var(--text-muted);font-size:11px"><span data-i18n="summary.asOf">Erzeugt</span>: {ts} &middot; 32h/<span data-i18n="card.week">Wo</span> <span data-i18n="summary.monThu">Mo&ndash;Do</span> &middot; Hugo KA: 25,6h</span>
 </div>
 
 <main>
@@ -6139,7 +6181,7 @@ var _I18N = {{
     'summary.green': 'Gr\u00fcn',
     'summary.yellow': 'Gelb',
     'summary.red': 'Rot',
-    'summary.asOf': 'Stand',
+    'summary.asOf': 'Erzeugt',
     'summary.monThu': 'Mo\u2013Do',
     'h.overview': '\u00dcbersicht \u2014 Qualifikations-Ampel',
     'hint.overview': {_js_json(overview_hint_text_de)},
@@ -6277,7 +6319,7 @@ var _I18N = {{
     'summary.green': 'Green',
     'summary.yellow': 'Yellow',
     'summary.red': 'Red',
-    'summary.asOf': 'As of',
+    'summary.asOf': 'Generated',
     'summary.monThu': 'Mon\u2013Thu',
     'h.overview': 'Overview \u2014 Qualification Traffic Light',
     'hint.overview': {_js_json(overview_hint_text_en)},
@@ -7111,6 +7153,11 @@ def _main_build(demo: bool) -> None:
         for tid in techniker
     }
 
+    datenstand = None
+    if _ECHTDATEN:
+        from api.smax_cache import load_dashboard_data as _lade_ds
+        datenstand = _lade_ds() or {}
+
     print("Rendere HTML...")
     html = render_html(
         ampeln=ampeln,
@@ -7137,6 +7184,7 @@ def _main_build(demo: bool) -> None:
         empfehlungen_echtdaten=empfehlungen_echtdaten,
         offene_gesamt=offene_gesamt,
         offene_ohne_standort=offene_ohne_standort,
+        datenstand=datenstand,
     )
 
     if _ECHTDATEN and not demo:

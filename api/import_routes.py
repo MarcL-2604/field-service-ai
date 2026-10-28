@@ -407,6 +407,14 @@ class SMaxImportResult(BaseModel):
     log: list[str]
     sheet_warnungen: dict[str, list[str]]
     timestamp: str
+    datenstand_letzter_auftrag: str | None = None   # spaetestes Actual Resolution (ISO-Datum)
+
+
+def _letzter_auftrag_iso(ergebnis) -> str | None:
+    """Spaetestes Actual Resolution der Closed Jobs als ISO-Datum (None, wenn keines)."""
+    from api.smax_cache import _parse_datum
+    datums = [d for d in (_parse_datum(a.erledigung_datum) for a in ergebnis.geschlossene_auftraege) if d]
+    return max(datums).date().isoformat() if datums else None
 
 
 @router.post("/smax", response_model=SMaxImportResult)
@@ -440,4 +448,5 @@ async def import_smax(file: UploadFile = File(...)):
         log=ergebnis.log,
         sheet_warnungen=sheet_warnungen,
         timestamp=_now_iso(),
+        datenstand_letzter_auftrag=_letzter_auftrag_iso(ergebnis),
     )
